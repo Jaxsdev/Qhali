@@ -1,0 +1,134 @@
+[
+  {
+    "id": 1,
+    "title": "Bache peligroso en Av. Real",
+    "description": "Bache de aproximadamente 50cm de diámetro en el carril derecho. Varios vehículos ya han sufrido daños.",
+    "category": "bache",
+    "latitude": -12.0651,
+    "longitude": -75.2049,
+    "status": "pendiente",
+    "distrito": "Huancayo",
+    "created_at": "2026-05-15T10:30:00"
+  },
+  {
+    "id": 2,
+    "title": "Poste de luz apagado en Jr. Puno",
+    "description": "El poste de alumbrado público frente al parque está apagado hace 3 días. Zona oscura y peligrosa por las noches.",
+    "category": "alumbrado",
+    "latitude": -12.0660,
+    "longitude": -75.2045,
+    "status": "pendiente",
+    "distrito": "Huancayo",
+    "created_at": "2026-05-15T11:00:00"
+  },
+  {
+    "id": 3,
+    "title": "Basura acumulada en esquina de Av. Giraldez",
+    "description": "Basura acumulada sin recojo por más de una semana. Genera malos olores y atrae insectos.",
+    "category": "basura",
+    "latitude": -12.0643,
+    "longitude": -75.2055,
+    "status": "confirmado",
+    "distrito": "Huancayo",
+    "created_at": "2026-05-14T09:15:00"
+  },
+  {
+    "id": 4,
+    "title": "Fuga de agua en Calle Real",
+    "description": "Fuga de agua potable visible en la vereda. El agua corre por la calle y genera charcos.",
+    "category": "agua",
+    "latitude": -12.0670,
+    "longitude": -75.2040,
+    "status": "en_revisión",
+    "distrito": "Huancayo",
+    "created_at": "2026-05-13T14:20:00"
+  },
+  {
+    "id": 5,
+    "title": "Alcantarilla sin tapa en Jr. Amazonas",
+    "description": "La tapa de la alcantarilla fue robada. Peligro para peatones, especialmente de noche.",
+    "category": "alcantarillado",
+    "latitude": -12.0635,
+    "longitude": -75.2060,
+    "status": "pendiente",
+    "distrito": "Huancayo",
+    "created_at": "2026-05-15T16:45:00"
+  },
+  {
+    "id": 6,
+    "title": "Señal de tránsito caída en Av. Huancavelica",
+    "description": "Señal de pare caída en intersección. Los conductores no respetan la prioridad.",
+    "category": "señalización",
+    "latitude": -12.0680,
+    "longitude": -75.2030,
+    "status": "pendiente",
+    "distrito": "Huancayo",
+    "created_at": "2026-05-15T08:00:00"
+  },
+  {
+    "id": 7,
+    "title": "Jardín abandonado en Plaza Constitución",
+    "description": "Las áreas verdes de la plaza están descuidadas. Pasto seco y basura acumulada.",
+    "category": "áreas_verdes",
+    "latitude": -12.0655,
+    "longitude": -75.2048,
+    "status": "confirmado",
+    "distrito": "Huancayo",
+    "created_at": "2026-05-14T12:30:00"
+  },
+  {
+    "id": 8,
+    "title": "Bache en Jr. Ancash",
+    "description": "Bache pequeño pero creciendo rápidamente. Cerca del anterior reporte de bache en Av. Real.",
+    "category": "bache",
+    "latitude": -12.0652,
+    "longitude": -75.2050,
+    "status": "pendiente",
+    "distrito": "Huancayo",
+    "created_at": "2026-05-15T17:00:00"
+  },
+  {
+    "id": 9,
+    "title": "Contaminación sonora por construcción en El Tambo",
+    "description": "Construcción ilegal que genera ruido excesivo desde las 6am. Afecta a vecinos de 3 cuadras.",
+    "category": "ruido",
+    "latitude": -12.0580,
+    "longitude": -75.2100,
+    "status": "pendiente",
+    "distrito": "El Tambo",
+    "created_at": "2026-05-15T06:30:00"
+  },
+  {
+    "id": 10,
+    "title": "Zona insegura en Av. Ferrocarril",
+    "description": "Robos frecuentes reportados por vecinos. Falta de iluminación y vigilancia.",
+    "category": "seguridad",
+    "latitude": -12.0700,
+    "longitude": -75.2020,
+    "status": "pendiente",
+    "distrito": "Huancayo",
+    "created_at": "2026-05-15T20:00:00"
+  },
+  {
+    "id": 11,
+    "title": "Tubería rota en Chilca",
+    "description": "Tubería de desagüe rota que contamina la calle. Riesgo sanitario para los vecinos.",
+    "category": "alcantarillado",
+    "latitude": -12.0750,
+    "longitude": -75.2080,
+    "status": "pendiente",
+    "distrito": "Chilca",
+    "created_at": "2026-05-15T13:00:00"
+  },
+  {
+    "id": 12,
+    "title": "Semáforo dañado en cruce Real con Giraldez",
+    "description": "El semáforo parpadea en rojo constantemente. Causa confusión en el cruce.",
+    "category": "señalización",
+    "latitude": -12.0648,
+    "longitude": -75.2052,
+    "status": "resuelto",
+    "distrito": "Huancayo",
+    "created_at": "2026-05-10T10:00:00"
+  }
+]
