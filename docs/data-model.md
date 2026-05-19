@@ -47,8 +47,8 @@
 | Campo | Tipo | Null | Descripción |
 |-------|------|------|-------------|
 | id | INTEGER | PK | Identificador único |
-| email | VARCHAR(255) | NOT NULL, UNIQUE | Correo electrónico |
-| alias_anonimo | VARCHAR(50) | NULL | Alias para reportes públicos |
+| email | VARCHAR(255) | NOT NULL, UNIQUE | Correo electrónico (nunca público) |
+| alias_anonimo | VARCHAR(50) | NOT NULL, UNIQUE | Alias anónimo generado automáticamente |
 | password_hash | VARCHAR(255) | NOT NULL | Contraseña hasheada (bcrypt) |
 | role | ENUM | NOT NULL | ciudadano, admin, moderador |
 | is_active | BOOLEAN | NOT NULL | Default: true |
@@ -101,7 +101,7 @@
 - Un User NO puede validar su propio Incident
 - Un User solo puede validar un Incident una vez
 
-## Índices recomendados (Sprint 2+)
+## Índices implementados (Sprint 2)
 
 ```sql
 -- Búsqueda por ubicación
