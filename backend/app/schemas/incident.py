@@ -16,6 +16,7 @@ class IncidentResponse(BaseModel):
     latitude: float
     longitude: float
     status: str
+    validation_count: int = 0
     created_at: datetime
 
     class Config:
@@ -31,6 +32,7 @@ class IncidentPublicItem(BaseModel):
     latitude: float
     longitude: float
     status: str
+    validation_count: int = 0
     created_at: datetime
 
     class Config:

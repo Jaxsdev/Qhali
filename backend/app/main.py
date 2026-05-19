@@ -18,6 +18,17 @@ import app.models.user_db      # noqa: F401
 import app.models.incident_db  # noqa: F401
 Base.metadata.create_all(bind=engine)
 
+# Sprint 4 — migración idempotente: añadir validation_count si no existe
+from sqlalchemy import text  # noqa: E402
+try:
+    with engine.connect() as _conn:
+        _conn.execute(text(
+            "ALTER TABLE incidents ADD COLUMN validation_count INTEGER NOT NULL DEFAULT 0"
+        ))
+        _conn.commit()
+except Exception:
+    pass  # columna ya existe
+
 # Directorio de imágenes subidas
 _UPLOADS_DIR = os.path.normpath(
     os.path.join(os.path.dirname(__file__), "..", "uploads", "images")

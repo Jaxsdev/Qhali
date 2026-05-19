@@ -1,17 +1,20 @@
 """
-Router de Incidencias — QHALI Sprint 3.
-POST /incidents  — crear reporte ciudadano (protegido, multipart/form-data).
-GET  /incidents/public — lista pública para mapa.
-GET  /incidents/my     — historial privado del usuario.
-GET  /incidents/{id}   — detalle de un incidente.
+Router de Incidencias — QHALI Sprint 3 / 4.
+POST /              — crear reporte (protegido, multipart/form-data).
+GET  /public        — lista pública para el mapa ciudadano.
+GET  /my            — historial privado del usuario autenticado.
+GET  /{incident_id} — detalle de un incidente.
 """
 
 import os
 import uuid
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 # pyrefly: ignore [missing-import]
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
+# pyrefly: ignore [missing-import]
+from sqlalchemy import and_, or_
 # pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
 
@@ -36,6 +39,8 @@ _VALID_CATEGORIES = {
 }
 
 
+# ── POST / — Crear incidente ─────────────────────────────────────────────────
+
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=IncidentResponse)
 async def create_incident(
     request: Request,
@@ -49,19 +54,15 @@ async def create_incident(
     db: Session = Depends(get_db),
 ):
     """
-    Crea un reporte urbano.
-    - Requiere JWT (ciudadano autenticado).
-    - Acepta multipart/form-data con campos de texto + archivo de imagen.
-    - Estado inicial siempre "Pendiente" (no configurable por el cliente).
+    Crea un reporte urbano. Requiere JWT. Acepta multipart/form-data.
+    Estado inicial siempre 'Pendiente', no configurable por el cliente.
     """
-    # -- Validar categoría --
     if category not in _VALID_CATEGORIES:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Categoría inválida. Opciones: {', '.join(sorted(_VALID_CATEGORIES))}",
         )
 
-    # -- Validar descripción --
     description = description.strip()
     if len(description) < 10:
         raise HTTPException(
@@ -74,10 +75,8 @@ async def create_incident(
             detail="La descripción no puede superar los 250 caracteres.",
         )
 
-    # -- Validar coordenadas (GeoData) --
     validate_coordinates(latitude, longitude)
 
-    # -- Validar y guardar imagen --
     if image.content_type not in _ALLOWED_TYPES:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -102,7 +101,6 @@ async def create_incident(
     base = str(request.base_url).rstrip("/")
     image_url = f"{base}/static/images/{filename}"
 
-    # -- Crear incidente en BD --
     incident = Incident(
         user_id=current_user.id,
         public_alias=current_user.alias_anonimo,
@@ -113,32 +111,60 @@ async def create_incident(
         longitude=longitude,
         location_accuracy=location_accuracy,
         status="Pendiente",
+        validation_count=0,
     )
     db.add(incident)
     db.commit()
     db.refresh(incident)
-
     return incident
 
+
+# ── GET /public — Lista pública para el mapa ─────────────────────────────────
 
 @router.get("/public", response_model=list[IncidentPublicItem])
 def list_public_incidents(
     category: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
-    """Lista pública de incidentes activos para el mapa ciudadano (Sprint 4)."""
-    query = db.query(Incident).filter(Incident.status != "Resuelto")
+    """
+    Lista pública de incidentes para el mapa ciudadano.
+    Reglas de visibilidad (Sprint 4):
+    - Confirmados, En revisión y Resueltos: siempre visibles.
+    - Pendientes: visibles solo si tienen <24h O tienen al menos 1 validación.
+    No expone email, user_id ni datos privados.
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+
+    query = db.query(Incident).filter(
+        or_(
+            Incident.status != "Pendiente",
+            and_(
+                Incident.status == "Pendiente",
+                or_(
+                    Incident.created_at >= cutoff,
+                    Incident.validation_count > 0,
+                ),
+            ),
+        )
+    )
+
     if category:
         query = query.filter(Incident.category == category)
+
     return query.order_by(Incident.created_at.desc()).limit(200).all()
 
+
+# ── GET /my — Historial privado ──────────────────────────────────────────────
 
 @router.get("/my", response_model=list[IncidentResponse])
 def list_my_incidents(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Historial privado de incidentes del usuario autenticado (Sprint 4)."""
+    """
+    Historial privado del usuario autenticado, ordenado por fecha descendente.
+    Solo devuelve reportes del usuario cuyo token está en el header.
+    """
     return (
         db.query(Incident)
         .filter(Incident.user_id == current_user.id)
@@ -147,12 +173,14 @@ def list_my_incidents(
     )
 
 
+# ── GET /{incident_id} — Detalle ─────────────────────────────────────────────
+
 @router.get("/{incident_id}", response_model=IncidentResponse)
 def get_incident(
     incident_id: int,
     db: Session = Depends(get_db),
 ):
-    """Detalle de un incidente por ID."""
+    """Detalle completo de un incidente por ID. Sin datos privados."""
     incident = db.query(Incident).filter(Incident.id == incident_id).first()
     if not incident:
         raise HTTPException(
