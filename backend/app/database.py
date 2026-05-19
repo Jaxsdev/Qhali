@@ -1,22 +1,27 @@
 """
 Configuración de conexión a base de datos.
-Preparado para PostgreSQL con SQLAlchemy.
-En Sprint 1 solo se define la estructura; la conexión real se activa en Sprint 2.
+Usando SQLite para el Sprint 2 (proceso de desarrollo local y pruebas).
 """
 
+# pyrefly: ignore [missing-import]
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
+# pyrefly: ignore [missing-import]
+from sqlalchemy.orm import declarative_base
+# pyrefly: ignore [missing-import]
 from sqlalchemy.orm import sessionmaker
 
 from app.config import settings
 
-# ── Engine y sesión ──
-# En Sprint 1 no se conecta a BD real, pero la estructura queda lista.
 SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
+
+# Configuración especial si es SQLite (check_same_thread)
+connect_args = {}
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    connect_args["check_same_thread"] = False
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    # pool_pre_ping=True,  # Descomentar cuando se conecte a BD real
+    connect_args=connect_args
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -3,6 +3,7 @@ Configuración central del backend QHALI.
 Carga variables de entorno y define settings globales.
 """
 
+# pyrefly: ignore [missing-import]
 from pydantic_settings import BaseSettings
 from typing import Optional
 
@@ -12,15 +13,17 @@ class Settings(BaseSettings):
 
     # ── Aplicación ──
     APP_NAME: str = "QHALI API"
-    APP_VERSION: str = "0.1.0"
+    APP_VERSION: str = "0.2.0"
     DEBUG: bool = True
 
     # ── Base de datos ──
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/qhali"
+    # Para SQLite usar: sqlite:///./qhali.db
+    # Para PostgreSQL: postgresql://postgres:postgres@localhost:5432/qhali
+    DATABASE_URL: str = "sqlite:///./qhali.db"
 
     # ── Autenticación ──
-    SECRET_KEY: str = "qhali-dev-secret-key-change-in-production"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    SECRET_KEY: str = "qhali-dev-secret-key-change-in-production-2026-sprint2"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440 # 24 horas para persistencia
     ALGORITHM: str = "HS256"
 
     # ── Geolocalización ──

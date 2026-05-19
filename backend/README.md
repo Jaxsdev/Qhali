@@ -4,9 +4,9 @@ API REST del MVP QHALI para reporte ciudadano de incidencias urbanas con geoloca
 
 ## Stack
 
-- **Framework**: FastAPI (Python 3.10+)
-- **BD**: PostgreSQL (preparado, no conectado en Sprint 1)
-- **Auth**: JWT con python-jose (preparado para Sprint 2)
+- **Framework**: FastAPI 0.115 (Python 3.10+)
+- **BD**: SQLite (desarrollo) / PostgreSQL (producción)
+- **Auth**: JWT con python-jose + bcrypt para hash de contraseñas
 - **Geo**: Fórmula Haversine para cálculo de distancias
 
 ## Instalación
@@ -32,58 +32,149 @@ copy .env.example .env
 uvicorn app.main:app --reload --port 8000
 ```
 
-## Endpoints disponibles (Sprint 1)
+La BD SQLite (`qhali.db`) se crea automáticamente al arrancar.
+
+## Scripts de utilidad
+
+```bash
+# Cargar usuarios demo (para pruebas y QA)
+python -m scripts.seed_demo_users
+
+# Verificar unicidad y formato de alias anónimos
+python -m scripts.test_alias_uniqueness
+```
+
+## Endpoints — Sprint 2 (Autenticación)
+
+### POST `/api/v1/auth/register`
+Registra un ciudadano nuevo. El alias anónimo se genera automáticamente.
+
+**Request:**
+```json
+{ "email": "tu@correo.com", "password": "min8chars" }
+```
+
+**Response 201:**
+```json
+{
+  "access_token": "<jwt>",
+  "token_type": "bearer",
+  "user": {
+    "id": 1,
+    "alias_anonimo": "Vecino_AB3K",
+    "role": "ciudadano",
+    "is_active": true,
+    "created_at": "2026-05-19T..."
+  }
+}
+```
+
+**Errores:** `400` correo ya registrado · `422` campos inválidos
+
+---
+
+### POST `/api/v1/auth/login`
+Autentica un ciudadano existente.
+
+**Request:**
+```json
+{ "email": "tu@correo.com", "password": "tu_contraseña" }
+```
+
+**Response 200:** igual que `/register`
+
+**Errores:** `401` credenciales incorrectas · `400` cuenta inactiva
+
+---
+
+### GET `/api/v1/auth/me`
+Devuelve el perfil del usuario autenticado. Requiere token JWT.
+
+**Header:** `Authorization: Bearer <token>`
+
+**Response 200:**
+```json
+{
+  "id": 1,
+  "alias_anonimo": "Vecino_AB3K",
+  "role": "ciudadano",
+  "is_active": true,
+  "created_at": "2026-05-19T..."
+}
+```
+
+**Errores:** `401` token inválido o expirado
+
+---
+
+### POST `/api/v1/auth/logout`
+Cierra la sesión (el token se elimina en el cliente). Requiere token JWT.
+
+**Response 200:**
+```json
+{ "message": "Sesión cerrada correctamente" }
+```
+
+---
+
+## Endpoints — Sprint 1 (base preparada)
 
 | Método | Ruta | Descripción | Estado |
 |--------|------|-------------|--------|
 | GET | `/health` | Health check | ✅ Funcional |
-| GET | `/docs` | Swagger UI | ✅ Funcional |
+| GET | `/docs` | Swagger UI interactivo | ✅ Funcional |
 | GET | `/redoc` | ReDoc | ✅ Funcional |
-| POST | `/api/v1/auth/register` | Registro | 🟡 Preparado |
-| POST | `/api/v1/auth/login` | Login | 🟡 Preparado |
-| GET | `/api/v1/users/` | Listar usuarios | 🟡 Preparado |
-| GET | `/api/v1/incidents/` | Listar incidencias | 🟡 Preparado |
-| POST | `/api/v1/incidents/` | Crear incidencia | 🟡 Preparado |
-| POST | `/api/v1/validations/` | Crear validación | 🟡 Preparado |
-| GET | `/api/v1/admin/dashboard` | Dashboard | 🟡 Preparado |
+| GET | `/api/v1/users/` | Listar usuarios | 🟡 Sprint 3 |
+| GET | `/api/v1/incidents/` | Listar incidencias | 🟡 Sprint 3 |
+| POST | `/api/v1/incidents/` | Crear incidencia | 🟡 Sprint 3 |
+| POST | `/api/v1/validations/` | Crear validación | 🟡 Sprint 5 |
+| GET | `/api/v1/admin/dashboard` | Dashboard admin | 🟡 Sprint 6 |
 
 ## Estructura de carpetas
 
 ```
 backend/
 ├── app/
-│   ├── __init__.py
-│   ├── main.py              # Punto de entrada FastAPI
-│   ├── config.py             # Configuración con pydantic-settings
-│   ├── database.py           # Conexión a BD
-│   ├── models/               # Modelos Pydantic
-│   │   ├── user.py
+│   ├── main.py              # FastAPI app + arranque de BD
+│   ├── config.py            # Settings con pydantic-settings
+│   ├── database.py          # Sesión SQLAlchemy + get_db
+│   ├── models/
+│   │   ├── user_db.py       # ORM SQLAlchemy (tabla users)
+│   │   ├── user.py          # Pydantic models (legado Sprint 1)
 │   │   ├── incident.py
 │   │   └── validation.py
-│   ├── routers/              # Endpoints de la API
-│   │   ├── auth.py
+│   ├── routers/
+│   │   ├── auth.py          # register, login, /me, logout
 │   │   ├── users.py
 │   │   ├── incidents.py
 │   │   ├── validations.py
 │   │   └── admin.py
-│   ├── schemas/              # Schemas request/response
+│   ├── schemas/
+│   │   └── user.py          # RegisterRequest, LoginRequest, AuthResponse, UserPublic
 │   └── utils/
-│       └── geo.py            # Utilidades geográficas (Haversine)
+│       ├── auth_utils.py    # JWT, bcrypt, get_current_user
+│       ├── alias_generator.py  # Generación de alias anónimos
+│       └── geo.py           # Haversine
+├── scripts/
+│   ├── seed_demo_users.py   # Seed de usuarios demo
+│   └── test_alias_uniqueness.py
 ├── .env.example
 ├── requirements.txt
 └── README.md
 ```
 
-## Modelos de datos
+## Seguridad
 
-### User
-- `id`, `email`, `alias_anonimo`, `password_hash`, `role`, `is_active`, `created_at`
+- Contraseñas: `bcrypt` (nunca se almacena en texto plano)
+- Tokens: JWT firmados con `SECRET_KEY`, expiran en 24 horas
+- El `email` y `password_hash` **nunca** aparecen en respuestas de API
+- El alias anónimo es el único identificador público del ciudadano
 
-### Incident
-- `id`, `user_id`, `title`, `description`, `category`, `photo_url`
-- `latitude`, `longitude`, `location_accuracy`, `distrito`
-- `status`, `validation_count`, `confidence_score`, `created_at`
+## Variables de entorno relevantes
 
-### Validation
-- `id`, `incident_id`, `user_id`, `is_confirmed`
-- `latitude`, `longitude`, `distance_to_incident`, `comment`, `created_at`
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `DATABASE_URL` | `sqlite:///./qhali.db` | Conexión a BD |
+| `SECRET_KEY` | — | Clave para firmar JWT (cambiar en prod) |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `1440` | Duración del token (24h) |
+| `CORS_ORIGINS` | `["http://localhost:3000"]` | Orígenes permitidos |

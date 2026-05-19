@@ -1,13 +1,17 @@
-"""
-Punto de entrada principal de la API QHALI.
-FastAPI application con todos los routers registrados.
-"""
+"""Punto de entrada principal de la API QHALI."""
 
+# pyrefly: ignore [missing-import]
 from fastapi import FastAPI
+# pyrefly: ignore [missing-import]
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.database import Base, engine
 from app.routers import auth, users, incidents, validations, admin
+
+# Crear tablas en BD al iniciar (SQLite para desarrollo)
+import app.models.user_db  # noqa: F401 — registra el modelo en Base.metadata
+Base.metadata.create_all(bind=engine)
 
 # ── Crear aplicación ──
 app = FastAPI(
@@ -31,20 +35,9 @@ app.add_middleware(
 )
 
 
-# ── Health Check ──
-@app.get(
-    "/health",
-    tags=["Health"],
-    summary="Verificar estado de la API",
-    description="Endpoint de salud que confirma que la API está ejecutándose correctamente.",
-)
+@app.get("/health", tags=["Health"], summary="Verificar estado de la API")
 async def health_check():
-    """Endpoint de salud. Responde con status ok si la API está activa."""
-    return {
-        "status": "ok",
-        "app": settings.APP_NAME,
-        "version": settings.APP_VERSION,
-    }
+    return {"status": "ok", "app": settings.APP_NAME, "version": settings.APP_VERSION}
 
 
 # ── Registrar routers ──
@@ -57,9 +50,4 @@ app.include_router(admin.router, prefix="/api/v1/admin", tags=["Administración"
 
 @app.get("/", tags=["Root"])
 async def root():
-    """Ruta raíz con información básica de la API."""
-    return {
-        "message": "Bienvenido a QHALI API",
-        "docs": "/docs",
-        "health": "/health",
-    }
+    return {"message": "Bienvenido a QHALI API", "docs": "/docs", "health": "/health"}
