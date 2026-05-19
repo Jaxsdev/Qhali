@@ -51,6 +51,28 @@ export interface IncidentResponse {
   created_at: string;
 }
 
+export interface NearbyIncidentItem {
+  id: number;
+  public_alias: string;
+  category: string;
+  description: string;
+  image_url: string | null;
+  latitude: number;
+  longitude: number;
+  status: string;
+  validation_count: number;
+  created_at: string;
+  distance_meters: number;
+}
+
+export interface ValidateResponse {
+  validation_id: number;
+  incident_id: number;
+  validation_count: number;
+  status: string;
+  message: string;
+}
+
 export const api = {
   register(email: string, password: string) {
     return request<AuthResponse>("/auth/register", {
@@ -96,5 +118,18 @@ export const api = {
   getPublicIncidents(category?: string) {
     const qs = category ? `?category=${encodeURIComponent(category)}` : "";
     return request<IncidentResponse[]>(`/incidents/public${qs}`);
+  },
+
+  getNearbyIncidents(lat: number, lng: number, radius = 300) {
+    return request<NearbyIncidentItem[]>(
+      `/incidents/nearby?lat=${lat}&lng=${lng}&radius=${radius}`
+    );
+  },
+
+  validateIncident(incidentId: number, latitude: number, longitude: number) {
+    return request<ValidateResponse>(`/incidents/${incidentId}/validate`, {
+      method: "POST",
+      body: JSON.stringify({ latitude, longitude }),
+    });
   },
 };
