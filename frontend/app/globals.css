@@ -1,0 +1,166 @@
+@import "tailwindcss";
+
+/* ══════════════════════════════════════════════
+   QHALI — Design System CSS
+   PWA Ciudadana de Reporte de Incidencias
+   ══════════════════════════════════════════════ */
+
+:root {
+  /* ── Brand Colors ── */
+  --qhali-primary: #10b981;
+  --qhali-primary-dark: #059669;
+  --qhali-primary-light: #34d399;
+  --qhali-secondary: #0ea5e9;
+  --qhali-secondary-dark: #0284c7;
+  --qhali-accent: #f59e0b;
+  
+  /* ── Surfaces ── */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --bg-elevated: #334155;
+  --bg-glass: rgba(30, 41, 59, 0.7);
+  
+  /* ── Text ── */
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  /* ── Status ── */
+  --status-pending: #f59e0b;
+  --status-confirmed: #10b981;
+  --status-review: #0ea5e9;
+  --status-resolved: #8b5cf6;
+  
+  /* ── Spacing ── */
+  --bottom-nav-height: 72px;
+  --header-height: 56px;
+  
+  /* ── Shadows ── */
+  --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.15);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Base ── */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 999px;
+}
+
+/* ── Glass Effect ── */
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-strong {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ── Gradient Text ── */
+.gradient-text {
+  background: linear-gradient(135deg, var(--qhali-primary), var(--qhali-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Gradient Background ── */
+.gradient-bg {
+  background: linear-gradient(135deg, var(--qhali-primary), var(--qhali-secondary));
+}
+
+/* ── Pulse Animation ── */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(16, 185, 129, 0.3); }
+  50% { box-shadow: 0 0 24px rgba(16, 185, 129, 0.6); }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ── Slide Up Animation ── */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out forwards;
+}
+
+/* ── Fade In ── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+/* ── Scale In ── */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out forwards;
+}
+
+/* ── Status Badge Styles ── */
+.status-pendiente { background: rgba(245, 158, 11, 0.15); color: var(--status-pending); border: 1px solid rgba(245, 158, 11, 0.3); }
+.status-confirmado { background: rgba(16, 185, 129, 0.15); color: var(--status-confirmed); border: 1px solid rgba(16, 185, 129, 0.3); }
+.status-en_revision { background: rgba(14, 165, 233, 0.15); color: var(--status-review); border: 1px solid rgba(14, 165, 233, 0.3); }
+.status-resuelto { background: rgba(139, 92, 246, 0.15); color: var(--status-resolved); border: 1px solid rgba(139, 92, 246, 0.3); }
+
+/* ── Safe area for PWA ── */
+.safe-area-bottom {
+  padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+}
