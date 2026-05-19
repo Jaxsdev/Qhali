@@ -7,8 +7,8 @@ const navItems = [
   {
     href: "/home",
     label: "Inicio",
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+    icon: (active: boolean) => (
+      <svg className="w-5 h-5" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
       </svg>
     ),
@@ -16,8 +16,8 @@ const navItems = [
   {
     href: "/report",
     label: "Reportar",
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+    icon: (_active: boolean) => (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
@@ -26,17 +26,17 @@ const navItems = [
   {
     href: "/map",
     label: "Mapa",
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+    icon: (active: boolean) => (
+      <svg className="w-5 h-5" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
       </svg>
     ),
   },
   {
     href: "/my-reports",
-    label: "Mis reportes",
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+    label: "Historial",
+    icon: (active: boolean) => (
+      <svg className="w-5 h-5" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
       </svg>
     ),
@@ -48,8 +48,8 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 glass-strong safe-area-bottom"
-      id="bottom-nav"
+      className="fixed bottom-0 left-0 right-0 z-50 surface-header"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       <div className="max-w-lg mx-auto flex items-center justify-around h-[var(--bottom-nav-height)]">
         {navItems.map((item) => {
@@ -57,16 +57,18 @@ export default function BottomNav() {
 
           if (item.isAction) {
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                id={`nav-${item.label.toLowerCase()}`}
-                className="flex flex-col items-center -mt-6"
-              >
-                <div className="w-14 h-14 rounded-full gradient-bg flex items-center justify-center shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all duration-300 active:scale-90 text-white">
-                  {item.icon}
+              <Link key={item.href} href={item.href} className="flex flex-col items-center -mt-6">
+                <div
+                  className="w-13 h-13 rounded-full flex items-center justify-center transition-all active:scale-90 text-white"
+                  style={{
+                    width: 52, height: 52,
+                    background: "var(--qhali-orange)",
+                    boxShadow: "0 4px 14px rgba(234,88,12,0.35)",
+                  }}
+                >
+                  {item.icon(false)}
                 </div>
-                <span className="text-[10px] mt-1 font-medium text-emerald-400">
+                <span className="text-[10px] mt-1 font-semibold" style={{ color: "var(--qhali-orange)" }}>
                   {item.label}
                 </span>
               </Link>
@@ -77,21 +79,16 @@ export default function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              id={`nav-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
-              className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all duration-200 ${
-                isActive
-                  ? "text-emerald-400"
-                  : "text-slate-500 hover:text-slate-300"
-              }`}
+              className="flex flex-col items-center justify-center gap-0.5 py-1 px-4 touch-target transition-colors duration-150"
+              style={{ color: isActive ? "var(--qhali-primary)" : "var(--text-muted)" }}
             >
-              <span className={`transition-transform duration-200 ${isActive ? "scale-110" : ""}`}>
-                {item.icon}
-              </span>
-              <span className={`text-[10px] font-medium ${isActive ? "text-emerald-400" : ""}`}>
-                {item.label}
-              </span>
+              {item.icon(isActive)}
+              <span className="text-[10px] font-medium">{item.label}</span>
               {isActive && (
-                <span className="w-1 h-1 rounded-full bg-emerald-400 animate-fade-in" />
+                <span
+                  className="w-4 h-0.5 rounded-full mt-0.5 animate-fade-in"
+                  style={{ background: "var(--qhali-primary)" }}
+                />
               )}
             </Link>
           );

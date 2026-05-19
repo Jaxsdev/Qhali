@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Card from "../../components/Card";
 import StatusBadge from "../../components/StatusBadge";
+import { useAuth } from "../../lib/auth";
 
 const recentIncidents = [
   { id: 1, title: "Bache peligroso en Av. Real", category: "bache", status: "pendiente" as const, time: "Hace 2h", validations: 3 },
@@ -17,97 +18,193 @@ const categoryIcons: Record<string, string> = {
   ruido: "🔊", seguridad: "🔒", otro: "📌",
 };
 
+const quickActions = [
+  {
+    href: "/report",
+    label: "Nuevo reporte",
+    sub: "Reportar incidencia",
+    icon: "📋",
+    bg: "var(--qhali-orange)",
+    shadow: "0 4px 14px rgba(234,88,12,0.3)",
+  },
+  {
+    href: "/map",
+    label: "Ver mapa",
+    sub: "Incidencias cercanas",
+    icon: "🗺️",
+    bg: "var(--qhali-primary)",
+    shadow: "var(--shadow-primary)",
+  },
+  {
+    href: "/my-reports",
+    label: "Mis reportes",
+    sub: "Ver historial",
+    icon: "📁",
+    bg: "#0F766E",
+    shadow: "0 4px 14px rgba(15,118,110,0.3)",
+  },
+];
+
 export default function HomePage() {
+  const { user, logout } = useAuth();
+  const router = useRouter();
+
+  function handleLogout() {
+    logout();
+    router.replace("/login");
+  }
+
+  const aliasInitial = user?.alias_anonimo?.[0]?.toUpperCase() ?? "C";
+
   return (
-    <div className="min-h-screen pb-4">
-      <header className="sticky top-0 z-40 glass-strong">
+    <div className="min-h-screen" style={{ background: "var(--bg-primary)" }}>
+
+      {/* Header */}
+      <header className="sticky top-0 z-40 surface-header">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold gradient-text">QHALI</h1>
-            <p className="text-[10px] text-slate-500">Huancayo, Junín</p>
-          </div>
           <div className="flex items-center gap-3">
-            <button className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-colors">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ background: "var(--qhali-primary)" }}
+            >
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-base font-bold brand-text leading-none">QHALI</h1>
+              <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Huancayo, Junín</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleLogout}
+              title="Cerrar sesión"
+              className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors duration-150"
+              style={{
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border-subtle)",
+                color: "var(--text-muted)",
+              }}
+            >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
               </svg>
             </button>
-            <div className="w-9 h-9 rounded-full gradient-bg flex items-center justify-center text-white text-sm font-bold">C</div>
+            <div
+              className="w-9 h-9 rounded-lg flex items-center justify-center text-white text-sm font-bold"
+              style={{ background: "var(--qhali-primary)" }}
+            >
+              {aliasInitial}
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 space-y-6 mt-4">
-        {/* Welcome Banner */}
-        <div className="animate-slide-up">
-          <Card className="p-5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-[60px] pointer-events-none" />
-            <div className="relative">
-              <p className="text-sm text-slate-400">¡Hola, Ciudadano! 👋</p>
-              <h2 className="text-xl font-bold mt-1">Tu ciudad, <span className="gradient-text">tu voz</span></h2>
-              <p className="text-xs text-slate-500 mt-2">Reporta incidencias urbanas y ayuda a mejorar Huancayo.</p>
-              <div className="flex items-center gap-4 mt-4">
-                <div className="text-center">
-                  <p className="text-lg font-bold text-emerald-400">24</p>
-                  <p className="text-[10px] text-slate-500">Activos</p>
-                </div>
-                <div className="w-px h-8 bg-slate-700" />
-                <div className="text-center">
-                  <p className="text-lg font-bold text-sky-400">8</p>
-                  <p className="text-[10px] text-slate-500">Resueltos</p>
-                </div>
-                <div className="w-px h-8 bg-slate-700" />
-                <div className="text-center">
-                  <p className="text-lg font-bold text-violet-400">156</p>
-                  <p className="text-[10px] text-slate-500">Validaciones</p>
+      <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
+
+        {/* Banner bienvenida */}
+        <div
+          className="rounded-2xl p-5 animate-slide-up"
+          style={{
+            background: "linear-gradient(135deg, var(--qhali-primary) 0%, #0369A1 100%)",
+            boxShadow: "var(--shadow-primary)",
+          }}
+        >
+          <p className="text-sm text-white/80">Bienvenido,</p>
+          <h2 className="text-xl font-bold text-white mt-0.5">
+            {user?.alias_anonimo ?? "Ciudadano"}
+          </h2>
+          <p className="text-xs text-white/70 mt-1">
+            Reporta incidencias y ayuda a mejorar tu ciudad.
+          </p>
+
+          <div className="flex items-center gap-1 mt-4">
+            {[
+              { value: "24",  label: "Activos" },
+              { value: "8",   label: "Resueltos" },
+              { value: "156", label: "Validaciones" },
+            ].map((s, i) => (
+              <div key={s.label} className="flex items-center gap-1">
+                {i > 0 && <div className="w-px h-6 bg-white/20 mx-1" />}
+                <div>
+                  <p className="text-base font-bold text-white leading-none">{s.value}</p>
+                  <p className="text-[10px] text-white/60">{s.label}</p>
                 </div>
               </div>
-            </div>
-          </Card>
+            ))}
+          </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="animate-slide-up" style={{ animationDelay: "0.1s" }}>
-          <h3 className="text-sm font-semibold text-slate-300 mb-3">Acciones rápidas</h3>
+        {/* Acciones rápidas */}
+        <div className="animate-slide-up" style={{ animationDelay: "0.06s" }}>
+          <h3 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>
+            Acciones rápidas
+          </h3>
           <div className="grid grid-cols-3 gap-3">
-            {[
-              { href: "/report", label: "Reportar", icon: "➕", color: "from-emerald-500 to-teal-500", shadow: "shadow-emerald-500/20" },
-              { href: "/map", label: "Mapa", icon: "🗺️", color: "from-sky-500 to-blue-500", shadow: "shadow-sky-500/20" },
-              { href: "/my-reports", label: "Historial", icon: "📋", color: "from-violet-500 to-purple-500", shadow: "shadow-violet-500/20" },
-            ].map((a) => (
+            {quickActions.map((a) => (
               <Link key={a.href} href={a.href}>
-                <Card hover className="p-4 text-center">
-                  <div className={`w-12 h-12 mx-auto rounded-xl bg-gradient-to-br ${a.color} flex items-center justify-center text-xl shadow-lg ${a.shadow} mb-2`}>
+                <div
+                  className="rounded-xl p-3.5 text-center transition-all duration-150 active:scale-95"
+                  style={{
+                    background: "var(--bg-card)",
+                    border: "1px solid var(--border-subtle)",
+                    boxShadow: "var(--shadow-card)",
+                  }}
+                >
+                  <div
+                    className="w-10 h-10 mx-auto rounded-xl flex items-center justify-center text-xl mb-2"
+                    style={{ background: a.bg, boxShadow: a.shadow }}
+                  >
                     {a.icon}
                   </div>
-                  <p className="text-xs font-semibold text-slate-200">{a.label}</p>
-                </Card>
+                  <p className="text-xs font-semibold leading-tight" style={{ color: "var(--text-primary)" }}>
+                    {a.label}
+                  </p>
+                  <p className="text-[9px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+                    {a.sub}
+                  </p>
+                </div>
               </Link>
             ))}
           </div>
         </div>
 
-        {/* Recent Incidents */}
-        <div className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
+        {/* Incidencias recientes */}
+        <div className="animate-slide-up" style={{ animationDelay: "0.12s" }}>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-slate-300">Incidencias recientes</h3>
-            <Link href="/map" className="text-[10px] text-emerald-400 hover:text-emerald-300">Ver todas →</Link>
+            <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+              Incidencias recientes
+            </h3>
+            <Link href="/map" className="text-xs font-medium" style={{ color: "var(--qhali-primary)" }}>
+              Ver mapa →
+            </Link>
           </div>
+
           <div className="space-y-2">
             {recentIncidents.map((inc) => (
               <Card key={inc.id} hover className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-700/50 flex items-center justify-center text-lg flex-shrink-0">
-                    {categoryIcons[inc.category] || "📌"}
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                    style={{ background: "var(--bg-primary)", border: "1px solid var(--border-subtle)" }}
+                  >
+                    {categoryIcons[inc.category] ?? "📌"}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <h4 className="text-sm font-medium text-slate-200 truncate">{inc.title}</h4>
+                      <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>
+                        {inc.title}
+                      </p>
                       <StatusBadge status={inc.status} />
                     </div>
-                    <div className="flex items-center gap-3 mt-1.5">
-                      <span className="text-[10px] text-slate-500">{inc.time}</span>
-                      <span className="text-[10px] text-slate-500">✓ {inc.validations} validaciones</span>
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>{inc.time}</span>
+                      <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                        ✓ {inc.validations} validaciones
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -115,6 +212,7 @@ export default function HomePage() {
             ))}
           </div>
         </div>
+
       </div>
     </div>
   );

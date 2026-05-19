@@ -14,19 +14,24 @@ export default function Card({
   children,
   className = "",
   hover = false,
-  glow = false,
+  glow: _glow = false,
   onClick,
 }: CardProps) {
   return (
     <div
-      className={`
-        rounded-2xl border border-slate-700/50 bg-slate-800/40
-        backdrop-blur-sm
-        ${hover ? "hover:border-emerald-500/30 hover:bg-slate-800/60 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-300 cursor-pointer" : ""}
-        ${glow ? "pulse-glow" : ""}
-        ${onClick ? "cursor-pointer" : ""}
-        ${className}
-      `}
+      className={`rounded-xl surface-card ${className}`}
+      style={{
+        transition: hover ? "box-shadow 0.15s, border-color 0.15s" : undefined,
+        cursor: hover || onClick ? "pointer" : undefined,
+      }}
+      onMouseEnter={hover ? (e) => {
+        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 16px rgba(2,132,199,0.12)";
+        (e.currentTarget as HTMLDivElement).style.borderColor = "var(--qhali-primary-light)";
+      } : undefined}
+      onMouseLeave={hover ? (e) => {
+        (e.currentTarget as HTMLDivElement).style.boxShadow = "var(--shadow-card)";
+        (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border-subtle)";
+      } : undefined}
       onClick={onClick}
     >
       {children}

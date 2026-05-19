@@ -1,55 +1,78 @@
 @import "tailwindcss";
 
 /* ══════════════════════════════════════════════
-   QHALI — Design System CSS
-   PWA Ciudadana de Reporte de Incidencias
+   QHALI — Design System
+   Paleta: Cielo Formal (Light Theme)
    ══════════════════════════════════════════════ */
 
 :root {
-  /* ── Brand Colors ── */
-  --qhali-primary: #10b981;
-  --qhali-primary-dark: #059669;
-  --qhali-primary-light: #34d399;
-  --qhali-secondary: #0ea5e9;
-  --qhali-secondary-dark: #0284c7;
-  --qhali-accent: #f59e0b;
-  
-  /* ── Surfaces ── */
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-card: #1e293b;
-  --bg-elevated: #334155;
-  --bg-glass: rgba(30, 41, 59, 0.7);
-  
-  /* ── Text ── */
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  
-  /* ── Status ── */
-  --status-pending: #f59e0b;
-  --status-confirmed: #10b981;
-  --status-review: #0ea5e9;
-  --status-resolved: #8b5cf6;
-  
-  /* ── Spacing ── */
-  --bottom-nav-height: 72px;
+  /* ── Superficies ── */
+  --bg-primary:   #F0F5FA;
+  --bg-secondary: #E4ECF4;
+  --bg-card:      #FFFFFF;
+  --bg-elevated:  #F7FAFD;
+  --bg-header:    #FFFFFF;
+
+  /* ── Azul celeste institucional ── */
+  --qhali-primary:       #0284C7;
+  --qhali-primary-hover: #0369A1;
+  --qhali-primary-light: #38BDF8;
+  --qhali-primary-pale:  #E0F2FE;
+
+  /* ── Naranja formal (acento secundario) ── */
+  --qhali-orange:        #EA580C;
+  --qhali-orange-hover:  #C2410C;
+  --qhali-orange-light:  #FED7AA;
+
+  /* ── Semánticos ── */
+  --color-success: #15803D;
+  --color-warning: #D97706;
+  --color-error:   #DC2626;
+
+  /* ── Texto ── */
+  --text-primary:   #0F172A;
+  --text-secondary: #334155;
+  --text-muted:     #64748B;
+
+  /* ── Bordes ── */
+  --border:        #CBD5E1;
+  --border-subtle: #E2E8F0;
+
+  /* ── Status badges ── */
+  --status-pending-bg:    #FEF3C7;
+  --status-pending-text:  #92400E;
+  --status-pending-border:#FDE68A;
+
+  --status-confirmed-bg:    #DCFCE7;
+  --status-confirmed-text:  #166534;
+  --status-confirmed-border:#BBF7D0;
+
+  --status-review-bg:    #E0F2FE;
+  --status-review-text:  #075985;
+  --status-review-border:#BAE6FD;
+
+  --status-resolved-bg:    #EDE9FE;
+  --status-resolved-text:  #4C1D95;
+  --status-resolved-border:#DDD6FE;
+
+  /* ── Sombras ── */
+  --shadow-card:    0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+  --shadow-button:  0 1px 3px rgba(0,0,0,0.15);
+  --shadow-primary: 0 2px 10px rgba(2,132,199,0.3);
+  --shadow-header:  0 1px 0 #CBD5E1;
+
+  /* ── Layout ── */
+  --bottom-nav-height: 68px;
   --header-height: 56px;
-  
-  /* ── Shadows ── */
-  --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.15);
-  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
 }
 
-/* ── Base ── */
+/* ── Reset base ── */
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
 }
 
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
@@ -61,106 +84,71 @@ body {
 }
 
 /* ── Scrollbar ── */
-::-webkit-scrollbar {
-  width: 4px;
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+
+/* ── Superficies ── */
+.surface-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+.surface-header {
+  background: var(--bg-header);
+  box-shadow: var(--shadow-header);
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--text-muted);
-  border-radius: 999px;
+/* ── Marca ── */
+.brand-text {
+  color: var(--qhali-primary);
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
-/* ── Glass Effect ── */
-.glass {
-  background: var(--bg-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.brand-icon {
+  background: var(--qhali-primary);
 }
 
-.glass-strong {
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* ── Gradient Text ── */
-.gradient-text {
-  background: linear-gradient(135deg, var(--qhali-primary), var(--qhali-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ── Gradient Background ── */
-.gradient-bg {
-  background: linear-gradient(135deg, var(--qhali-primary), var(--qhali-secondary));
-}
-
-/* ── Pulse Animation ── */
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 8px rgba(16, 185, 129, 0.3); }
-  50% { box-shadow: 0 0 24px rgba(16, 185, 129, 0.6); }
-}
-
-.pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* ── Slide Up Animation ── */
+/* ── Animaciones ── */
 @keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
+.animate-slide-up { animation: slide-up 0.3s ease-out forwards; }
 
-.animate-slide-up {
-  animation: slide-up 0.4s ease-out forwards;
-}
-
-/* ── Fade In ── */
 @keyframes fade-in {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
+}
+.animate-fade-in { animation: fade-in 0.2s ease-out forwards; }
+
+/* ── Status Badges ── */
+.status-pendiente {
+  background: var(--status-pending-bg);
+  color: var(--status-pending-text);
+  border: 1px solid var(--status-pending-border);
+}
+.status-confirmado {
+  background: var(--status-confirmed-bg);
+  color: var(--status-confirmed-text);
+  border: 1px solid var(--status-confirmed-border);
+}
+.status-en_revision {
+  background: var(--status-review-bg);
+  color: var(--status-review-text);
+  border: 1px solid var(--status-review-border);
+}
+.status-resuelto {
+  background: var(--status-resolved-bg);
+  color: var(--status-resolved-text);
+  border: 1px solid var(--status-resolved-border);
 }
 
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out forwards;
-}
-
-/* ── Scale In ── */
-@keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.animate-scale-in {
-  animation: scale-in 0.3s ease-out forwards;
-}
-
-/* ── Status Badge Styles ── */
-.status-pendiente { background: rgba(245, 158, 11, 0.15); color: var(--status-pending); border: 1px solid rgba(245, 158, 11, 0.3); }
-.status-confirmado { background: rgba(16, 185, 129, 0.15); color: var(--status-confirmed); border: 1px solid rgba(16, 185, 129, 0.3); }
-.status-en_revision { background: rgba(14, 165, 233, 0.15); color: var(--status-review); border: 1px solid rgba(14, 165, 233, 0.3); }
-.status-resuelto { background: rgba(139, 92, 246, 0.15); color: var(--status-resolved); border: 1px solid rgba(139, 92, 246, 0.3); }
-
-/* ── Safe area for PWA ── */
+/* ── Safe area PWA ── */
 .safe-area-bottom {
   padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
 }
+
+.touch-target { min-height: 44px; min-width: 44px; }
