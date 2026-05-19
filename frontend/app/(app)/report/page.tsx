@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "../../components/Button";
 import Card from "../../components/Card";
-import { api } from "../../lib/api";
+import { api, type DuplicateCheckResponse } from "../../lib/api";
 
 const CATEGORIES = [
   { value: "bache",        label: "Bache",        icon: "🕳️" },
@@ -40,6 +40,7 @@ export default function ReportPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [incidentId, setIncidentId] = useState<number | null>(null);
+  const [duplicateWarning, setDuplicateWarning] = useState<DuplicateCheckResponse | null>(null);
 
   const [form, setForm] = useState<FormState>({
     category: "",
@@ -66,13 +67,19 @@ export default function ReportPage() {
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
         setForm((f) => ({
           ...f,
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
+          latitude: lat,
+          longitude: lng,
           locationAccuracy: pos.coords.accuracy ?? null,
         }));
         setGpsState("ok");
+        // Check for nearby duplicates — non-blocking warning only
+        api.checkDuplicate(lat, lng, form.category)
+          .then(setDuplicateWarning)
+          .catch(() => {});
       },
       (err) => {
         if (err.code === err.PERMISSION_DENIED) {
@@ -492,6 +499,21 @@ export default function ReportPage() {
                 <SummaryRow icon="📷" label="Fotografía" value={form.imageFile ? "Adjunta" : "Sin foto"} />
               </div>
             </Card>
+
+            {duplicateWarning?.has_duplicates && (
+              <div
+                className="rounded-lg px-3 py-3 text-xs"
+                style={{ background: "#FFF7ED", border: "1px solid #FED7AA", color: "#92400E" }}
+              >
+                <p className="font-semibold mb-1">
+                  Posible incidente duplicado
+                </p>
+                <p>
+                  Ya existe {duplicateWarning.duplicates.length} reporte similar de esta categoría
+                  a menos de 50 m. Puedes validarlo en &quot;Alertas&quot; o continuar si es un problema distinto.
+                </p>
+              </div>
+            )}
 
             {error && <ErrorBanner message={error} />}
 

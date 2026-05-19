@@ -73,6 +73,40 @@ export interface ValidateResponse {
   message: string;
 }
 
+export interface AdminIncident {
+  id: number;
+  public_alias: string;
+  category: string;
+  description: string;
+  image_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  status: string;
+  validation_count: number;
+  created_at: string;
+}
+
+export interface AdminMetrics {
+  total_reportes: number;
+  reportes_pendientes: number;
+  reportes_confirmados: number;
+  reportes_en_revision: number;
+  reportes_resueltos: number;
+  categoria_mas_frecuente: string | null;
+}
+
+export interface DuplicateItem {
+  id: number;
+  description: string;
+  status: string;
+  distance_meters: number;
+}
+
+export interface DuplicateCheckResponse {
+  has_duplicates: boolean;
+  duplicates: DuplicateItem[];
+}
+
 export const api = {
   register(email: string, password: string) {
     return request<AuthResponse>("/auth/register", {
@@ -131,5 +165,30 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ latitude, longitude }),
     });
+  },
+
+  checkDuplicate(lat: number, lng: number, category: string) {
+    return request<DuplicateCheckResponse>(
+      `/incidents/check-duplicate?lat=${lat}&lng=${lng}&category=${encodeURIComponent(category)}`
+    );
+  },
+
+  getAdminIncidents(statusFilter?: string, category?: string) {
+    const params = new URLSearchParams();
+    if (statusFilter) params.append("status_filter", statusFilter);
+    if (category) params.append("category", category);
+    const qs = params.toString() ? `?${params.toString()}` : "";
+    return request<AdminIncident[]>(`/admin/incidents${qs}`);
+  },
+
+  updateIncidentStatus(incidentId: number, newStatus: string) {
+    return request<AdminIncident>(`/admin/incidents/${incidentId}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status: newStatus }),
+    });
+  },
+
+  getAdminMetrics() {
+    return request<AdminMetrics>("/admin/metrics");
   },
 };
