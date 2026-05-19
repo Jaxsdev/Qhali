@@ -1,34 +1,39 @@
 "use client";
 
 interface StatusBadgeProps {
-  status: "pendiente" | "confirmado" | "en_revisión" | "resuelto";
+  status: string;
   size?: "sm" | "md";
 }
 
+function normalizeStatus(raw: string): string {
+  return raw.toLowerCase().replace(/\s+/g, "_");
+}
+
 const statusLabels: Record<string, string> = {
-  pendiente:   "Pendiente",
-  confirmado:  "Confirmado",
+  pendiente:     "Pendiente",
+  confirmado:    "Confirmado",
   "en_revisión": "En revisión",
-  resuelto:    "Resuelto",
+  resuelto:      "Resuelto",
 };
 
 const statusDot: Record<string, string> = {
-  pendiente:   "var(--status-pending-text)",
-  confirmado:  "var(--status-confirmed-text)",
+  pendiente:     "var(--status-pending-text)",
+  confirmado:    "var(--status-confirmed-text)",
   "en_revisión": "var(--status-review-text)",
-  resuelto:    "var(--status-resolved-text)",
+  resuelto:      "var(--status-resolved-text)",
 };
 
 const statusClass: Record<string, string> = {
-  pendiente:   "status-pendiente",
-  confirmado:  "status-confirmado",
+  pendiente:     "status-pendiente",
+  confirmado:    "status-confirmado",
   "en_revisión": "status-en_revision",
-  resuelto:    "status-resuelto",
+  resuelto:      "status-resuelto",
 };
 
 export default function StatusBadge({ status, size = "sm" }: StatusBadgeProps) {
-  const cls = statusClass[status] ?? "status-pendiente";
-  const dot = statusDot[status] ?? statusDot.pendiente;
+  const key = normalizeStatus(status);
+  const cls = statusClass[key] ?? "status-pendiente";
+  const dot = statusDot[key] ?? statusDot.pendiente;
 
   return (
     <span
@@ -42,7 +47,7 @@ export default function StatusBadge({ status, size = "sm" }: StatusBadgeProps) {
         className="w-1.5 h-1.5 rounded-full flex-shrink-0"
         style={{ background: dot }}
       />
-      {statusLabels[status] ?? status}
+      {statusLabels[key] ?? status}
     </span>
   );
 }

@@ -47,6 +47,7 @@ export interface IncidentResponse {
   latitude: number;
   longitude: number;
   status: string;
+  validation_count: number;
   created_at: string;
 }
 
