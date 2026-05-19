@@ -135,7 +135,11 @@ def list_public_incidents(
     """
     cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
 
+    # GeoData/IA Sprint 4: safety guard — only incidents with valid coordinates render on map.
+    # latitude/longitude are NOT NULL in the schema, so this is a defensive check.
     query = db.query(Incident).filter(
+        Incident.latitude.isnot(None),
+        Incident.longitude.isnot(None),
         or_(
             Incident.status != "Pendiente",
             and_(
@@ -145,7 +149,7 @@ def list_public_incidents(
                     Incident.validation_count > 0,
                 ),
             ),
-        )
+        ),
     )
 
     if category:
