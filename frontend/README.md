@@ -47,15 +47,15 @@ npm run lint
 npx tsc --noEmit
 ```
 
-## Rutas disponibles — Sprint 2
+## Rutas disponibles
 
 | Ruta | Descripción | Estado |
 |------|-------------|--------|
-| `/login` | Inicio de sesión y registro de ciudadano | ✅ Funcional |
-| `/home` | Pantalla principal con alias del usuario | ✅ Funcional |
-| `/report` | Formulario de nuevo reporte (3 pasos) | 🟡 Sprint 3 |
+| `/login` | Inicio de sesión y registro de ciudadano | ✅ Sprint 2 |
+| `/home` | Pantalla principal con alias del usuario | ✅ Sprint 2 |
+| `/report` | Formulario de nuevo reporte (3 pasos) | ✅ Sprint 3 |
 | `/map` | Mapa de incidencias | 🟡 Sprint 4 |
-| `/my-reports` | Historial de mis reportes | 🟡 Sprint 3 |
+| `/my-reports` | Historial de mis reportes | 🟡 Sprint 4 |
 
 ## Autenticación — Sprint 2
 
@@ -128,4 +128,42 @@ const { user, loading, login, register, logout } = useAuth()
 // login(email, password): Promise<UserPublic>
 // register(email, password): Promise<UserPublic>
 // logout(): void — limpia token y redirige al login
+```
+
+## Formulario de reporte — Sprint 3
+
+La pantalla `/report` tiene 3 pasos:
+
+**Paso 1 — Categoría**
+El usuario selecciona entre 10 categorías (bache, alumbrado, basura, agua, alcantarillado, señalización, áreas verdes, ruido, seguridad, otro).
+
+**Paso 2 — Descripción + Foto**
+- Textarea con límite de 250 caracteres y contador visible
+- Upload de imagen: se usa `<input type="file" accept="image/*" capture="environment">`, que abre la cámara en Android y el selector de archivos en escritorio
+- La imagen se previsualiza antes de enviar
+
+**Paso 3 — GPS + Envío**
+- La captura GPS se inicia automáticamente con `navigator.geolocation.getCurrentPosition()`
+- Se muestra el estado: *Obteniendo ubicación…* → *Ubicación obtenida* (con precisión) o *Permiso denegado* / *Error*
+- El botón Enviar queda bloqueado mientras no haya coordenadas o mientras se procesa el envío
+- Al éxito, se muestra una pantalla de confirmación con el ID del reporte y el estado `Pendiente`
+
+### Notas de GPS en móvil
+- En Android, el permiso de ubicación se solicita automáticamente la primera vez
+- En iOS, el permiso se gestiona desde Configuración → Safari → Ubicación
+- La precisión típica en Huancayo (ciudad) es de 5–30 metros
+- Si el usuario deniega el permiso, el sistema muestra un error claro y no permite enviar el reporte
+
+### Cliente HTTP — `api.createIncident()`
+
+```ts
+// Envía el reporte como multipart/form-data al backend
+const result = await api.createIncident(formData)
+// formData contiene: category, description, latitude, longitude, location_accuracy?, image (File)
+
+// Obtener reportes propios (requiere auth)
+const myReports = await api.getMyIncidents()
+
+// Obtener reportes públicos para mapa
+const publicReports = await api.getPublicIncidents("bache")
 ```
