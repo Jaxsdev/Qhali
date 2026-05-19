@@ -1,17 +1,28 @@
 """Punto de entrada principal de la API QHALI."""
 
+import os
+
 # pyrefly: ignore [missing-import]
 from fastapi import FastAPI
 # pyrefly: ignore [missing-import]
 from fastapi.middleware.cors import CORSMiddleware
+# pyrefly: ignore [missing-import]
+from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import Base, engine
 from app.routers import auth, users, incidents, validations, admin
 
-# Crear tablas en BD al iniciar (SQLite para desarrollo)
-import app.models.user_db  # noqa: F401 — registra el modelo en Base.metadata
+# Registrar modelos ORM y crear tablas al iniciar
+import app.models.user_db      # noqa: F401
+import app.models.incident_db  # noqa: F401
 Base.metadata.create_all(bind=engine)
+
+# Directorio de imágenes subidas
+_UPLOADS_DIR = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), "..", "uploads", "images")
+)
+os.makedirs(_UPLOADS_DIR, exist_ok=True)
 
 # ── Crear aplicación ──
 app = FastAPI(
@@ -24,6 +35,9 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+# Servir imágenes subidas en /static/images/
+app.mount("/static/images", StaticFiles(directory=_UPLOADS_DIR), name="images")
 
 # ── CORS ──
 app.add_middleware(

@@ -1,118 +1,162 @@
 """
-Router de Incidencias — QHALI MVP
-CRUD de reportes ciudadanos con geolocalización.
+Router de Incidencias — QHALI Sprint 3.
+POST /incidents  — crear reporte ciudadano (protegido, multipart/form-data).
+GET  /incidents/public — lista pública para mapa.
+GET  /incidents/my     — historial privado del usuario.
+GET  /incidents/{id}   — detalle de un incidente.
 """
 
-from fastapi import APIRouter, HTTPException, status
+import os
+import uuid
 from typing import Optional
+
+# pyrefly: ignore [missing-import]
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
+# pyrefly: ignore [missing-import]
+from sqlalchemy.orm import Session
+
+from app.database import get_db
+from app.models.incident_db import Incident
+from app.models.user_db import User
+from app.schemas.incident import IncidentPublicItem, IncidentResponse
+from app.utils.auth_utils import get_current_user
+from app.utils.geo_validation import validate_coordinates
 
 router = APIRouter()
 
-
-@router.get(
-    "/",
-    summary="Listar incidencias",
-    description="Retorna lista de incidencias con filtros opcionales por categoría, estado y ubicación.",
+_UPLOAD_DIR = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "uploads", "images")
 )
-async def list_incidents(
+_ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
+_MAX_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
+
+_VALID_CATEGORIES = {
+    "bache", "alumbrado", "basura", "agua", "alcantarillado",
+    "señalización", "áreas_verdes", "ruido", "seguridad", "otro",
+}
+
+
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=IncidentResponse)
+async def create_incident(
+    request: Request,
+    category: str = Form(...),
+    description: str = Form(...),
+    latitude: float = Form(...),
+    longitude: float = Form(...),
+    location_accuracy: Optional[float] = Form(None),
+    image: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Crea un reporte urbano.
+    - Requiere JWT (ciudadano autenticado).
+    - Acepta multipart/form-data con campos de texto + archivo de imagen.
+    - Estado inicial siempre "Pendiente" (no configurable por el cliente).
+    """
+    # -- Validar categoría --
+    if category not in _VALID_CATEGORIES:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Categoría inválida. Opciones: {', '.join(sorted(_VALID_CATEGORIES))}",
+        )
+
+    # -- Validar descripción --
+    description = description.strip()
+    if len(description) < 10:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="La descripción debe tener al menos 10 caracteres.",
+        )
+    if len(description) > 250:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="La descripción no puede superar los 250 caracteres.",
+        )
+
+    # -- Validar coordenadas (GeoData) --
+    validate_coordinates(latitude, longitude)
+
+    # -- Validar y guardar imagen --
+    if image.content_type not in _ALLOWED_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Tipo de imagen no permitido. Use JPG, PNG o WebP.",
+        )
+
+    contents = await image.read()
+    if len(contents) > _MAX_SIZE_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="La imagen supera el tamaño máximo de 10 MB.",
+        )
+
+    os.makedirs(_UPLOAD_DIR, exist_ok=True)
+    ext = "jpg"
+    if image.filename and "." in image.filename:
+        ext = image.filename.rsplit(".", 1)[-1].lower()
+    filename = f"{uuid.uuid4().hex}.{ext}"
+    with open(os.path.join(_UPLOAD_DIR, filename), "wb") as f:
+        f.write(contents)
+
+    base = str(request.base_url).rstrip("/")
+    image_url = f"{base}/static/images/{filename}"
+
+    # -- Crear incidente en BD --
+    incident = Incident(
+        user_id=current_user.id,
+        public_alias=current_user.alias_anonimo,
+        category=category,
+        description=description,
+        image_url=image_url,
+        latitude=latitude,
+        longitude=longitude,
+        location_accuracy=location_accuracy,
+        status="Pendiente",
+    )
+    db.add(incident)
+    db.commit()
+    db.refresh(incident)
+
+    return incident
+
+
+@router.get("/public", response_model=list[IncidentPublicItem])
+def list_public_incidents(
     category: Optional[str] = None,
-    status_filter: Optional[str] = None,
-    latitude: Optional[float] = None,
-    longitude: Optional[float] = None,
-    radius_m: Optional[float] = 300.0,
+    db: Session = Depends(get_db),
 ):
-    """
-    Listar incidencias. Sprint 3: Implementar con BD y filtros geo.
-    """
-    return {
-        "message": "Endpoint de listado de incidencias preparado",
-        "filters": {
-            "category": category,
-            "status": status_filter,
-            "location": {"lat": latitude, "lng": longitude, "radius": radius_m},
-        },
-        "status": "pendiente_implementacion",
-        "sprint": 3,
-    }
+    """Lista pública de incidentes activos para el mapa ciudadano (Sprint 4)."""
+    query = db.query(Incident).filter(Incident.status != "Resuelto")
+    if category:
+        query = query.filter(Incident.category == category)
+    return query.order_by(Incident.created_at.desc()).limit(200).all()
 
 
-@router.post(
-    "/",
-    summary="Crear incidencia",
-    description="Crea un nuevo reporte ciudadano con foto, GPS, categoría y descripción.",
-    status_code=status.HTTP_201_CREATED,
-)
-async def create_incident():
-    """
-    Crear incidencia. Sprint 3: Implementar con foto, GPS y validación.
-    """
-    return {
-        "message": "Endpoint de creación de incidencia preparado",
-        "status": "pendiente_implementacion",
-        "sprint": 3,
-    }
-
-
-@router.get(
-    "/{incident_id}",
-    summary="Obtener incidencia por ID",
-    description="Retorna detalle completo de una incidencia incluyendo validaciones.",
-)
-async def get_incident(incident_id: int):
-    """Detalle de incidencia. Sprint 3+."""
-    return {
-        "message": f"Endpoint de incidencia {incident_id} preparado",
-        "status": "pendiente_implementacion",
-        "sprint": 3,
-    }
-
-
-@router.put(
-    "/{incident_id}/status",
-    summary="Actualizar estado de incidencia",
-    description="Cambia el estado de una incidencia (pendiente → confirmado → en revisión → resuelto).",
-)
-async def update_incident_status(incident_id: int):
-    """Actualizar estado. Sprint 3+."""
-    return {
-        "message": f"Endpoint de actualización de estado de incidencia {incident_id} preparado",
-        "status": "pendiente_implementacion",
-        "sprint": 3,
-    }
-
-
-@router.get(
-    "/nearby",
-    summary="Obtener incidencias cercanas",
-    description="Retorna incidencias dentro de un radio dado desde una coordenada.",
-)
-async def get_nearby_incidents(
-    latitude: float,
-    longitude: float,
-    radius_m: float = 300.0,
+@router.get("/my", response_model=list[IncidentResponse])
+def list_my_incidents(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    """
-    Incidencias cercanas. Sprint 4: Implementar con fórmula Haversine.
-    """
-    return {
-        "message": "Endpoint de incidencias cercanas preparado",
-        "location": {"lat": latitude, "lng": longitude, "radius": radius_m},
-        "status": "pendiente_implementacion",
-        "sprint": 4,
-    }
+    """Historial privado de incidentes del usuario autenticado (Sprint 4)."""
+    return (
+        db.query(Incident)
+        .filter(Incident.user_id == current_user.id)
+        .order_by(Incident.created_at.desc())
+        .all()
+    )
 
 
-@router.get(
-    "/{incident_id}/duplicates",
-    summary="Verificar posibles duplicados",
-    description="Busca incidencias similares en la misma categoría dentro de 50 metros.",
-)
-async def check_duplicates(incident_id: int):
-    """
-    Detección de duplicados. Sprint 6: Implementar con regla de duplicidad.
-    """
-    return {
-        "message": f"Endpoint de duplicados para incidencia {incident_id} preparado",
-        "status": "pendiente_implementacion",
-        "sprint": 6,
-    }
+@router.get("/{incident_id}", response_model=IncidentResponse)
+def get_incident(
+    incident_id: int,
+    db: Session = Depends(get_db),
+):
+    """Detalle de un incidente por ID."""
+    incident = db.query(Incident).filter(Incident.id == incident_id).first()
+    if not incident:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Incidente no encontrado.",
+        )
+    return incident
