@@ -123,8 +123,7 @@ export default function AdminDashboardPage() {
         }
       })
       .finally(() => setLoadingMetrics(false));
-    fetchAll("", "");
-  }, [fetchAll]);
+  }, []);
 
   useEffect(() => {
     fetchAll(statusFilter, categoryFilter);

@@ -1,53 +1,40 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Card from "../../components/Card";
 import StatusBadge from "../../components/StatusBadge";
 import { useAuth } from "../../lib/auth";
+import { api, type IncidentResponse } from "../../lib/api";
 
-const recentIncidents = [
-  { id: 1, title: "Bache peligroso en Av. Real", category: "bache", status: "pendiente" as const, time: "Hace 2h", validations: 3 },
-  { id: 2, title: "Poste de luz apagado en Jr. Puno", category: "alumbrado", status: "confirmado" as const, time: "Hace 5h", validations: 7 },
-  { id: 3, title: "Basura acumulada en Av. Giraldez", category: "basura", status: "en_revisión" as const, time: "Ayer", validations: 12 },
-];
-
-const categoryIcons: Record<string, string> = {
+const CATEGORY_ICONS: Record<string, string> = {
   bache: "🕳️", alumbrado: "💡", basura: "🗑️", agua: "💧",
   alcantarillado: "🚰", señalización: "🚦", áreas_verdes: "🌳",
   ruido: "🔊", seguridad: "🔒", otro: "📌",
 };
 
-const quickActions = [
-  {
-    href: "/report",
-    label: "Nuevo reporte",
-    sub: "Reportar incidencia",
-    icon: "📋",
-    bg: "var(--qhali-orange)",
-    shadow: "0 4px 14px rgba(234,88,12,0.3)",
-  },
-  {
-    href: "/map",
-    label: "Ver mapa",
-    sub: "Incidencias cercanas",
-    icon: "🗺️",
-    bg: "var(--qhali-primary)",
-    shadow: "var(--shadow-primary)",
-  },
-  {
-    href: "/my-reports",
-    label: "Mis reportes",
-    sub: "Ver historial",
-    icon: "📁",
-    bg: "#0F766E",
-    shadow: "0 4px 14px rgba(15,118,110,0.3)",
-  },
-];
+function formatRelativeDate(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const hours = Math.floor(diff / 3600000);
+  if (hours < 1) return "Hace unos minutos";
+  if (hours < 24) return `Hace ${hours}h`;
+  const days = Math.floor(hours / 24);
+  return days === 1 ? "Ayer" : `Hace ${days} días`;
+}
 
 export default function HomePage() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [incidents, setIncidents] = useState<IncidentResponse[]>([]);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    api.getPublicIncidents()
+      .then(setIncidents)
+      .catch(() => {})
+      .finally(() => setStatsLoading(false));
+  }, []);
 
   function handleLogout() {
     logout();
@@ -55,6 +42,51 @@ export default function HomePage() {
   }
 
   const aliasInitial = user?.alias_anonimo?.[0]?.toUpperCase() ?? "C";
+  const isAdmin = user?.role === "admin";
+
+  const totalActive = incidents.filter((i) => i.status !== "Resuelto").length;
+  const totalResueltos = incidents.filter((i) => i.status === "Resuelto").length;
+  const totalValidaciones = incidents.reduce((sum, i) => sum + (i.validation_count ?? 0), 0);
+  const recentIncidents = incidents.slice(0, 3);
+
+  const quickActions = [
+    {
+      href: "/report",
+      label: "Nuevo reporte",
+      sub: "Reportar incidencia",
+      icon: "📋",
+      bg: "var(--qhali-orange)",
+      shadow: "0 4px 14px rgba(234,88,12,0.3)",
+    },
+    {
+      href: "/map",
+      label: "Ver mapa",
+      sub: "Incidencias cercanas",
+      icon: "🗺️",
+      bg: "var(--qhali-primary)",
+      shadow: "var(--shadow-primary)",
+    },
+    {
+      href: "/my-reports",
+      label: "Mis reportes",
+      sub: "Ver historial",
+      icon: "📁",
+      bg: "#0F766E",
+      shadow: "0 4px 14px rgba(15,118,110,0.3)",
+    },
+    ...(isAdmin
+      ? [
+          {
+            href: "/admin/dashboard",
+            label: "Dashboard",
+            sub: "Panel admin",
+            icon: "⚙️",
+            bg: "#7C3AED",
+            shadow: "0 4px 14px rgba(124,58,237,0.3)",
+          },
+        ]
+      : []),
+  ];
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-primary)" }}>
@@ -83,11 +115,7 @@ export default function HomePage() {
               onClick={handleLogout}
               title="Cerrar sesión"
               className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors duration-150"
-              style={{
-                background: "var(--bg-elevated)",
-                border: "1px solid var(--border-subtle)",
-                color: "var(--text-muted)",
-              }}
+              style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", color: "var(--text-muted)" }}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
@@ -122,28 +150,38 @@ export default function HomePage() {
           </p>
 
           <div className="flex items-center gap-1 mt-4">
-            {[
-              { value: "24",  label: "Activos" },
-              { value: "8",   label: "Resueltos" },
-              { value: "156", label: "Validaciones" },
-            ].map((s, i) => (
-              <div key={s.label} className="flex items-center gap-1">
-                {i > 0 && <div className="w-px h-6 bg-white/20 mx-1" />}
-                <div>
-                  <p className="text-base font-bold text-white leading-none">{s.value}</p>
-                  <p className="text-[10px] text-white/60">{s.label}</p>
+            {statsLoading ? (
+              <div
+                className="w-full h-6 rounded animate-pulse"
+                style={{ background: "rgba(255,255,255,0.15)" }}
+              />
+            ) : (
+              [
+                { value: String(totalActive),      label: "Activos" },
+                { value: String(totalResueltos),    label: "Resueltos" },
+                { value: String(totalValidaciones), label: "Validaciones" },
+              ].map((s, i) => (
+                <div key={s.label} className="flex items-center gap-1">
+                  {i > 0 && <div className="w-px h-6 bg-white/20 mx-1" />}
+                  <div>
+                    <p className="text-base font-bold text-white leading-none">{s.value}</p>
+                    <p className="text-[10px] text-white/60">{s.label}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
         {/* Acciones rápidas */}
         <div className="animate-slide-up" style={{ animationDelay: "0.06s" }}>
-          <h3 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>
+          <h3
+            className="text-xs font-semibold uppercase tracking-widest mb-3"
+            style={{ color: "var(--text-muted)" }}
+          >
             Acciones rápidas
           </h3>
-          <div className="grid grid-cols-3 gap-3">
+          <div className={`grid gap-3 ${quickActions.length === 4 ? "grid-cols-4" : "grid-cols-3"}`}>
             {quickActions.map((a) => (
               <Link key={a.href} href={a.href}>
                 <div
@@ -175,7 +213,10 @@ export default function HomePage() {
         {/* Incidencias recientes */}
         <div className="animate-slide-up" style={{ animationDelay: "0.12s" }}>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+            <h3
+              className="text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "var(--text-muted)" }}
+            >
               Incidencias recientes
             </h3>
             <Link href="/map" className="text-xs font-medium" style={{ color: "var(--qhali-primary)" }}>
@@ -183,34 +224,57 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="space-y-2">
-            {recentIncidents.map((inc) => (
-              <Card key={inc.id} hover className="p-4">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                    style={{ background: "var(--bg-primary)", border: "1px solid var(--border-subtle)" }}
-                  >
-                    {categoryIcons[inc.category] ?? "📌"}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>
-                        {inc.title}
-                      </p>
-                      <StatusBadge status={inc.status} />
+          {statsLoading ? (
+            <div className="space-y-2">
+              {[...Array(3)].map((_, i) => (
+                <div
+                  key={i}
+                  className="rounded-xl p-4 h-16 animate-pulse"
+                  style={{ background: "var(--bg-card)", border: "1px solid var(--border-subtle)" }}
+                />
+              ))}
+            </div>
+          ) : recentIncidents.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="text-3xl mb-2">🎉</div>
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                No hay incidencias activas cerca.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {recentIncidents.map((inc) => (
+                <Card key={inc.id} hover className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                      style={{ background: "var(--bg-primary)", border: "1px solid var(--border-subtle)" }}
+                    >
+                      {CATEGORY_ICONS[inc.category] ?? "📌"}
                     </div>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>{inc.time}</span>
-                      <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                        ✓ {inc.validations} validaciones
-                      </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>
+                          {inc.description.length > 45
+                            ? inc.description.slice(0, 45) + "…"
+                            : inc.description}
+                        </p>
+                        <StatusBadge status={inc.status} />
+                      </div>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                          {formatRelativeDate(inc.created_at)}
+                        </span>
+                        <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                          ✓ {inc.validation_count} validaciones
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
 
       </div>

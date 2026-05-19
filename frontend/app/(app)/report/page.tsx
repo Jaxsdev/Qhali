@@ -106,7 +106,7 @@ export default function ReportPage() {
   function goBack() {
     setError(null);
     if (step === 2) setStep(1);
-    else if (step === 3) setStep(2);
+    else if (step === 3) { setStep(2); setDuplicateWarning(null); }
     else router.back();
   }
 
@@ -129,8 +129,8 @@ export default function ReportPage() {
       return;
     }
     setError(null);
+    setDuplicateWarning(null);
     setStep(3);
-    // Iniciar GPS automáticamente al llegar al paso 3
     captureGps();
   }
 
