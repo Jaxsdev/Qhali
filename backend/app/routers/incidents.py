@@ -1,9 +1,11 @@
 """
-Router de Incidencias — QHALI Sprint 3 / 4.
-POST /              — crear reporte (protegido, multipart/form-data).
-GET  /public        — lista pública para el mapa ciudadano.
-GET  /my            — historial privado del usuario autenticado.
-GET  /{incident_id} — detalle de un incidente.
+Router de Incidencias — QHALI Sprint 3 / 4 / 5.
+POST /                   — crear reporte (protegido, multipart/form-data).
+GET  /public             — lista pública para el mapa ciudadano.
+GET  /my                 — historial privado del usuario autenticado.
+GET  /nearby             — incidentes pendientes cercanos para validar (Sprint 5).
+GET  /{incident_id}      — detalle de un incidente.
+POST /{incident_id}/validate — validar incidente cercano (Sprint 5).
 """
 
 import os
@@ -16,13 +18,17 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Uplo
 # pyrefly: ignore [missing-import]
 from sqlalchemy import and_, or_
 # pyrefly: ignore [missing-import]
+from sqlalchemy.exc import IntegrityError
+# pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.incident_db import Incident
 from app.models.user_db import User
 from app.schemas.incident import IncidentPublicItem, IncidentResponse
+from app.schemas.validation import NearbyIncidentItem, ValidateRequest, ValidateResponse
 from app.utils.auth_utils import get_current_user
+from app.utils.geo import haversine_distance
 from app.utils.geo_validation import validate_coordinates
 
 router = APIRouter()
@@ -32,11 +38,14 @@ _UPLOAD_DIR = os.path.normpath(
 )
 _ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
 _MAX_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
+_NEARBY_RADIUS_MAX = 1000.0          # cap para evitar queries excesivos
 
 _VALID_CATEGORIES = {
     "bache", "alumbrado", "basura", "agua", "alcantarillado",
     "señalización", "áreas_verdes", "ruido", "seguridad", "otro",
 }
+
+_VALIDATION_THRESHOLD = 5  # validaciones para cambiar a "Confirmado"
 
 
 # ── POST / — Crear incidente ─────────────────────────────────────────────────
@@ -135,8 +144,6 @@ def list_public_incidents(
     """
     cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
 
-    # GeoData/IA Sprint 4: safety guard — only incidents with valid coordinates render on map.
-    # latitude/longitude are NOT NULL in the schema, so this is a defensive check.
     query = db.query(Incident).filter(
         Incident.latitude.isnot(None),
         Incident.longitude.isnot(None),
@@ -177,6 +184,53 @@ def list_my_incidents(
     )
 
 
+# ── GET /nearby — Incidentes cercanos para validar (Sprint 5) ────────────────
+
+@router.get("/nearby", response_model=list[NearbyIncidentItem])
+def list_nearby_incidents(
+    lat: float,
+    lng: float,
+    radius: float = 300.0,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Devuelve incidentes pendientes dentro del radio (default 300 m), excluyendo
+    los reportes del propio usuario. Incluye distancia calculada con Haversine.
+    Solo accesible con JWT.
+    """
+    if radius > _NEARBY_RADIUS_MAX:
+        radius = _NEARBY_RADIUS_MAX
+
+    candidates = db.query(Incident).filter(
+        Incident.status == "Pendiente",
+        Incident.user_id != current_user.id,
+        Incident.latitude.isnot(None),
+        Incident.longitude.isnot(None),
+    ).all()
+
+    result: list[NearbyIncidentItem] = []
+    for inc in candidates:
+        dist = haversine_distance(lat, lng, inc.latitude, inc.longitude)
+        if dist <= radius:
+            result.append(NearbyIncidentItem(
+                id=inc.id,
+                public_alias=inc.public_alias,
+                category=inc.category,
+                description=inc.description,
+                image_url=inc.image_url,
+                latitude=inc.latitude,
+                longitude=inc.longitude,
+                status=inc.status,
+                validation_count=inc.validation_count,
+                created_at=inc.created_at,
+                distance_meters=round(dist, 1),
+            ))
+
+    result.sort(key=lambda x: x.distance_meters)
+    return result
+
+
 # ── GET /{incident_id} — Detalle ─────────────────────────────────────────────
 
 @router.get("/{incident_id}", response_model=IncidentResponse)
@@ -192,3 +246,93 @@ def get_incident(
             detail="Incidente no encontrado.",
         )
     return incident
+
+
+# ── POST /{incident_id}/validate — Validar incidente (Sprint 5) ──────────────
+
+@router.post("/{incident_id}/validate", response_model=ValidateResponse, status_code=status.HTTP_201_CREATED)
+def validate_incident(
+    incident_id: int,
+    body: ValidateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Registra la validación ciudadana de un incidente cercano.
+    Reglas (Sprint 5):
+    1. El incidente debe estar en estado 'Pendiente'.
+    2. El usuario no puede validar su propio reporte.
+    3. El usuario debe estar dentro del radio de 300 m.
+    4. Cada usuario solo puede validar una vez el mismo incidente.
+    5. Al llegar a 5 validaciones el incidente pasa a 'Confirmado'.
+    """
+    from app.models.validation_db import Validation
+
+    incident = db.query(Incident).filter(Incident.id == incident_id).first()
+    if not incident:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Incidente no encontrado.",
+        )
+
+    if incident.status != "Pendiente":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Este incidente ya está '{incident.status}' y no puede recibir más validaciones.",
+        )
+
+    if incident.user_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No puedes confirmar tu propio reporte.",
+        )
+
+    dist = haversine_distance(body.latitude, body.longitude, incident.latitude, incident.longitude)
+    if dist > 300.0:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Estás a {dist:.0f} m del incidente. Debes estar a menos de 300 m para validar.",
+        )
+
+    existing = db.query(Validation).filter(
+        Validation.incident_id == incident_id,
+        Validation.user_id == current_user.id,
+    ).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Ya confirmaste este incidente.",
+        )
+
+    try:
+        val = Validation(incident_id=incident_id, user_id=current_user.id)
+        db.add(val)
+        db.flush()  # obtener val.id antes del commit
+
+        incident.validation_count = (incident.validation_count or 0) + 1
+        if incident.validation_count >= _VALIDATION_THRESHOLD:
+            incident.status = "Confirmado"
+
+        db.commit()
+        db.refresh(val)
+        db.refresh(incident)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Ya confirmaste este incidente.",
+        )
+
+    msg = (
+        "¡Incidente confirmado por la comunidad! Estado actualizado a 'Confirmado'."
+        if incident.status == "Confirmado"
+        else "Validación registrada correctamente."
+    )
+
+    return ValidateResponse(
+        validation_id=val.id,
+        incident_id=incident.id,
+        validation_count=incident.validation_count,
+        status=incident.status,
+        message=msg,
+    )

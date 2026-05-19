@@ -14,12 +14,15 @@ from app.database import Base, engine
 from app.routers import auth, users, incidents, validations, admin
 
 # Registrar modelos ORM y crear tablas al iniciar
-import app.models.user_db      # noqa: F401
-import app.models.incident_db  # noqa: F401
+import app.models.user_db       # noqa: F401
+import app.models.incident_db   # noqa: F401
+import app.models.validation_db  # noqa: F401 — Sprint 5: tabla validations
 Base.metadata.create_all(bind=engine)
 
-# Sprint 4 — migración idempotente: añadir validation_count si no existe
+# pyrefly: ignore [missing-import]
 from sqlalchemy import text  # noqa: E402
+
+# Sprint 4 — migración idempotente: añadir validation_count si no existe
 try:
     with engine.connect() as _conn:
         _conn.execute(text(
@@ -28,6 +31,22 @@ try:
         _conn.commit()
 except Exception:
     pass  # columna ya existe
+
+# Sprint 5 — migración idempotente: crear tabla validations si no existe
+try:
+    with engine.connect() as _conn:
+        _conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS validations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                incident_id INTEGER NOT NULL REFERENCES incidents(id),
+                user_id INTEGER NOT NULL REFERENCES users(id),
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(incident_id, user_id)
+            )
+        """))
+        _conn.commit()
+except Exception:
+    pass  # tabla ya existe
 
 # Directorio de imágenes subidas
 _UPLOADS_DIR = os.path.normpath(
