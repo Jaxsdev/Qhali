@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.incident_db import Incident
 from app.models.user_db import User
-from app.schemas.incident import IncidentPublicItem, IncidentResponse
+from app.schemas.incident import DuplicateCheckResponse, DuplicateItem, IncidentPublicItem, IncidentResponse
 from app.schemas.validation import NearbyIncidentItem, ValidateRequest, ValidateResponse
 from app.utils.auth_utils import get_current_user
 from app.utils.geo import haversine_distance
@@ -229,6 +229,44 @@ def list_nearby_incidents(
 
     result.sort(key=lambda x: x.distance_meters)
     return result
+
+
+# ── GET /check-duplicate — Detección de duplicados cercanos (Sprint 6) ──────
+
+@router.get("/check-duplicate", response_model=DuplicateCheckResponse)
+def check_duplicate_incident(
+    lat: float,
+    lng: float,
+    category: str,
+    _current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Verifica si existen incidentes similares a menos de 50 m del punto dado.
+    Mismo criterio: misma categoría + estado activo (Pendiente, Confirmado, En revisión).
+    No bloquea el envío; sirve como advertencia previa al ciudadano.
+    """
+    _ACTIVE_STATUSES = ["Pendiente", "Confirmado", "En revisión"]
+    candidates = db.query(Incident).filter(
+        Incident.category == category,
+        Incident.status.in_(_ACTIVE_STATUSES),
+        Incident.latitude.isnot(None),
+        Incident.longitude.isnot(None),
+    ).all()
+
+    duplicates: list[DuplicateItem] = []
+    for inc in candidates:
+        dist = haversine_distance(lat, lng, inc.latitude, inc.longitude)
+        if dist <= 50.0:
+            duplicates.append(DuplicateItem(
+                id=inc.id,
+                description=inc.description,
+                status=inc.status,
+                distance_meters=round(dist, 1),
+            ))
+
+    duplicates.sort(key=lambda x: x.distance_meters)
+    return DuplicateCheckResponse(has_duplicates=len(duplicates) > 0, duplicates=duplicates)
 
 
 # ── GET /{incident_id} — Detalle ─────────────────────────────────────────────

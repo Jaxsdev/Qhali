@@ -37,3 +37,15 @@ class IncidentPublicItem(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class DuplicateItem(BaseModel):
+    id: int
+    description: str
+    status: str
+    distance_meters: float
+
+
+class DuplicateCheckResponse(BaseModel):
+    has_duplicates: bool
+    duplicates: list[DuplicateItem]
