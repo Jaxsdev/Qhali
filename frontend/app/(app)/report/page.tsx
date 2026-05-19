@@ -1,129 +1,553 @@
 "use client";
 
-import React, { useState } from "react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Button from "../../components/Button";
-import Input from "../../components/Input";
 import Card from "../../components/Card";
+import { api } from "../../lib/api";
 
-const categories = [
-  { value: "bache", label: "Bache", icon: "🕳️" },
-  { value: "alumbrado", label: "Alumbrado", icon: "💡" },
-  { value: "basura", label: "Basura", icon: "🗑️" },
-  { value: "agua", label: "Agua", icon: "💧" },
+const CATEGORIES = [
+  { value: "bache",        label: "Bache",        icon: "🕳️" },
+  { value: "alumbrado",    label: "Alumbrado",    icon: "💡" },
+  { value: "basura",       label: "Basura",       icon: "🗑️" },
+  { value: "agua",         label: "Agua",         icon: "💧" },
   { value: "alcantarillado", label: "Alcantarillado", icon: "🚰" },
   { value: "señalización", label: "Señalización", icon: "🚦" },
   { value: "áreas_verdes", label: "Áreas verdes", icon: "🌳" },
-  { value: "ruido", label: "Ruido", icon: "🔊" },
-  { value: "seguridad", label: "Seguridad", icon: "🔒" },
-  { value: "otro", label: "Otro", icon: "📌" },
+  { value: "ruido",        label: "Ruido",        icon: "🔊" },
+  { value: "seguridad",    label: "Seguridad",    icon: "🔒" },
+  { value: "otro",         label: "Otro",         icon: "📌" },
 ];
 
+type GpsState = "idle" | "loading" | "ok" | "denied" | "error";
+
+interface FormState {
+  category: string;
+  description: string;
+  imageFile: File | null;
+  imagePreview: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  locationAccuracy: number | null;
+}
+
 export default function ReportPage() {
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [step, setStep] = useState(1);
+  const router = useRouter();
+
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [gpsState, setGpsState] = useState<GpsState>("idle");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [incidentId, setIncidentId] = useState<number | null>(null);
+
+  const [form, setForm] = useState<FormState>({
+    category: "",
+    description: "",
+    imageFile: null,
+    imagePreview: null,
+    latitude: null,
+    longitude: null,
+    locationAccuracy: null,
+  });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ── GPS ──────────────────────────────────────────────────────────────────
+  function captureGps() {
+    setGpsState("loading");
+    setError(null);
+
+    if (!navigator.geolocation) {
+      setGpsState("error");
+      setError("Tu navegador no soporta geolocalización.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm((f) => ({
+          ...f,
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          locationAccuracy: pos.coords.accuracy ?? null,
+        }));
+        setGpsState("ok");
+      },
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) {
+          setGpsState("denied");
+          setError("Permiso de ubicación denegado. Actívalo en la configuración del navegador.");
+        } else {
+          setGpsState("error");
+          setError("No se pudo obtener la ubicación. Inténtalo de nuevo.");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+    );
+  }
+
+  // ── Imagen ───────────────────────────────────────────────────────────────
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setForm((f) => ({ ...f, imageFile: file, imagePreview: url }));
+  }
+
+  // ── Navegación de pasos ──────────────────────────────────────────────────
+  function goBack() {
+    setError(null);
+    if (step === 2) setStep(1);
+    else if (step === 3) setStep(2);
+    else router.back();
+  }
+
+  function goToStep2() {
+    if (!form.category) {
+      setError("Selecciona una categoría para continuar.");
+      return;
+    }
+    setError(null);
+    setStep(2);
+  }
+
+  function goToStep3() {
+    if (!form.description.trim() || form.description.trim().length < 10) {
+      setError("La descripción debe tener al menos 10 caracteres.");
+      return;
+    }
+    if (!form.imageFile) {
+      setError("Adjunta una fotografía del incidente.");
+      return;
+    }
+    setError(null);
+    setStep(3);
+    // Iniciar GPS automáticamente al llegar al paso 3
+    captureGps();
+  }
+
+  // ── Envío ────────────────────────────────────────────────────────────────
+  async function handleSubmit() {
+    if (form.latitude === null || form.longitude === null) {
+      setError("Necesitamos tu ubicación GPS para enviar el reporte.");
+      return;
+    }
+    if (!form.imageFile) return;
+
+    setError(null);
+    setSubmitting(true);
+
+    try {
+      const fd = new FormData();
+      fd.append("category", form.category);
+      fd.append("description", form.description.trim());
+      fd.append("latitude", String(form.latitude));
+      fd.append("longitude", String(form.longitude));
+      if (form.locationAccuracy !== null) {
+        fd.append("location_accuracy", String(form.locationAccuracy));
+      }
+      fd.append("image", form.imageFile);
+
+      const result = await api.createIncident(fd);
+      setIncidentId(result.id);
+      setSuccess(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al enviar el reporte.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  // ── Pantalla de éxito ────────────────────────────────────────────────────
+  if (success) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-5 text-center"
+        style={{ background: "var(--bg-primary)" }}>
+        <div
+          className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
+          style={{ background: "var(--qhali-primary-pale)" }}
+        >
+          <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"
+            style={{ color: "var(--qhali-primary)" }}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>
+          Reporte enviado correctamente
+        </h2>
+        <p className="text-sm mb-1" style={{ color: "var(--text-muted)" }}>
+          Tu reporte #{incidentId} fue registrado con estado
+        </p>
+        <span
+          className="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-6"
+          style={{ background: "var(--qhali-primary-pale)", color: "var(--qhali-primary)" }}
+        >
+          Pendiente
+        </span>
+        <p className="text-xs mb-8 max-w-xs" style={{ color: "var(--text-muted)" }}>
+          Las autoridades revisarán tu reporte. Otros ciudadanos podrán validarlo en el mapa.
+        </p>
+        <div className="flex flex-col gap-3 w-full max-w-xs">
+          <Button
+            fullWidth
+            onClick={() => {
+              setSuccess(false);
+              setStep(1);
+              setForm({ category: "", description: "", imageFile: null, imagePreview: null, latitude: null, longitude: null, locationAccuracy: null });
+              setGpsState("idle");
+            }}
+          >
+            Hacer otro reporte
+          </Button>
+          <Button variant="secondary" fullWidth onClick={() => router.replace("/home")}>
+            Volver al inicio
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const selectedCat = CATEGORIES.find((c) => c.value === form.category);
 
   return (
-    <div className="min-h-screen pb-4">
-      <header className="sticky top-0 z-40 glass-strong">
+    <div className="min-h-screen pb-24" style={{ background: "var(--bg-primary)" }}>
+
+      {/* Header */}
+      <header className="sticky top-0 z-40 surface-header">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
-          <button onClick={() => step > 1 && setStep(step - 1)} className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-colors">
+          <button
+            onClick={goBack}
+            className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
+            style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)", color: "var(--text-muted)" }}
+          >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
             </svg>
           </button>
           <div className="flex-1">
-            <h1 className="text-base font-bold text-slate-200">Nuevo reporte</h1>
-            <p className="text-[10px] text-slate-500">Paso {step} de 3</p>
+            <h1 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>Nuevo reporte</h1>
+            <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Paso {step} de 3</p>
           </div>
-          {/* Progress bar */}
-          <div className="flex gap-1">
-            {[1, 2, 3].map((s) => (
-              <div key={s} className={`w-8 h-1 rounded-full transition-colors ${s <= step ? "bg-emerald-500" : "bg-slate-700"}`} />
+          {/* Indicador de pasos */}
+          <div className="flex gap-1.5">
+            {([1, 2, 3] as const).map((s) => (
+              <div
+                key={s}
+                className="h-1.5 rounded-full transition-all duration-300"
+                style={{
+                  width: s === step ? 24 : 8,
+                  background: s <= step ? "var(--qhali-primary)" : "var(--border)",
+                }}
+              />
             ))}
           </div>
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 mt-6">
-        {/* Step 1: Category */}
+      <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
+
+        {/* ── Paso 1: Categoría ────────────────────────────────────── */}
         {step === 1 && (
           <div className="animate-slide-up space-y-4">
             <div>
-              <h2 className="text-lg font-bold text-slate-200">¿Qué tipo de incidencia?</h2>
-              <p className="text-xs text-slate-500 mt-1">Selecciona la categoría que mejor describe el problema</p>
+              <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+                ¿Qué tipo de incidencia?
+              </h2>
+              <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+                Selecciona la categoría que describe mejor el problema
+              </p>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              {categories.map((cat) => (
-                <Card
-                  key={cat.value}
-                  hover
-                  onClick={() => setSelectedCategory(cat.value)}
-                  className={`p-4 text-center transition-all ${selectedCategory === cat.value ? "!border-emerald-500/50 !bg-emerald-500/10" : ""}`}
-                >
-                  <span className="text-2xl">{cat.icon}</span>
-                  <p className="text-xs font-medium text-slate-300 mt-1.5">{cat.label}</p>
-                </Card>
-              ))}
+
+            <div className="grid grid-cols-2 gap-2.5">
+              {CATEGORIES.map((cat) => {
+                const active = form.category === cat.value;
+                return (
+                  <button
+                    key={cat.value}
+                    onClick={() => { setForm((f) => ({ ...f, category: cat.value })); setError(null); }}
+                    className="rounded-xl p-4 text-center transition-all duration-150 active:scale-95"
+                    style={{
+                      background: active ? "var(--qhali-primary-pale)" : "var(--bg-card)",
+                      border: active ? "1.5px solid var(--qhali-primary-light)" : "1px solid var(--border-subtle)",
+                      boxShadow: active ? "none" : "var(--shadow-card)",
+                    }}
+                  >
+                    <span className="text-2xl">{cat.icon}</span>
+                    <p
+                      className="text-xs font-semibold mt-1.5"
+                      style={{ color: active ? "var(--qhali-primary)" : "var(--text-primary)" }}
+                    >
+                      {cat.label}
+                    </p>
+                  </button>
+                );
+              })}
             </div>
-            <Button fullWidth size="lg" disabled={!selectedCategory} onClick={() => setStep(2)}>
+
+            {error && <ErrorBanner message={error} />}
+
+            <Button fullWidth size="lg" disabled={!form.category} onClick={goToStep2}>
               Continuar
             </Button>
           </div>
         )}
 
-        {/* Step 2: Details */}
+        {/* ── Paso 2: Descripción + Imagen ─────────────────────────── */}
         {step === 2 && (
           <div className="animate-slide-up space-y-4">
             <div>
-              <h2 className="text-lg font-bold text-slate-200">Describe la incidencia</h2>
-              <p className="text-xs text-slate-500 mt-1">Agrega detalles para que otros puedan identificarla</p>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xl">{selectedCat?.icon}</span>
+                <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+                  {selectedCat?.label}
+                </h2>
+              </div>
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                Describe el problema y adjunta una fotografía
+              </p>
             </div>
-            <Input label="Título" placeholder="Ej: Bache peligroso en Av. Real" />
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-slate-300">Descripción</label>
-              <textarea
-                className="w-full rounded-xl border border-slate-700 bg-slate-800/60 px-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/50 transition-all min-h-[100px] resize-none"
-                placeholder="Describe la incidencia con el mayor detalle posible..."
-              />
-            </div>
-            {/* Photo upload area */}
-            <Card className="p-6 text-center border-dashed !border-slate-600 hover:!border-emerald-500/40 transition-colors cursor-pointer">
-              <div className="text-3xl mb-2">📷</div>
-              <p className="text-sm font-medium text-slate-300">Agregar foto</p>
-              <p className="text-[10px] text-slate-500 mt-1">Toca para tomar o seleccionar una foto</p>
-            </Card>
-            <Button fullWidth size="lg" onClick={() => setStep(3)}>Continuar</Button>
-          </div>
-        )}
 
-        {/* Step 3: Location */}
-        {step === 3 && (
-          <div className="animate-slide-up space-y-4">
-            <div>
-              <h2 className="text-lg font-bold text-slate-200">Ubicación</h2>
-              <p className="text-xs text-slate-500 mt-1">Confirma la ubicación de la incidencia</p>
+            {/* Textarea descripción */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
+                  Descripción
+                </label>
+                <span className="text-[10px]" style={{ color: form.description.length > 230 ? "var(--color-error)" : "var(--text-muted)" }}>
+                  {form.description.length}/250
+                </span>
+              </div>
+              <textarea
+                value={form.description}
+                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value.slice(0, 250) }))}
+                placeholder="Ej: Bache profundo frente al colegio, lleva 2 semanas sin atención..."
+                rows={4}
+                className="w-full rounded-lg text-sm px-4 py-3 resize-none focus:outline-none focus:ring-2 transition-all duration-150"
+                style={{
+                  background: "var(--bg-card)",
+                  border: "1.5px solid var(--border)",
+                  color: "var(--text-primary)",
+                  boxShadow: "var(--shadow-button)",
+                  lineHeight: "1.5",
+                } as React.CSSProperties}
+              />
+              <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                Mínimo 10 caracteres
+              </p>
             </div>
-            {/* Map placeholder */}
-            <Card className="h-56 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-slate-700/50 to-slate-800/50 flex flex-col items-center justify-center">
-                <div className="text-4xl mb-2">📍</div>
-                <p className="text-sm text-slate-400 font-medium">Mapa de ubicación</p>
-                <p className="text-[10px] text-slate-500 mt-1">Se detectará tu GPS automáticamente</p>
-                <div className="mt-3 flex items-center gap-2 text-[10px] text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  GPS activo — Precisión: ~10m
+
+            {/* Upload de imagen */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleImageChange}
+            />
+
+            {form.imagePreview ? (
+              <div className="relative rounded-xl overflow-hidden" style={{ border: "1px solid var(--border-subtle)" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={form.imagePreview}
+                  alt="Vista previa"
+                  className="w-full object-cover max-h-52"
+                />
+                <button
+                  onClick={() => setForm((f) => ({ ...f, imageFile: null, imagePreview: null }))}
+                  className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ background: "rgba(0,0,0,0.55)" }}
+                >
+                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+                <div
+                  className="absolute bottom-2 left-2 text-[10px] px-2 py-1 rounded-full font-medium"
+                  style={{ background: "rgba(0,0,0,0.55)", color: "#fff" }}
+                >
+                  Foto adjunta
                 </div>
               </div>
-            </Card>
-            <div className="grid grid-cols-2 gap-3">
-              <Input label="Latitud" value="-12.0651" readOnly />
-              <Input label="Longitud" value="-75.2049" readOnly />
-            </div>
-            <Button fullWidth size="lg" onClick={() => alert("¡Reporte enviado! (Demo Sprint 1)")}>
-              Enviar reporte
+            ) : (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full rounded-xl p-6 text-center transition-all duration-150 active:scale-[0.98]"
+                style={{
+                  background: "var(--bg-card)",
+                  border: "1.5px dashed var(--border)",
+                  boxShadow: "var(--shadow-card)",
+                }}
+              >
+                <div
+                  className="w-12 h-12 rounded-xl mx-auto flex items-center justify-center mb-3 text-2xl"
+                  style={{ background: "var(--qhali-primary-pale)" }}
+                >
+                  📷
+                </div>
+                <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                  Adjuntar fotografía
+                </p>
+                <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+                  Toca para tomar foto o elegir de la galería
+                </p>
+              </button>
+            )}
+
+            {error && <ErrorBanner message={error} />}
+
+            <Button fullWidth size="lg" onClick={goToStep3}>
+              Continuar
             </Button>
           </div>
         )}
+
+        {/* ── Paso 3: Ubicación GPS + Enviar ───────────────────────── */}
+        {step === 3 && (
+          <div className="animate-slide-up space-y-4">
+            <div>
+              <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+                Ubicación del incidente
+              </h2>
+              <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+                El sistema captura tu posición GPS automáticamente
+              </p>
+            </div>
+
+            {/* Estado GPS */}
+            <Card className="p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                  style={{ background: "var(--bg-primary)", border: "1px solid var(--border-subtle)" }}
+                >
+                  📍
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                    {gpsState === "loading" && "Obteniendo ubicación..."}
+                    {gpsState === "ok"      && "Ubicación obtenida"}
+                    {gpsState === "denied"  && "Permiso denegado"}
+                    {gpsState === "error"   && "Error de GPS"}
+                    {gpsState === "idle"    && "GPS no iniciado"}
+                  </p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{
+                        background: gpsState === "ok" ? "#22C55E"
+                          : gpsState === "loading" ? "var(--qhali-primary)"
+                          : gpsState === "denied" || gpsState === "error" ? "var(--color-error)"
+                          : "var(--border)",
+                        ...(gpsState === "loading" || gpsState === "ok" ? { animation: "pulse 1.5s infinite" } : {}),
+                      }}
+                    />
+                    <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                      {gpsState === "loading" && "Solicitando permiso y posición..."}
+                      {gpsState === "ok" && form.locationAccuracy !== null
+                        ? `Precisión: ~${Math.round(form.locationAccuracy)} m`
+                        : gpsState === "ok" ? "Posición confirmada" : ""}
+                      {gpsState === "denied" && "Activa el permiso en el navegador"}
+                      {gpsState === "error"  && "Inténtalo de nuevo"}
+                      {gpsState === "idle"   && "Iniciando..."}
+                    </span>
+                  </div>
+                </div>
+                {(gpsState === "denied" || gpsState === "error") && (
+                  <button
+                    onClick={() => { setError(null); captureGps(); }}
+                    className="text-xs font-semibold px-3 py-1.5 rounded-lg"
+                    style={{ background: "var(--qhali-primary-pale)", color: "var(--qhali-primary)" }}
+                  >
+                    Reintentar
+                  </button>
+                )}
+              </div>
+
+              {form.latitude !== null && (
+                <div
+                  className="grid grid-cols-2 gap-3 rounded-lg p-3"
+                  style={{ background: "var(--bg-primary)", border: "1px solid var(--border-subtle)" }}
+                >
+                  <CoordField label="Latitud" value={form.latitude.toFixed(6)} />
+                  <CoordField label="Longitud" value={form.longitude!.toFixed(6)} />
+                </div>
+              )}
+            </Card>
+
+            {/* Resumen del reporte */}
+            <Card className="p-4">
+              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>
+                Resumen
+              </p>
+              <div className="space-y-2">
+                <SummaryRow icon={selectedCat?.icon ?? "📌"} label="Categoría" value={selectedCat?.label ?? ""} />
+                <SummaryRow
+                  icon="📝"
+                  label="Descripción"
+                  value={form.description.length > 60 ? form.description.slice(0, 60) + "..." : form.description}
+                />
+                <SummaryRow icon="📷" label="Fotografía" value={form.imageFile ? "Adjunta" : "Sin foto"} />
+              </div>
+            </Card>
+
+            {error && <ErrorBanner message={error} />}
+
+            <Button
+              fullWidth
+              size="lg"
+              disabled={submitting || form.latitude === null}
+              onClick={handleSubmit}
+            >
+              {submitting ? "Enviando reporte..." : "Enviar reporte"}
+            </Button>
+
+            {form.latitude === null && gpsState !== "loading" && gpsState !== "denied" && (
+              <p className="text-center text-xs" style={{ color: "var(--text-muted)" }}>
+                Esperando ubicación GPS para habilitar el envío...
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Componentes auxiliares ───────────────────────────────────────────────────
+
+function ErrorBanner({ message }: { message: string }) {
+  return (
+    <div
+      className="rounded-lg px-3 py-2.5 text-xs flex items-start gap-2"
+      style={{ background: "#FEF2F2", border: "1px solid #FECACA", color: "var(--color-error)" }}
+    >
+      <svg className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+      </svg>
+      {message}
+    </div>
+  );
+}
+
+function CoordField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[10px] font-medium mb-0.5" style={{ color: "var(--text-muted)" }}>{label}</p>
+      <p className="text-sm font-mono font-semibold" style={{ color: "var(--text-primary)" }}>{value}</p>
+    </div>
+  );
+}
+
+function SummaryRow({ icon, label, value }: { icon: string; label: string; value: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-base w-5 text-center">{icon}</span>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>{label}</p>
+        <p className="text-xs font-medium truncate" style={{ color: "var(--text-primary)" }}>{value}</p>
       </div>
     </div>
   );

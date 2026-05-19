@@ -38,6 +38,18 @@ export interface AuthResponse {
   user: UserPublic;
 }
 
+export interface IncidentResponse {
+  id: number;
+  public_alias: string;
+  category: string;
+  description: string;
+  image_url: string | null;
+  latitude: number;
+  longitude: number;
+  status: string;
+  created_at: string;
+}
+
 export const api = {
   register(email: string, password: string) {
     return request<AuthResponse>("/auth/register", {
@@ -59,5 +71,29 @@ export const api = {
 
   logout() {
     return request<{ message: string }>("/auth/logout", { method: "POST" });
+  },
+
+  createIncident(formData: FormData) {
+    const token = getToken();
+    return fetch(`${API_BASE}/incidents/`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    }).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Error de red" }));
+        throw new Error(err.detail ?? "Error al crear reporte");
+      }
+      return res.json() as Promise<IncidentResponse>;
+    });
+  },
+
+  getMyIncidents() {
+    return request<IncidentResponse[]>("/incidents/my");
+  },
+
+  getPublicIncidents(category?: string) {
+    const qs = category ? `?category=${encodeURIComponent(category)}` : "";
+    return request<IncidentResponse[]>(`/incidents/public${qs}`);
   },
 };
