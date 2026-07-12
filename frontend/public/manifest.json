@@ -1,0 +1,9 @@
+{
+  "name": "QHALI",
+  "short_name": "QHALI",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F0F5FA",
+  "theme_color": "#0284C7",
+  "icons": []
+}

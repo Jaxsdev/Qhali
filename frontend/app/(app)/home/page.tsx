@@ -41,6 +41,31 @@ export default function HomePage() {
     router.replace("/login");
   }
 
+  const [validatingId, setValidatingId] = useState<number | null>(null);
+
+  async function handleLikeValidate(incId: number, lat: number, lng: number) {
+    try {
+      setValidatingId(incId);
+      const res = await api.validateIncident(incId, lat, lng);
+      setIncidents((prev) =>
+        prev.map((inc) =>
+          inc.id === incId
+            ? { ...inc, validation_count: res.validation_count, status: res.status }
+            : inc
+        )
+      );
+    } catch (err: any) {
+      alert(err.message || "Error al validar");
+    } finally {
+      setValidatingId(null);
+    }
+  }
+
+  function handleShareWhatsApp(id: number, category: string, description: string) {
+    const text = `🚨 *QHALI — Reporte Ciudadano* 🚨\n\n*Categoría:* #${category}\n*Detalle:* ${description}\n\nAyúdanos a confirmar este reporte para alertar a las autoridades. Consúltalo aquí:\n${window.location.origin}/post/${id}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
+  }
+
   const aliasInitial = user?.alias_anonimo?.[0]?.toUpperCase() ?? "C";
   const isAdmin = user?.role === "admin";
 
@@ -55,8 +80,8 @@ export default function HomePage() {
       label: "Nuevo reporte",
       sub: "Reportar incidencia",
       icon: "📋",
-      bg: "var(--qhali-orange)",
-      shadow: "0 4px 14px rgba(234,88,12,0.3)",
+      bg: "var(--qhali-primary)",
+      shadow: "var(--shadow-primary)",
     },
     {
       href: "/map",
@@ -71,8 +96,8 @@ export default function HomePage() {
       label: "Mis reportes",
       sub: "Ver historial",
       icon: "📁",
-      bg: "#0F766E",
-      shadow: "0 4px 14px rgba(15,118,110,0.3)",
+      bg: "var(--qhali-primary)",
+      shadow: "var(--shadow-primary)",
     },
     ...(isAdmin
       ? [
@@ -81,8 +106,8 @@ export default function HomePage() {
             label: "Dashboard",
             sub: "Panel admin",
             icon: "⚙️",
-            bg: "#7C3AED",
-            shadow: "0 4px 14px rgba(124,58,237,0.3)",
+            bg: "var(--qhali-primary)",
+            shadow: "var(--shadow-primary)",
           },
         ]
       : []),
@@ -92,7 +117,7 @@ export default function HomePage() {
     <div className="min-h-screen" style={{ background: "var(--bg-primary)" }}>
 
       {/* Header */}
-      <header className="sticky top-0 z-40 surface-header">
+      <header className="sticky top-0 z-40 surface-header md:hidden">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
@@ -131,150 +156,203 @@ export default function HomePage() {
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
+      <div className="max-w-5xl mx-auto px-4 py-6 md:py-8 space-y-6">
 
         {/* Banner bienvenida */}
         <div
-          className="rounded-2xl p-5 animate-slide-up"
+          className="p-6 animate-slide-up flex flex-col md:flex-row md:items-center justify-between gap-4 border border-[var(--text-primary)] bg-white"
           style={{
-            background: "linear-gradient(135deg, var(--qhali-primary) 0%, #0369A1 100%)",
             boxShadow: "var(--shadow-primary)",
           }}
         >
-          <p className="text-sm text-white/80">Bienvenido,</p>
-          <h2 className="text-xl font-bold text-white mt-0.5">
-            {user?.alias_anonimo ?? "Ciudadano"}
-          </h2>
-          <p className="text-xs text-white/70 mt-1">
-            Reporta incidencias y ayuda a mejorar tu ciudad.
-          </p>
-
-          <div className="flex items-center gap-1 mt-4">
-            {statsLoading ? (
-              <div
-                className="w-full h-6 rounded animate-pulse"
-                style={{ background: "rgba(255,255,255,0.15)" }}
-              />
-            ) : (
-              [
-                { value: String(totalActive),      label: "Activos" },
-                { value: String(totalResueltos),    label: "Resueltos" },
-                { value: String(totalValidaciones), label: "Validaciones" },
-              ].map((s, i) => (
-                <div key={s.label} className="flex items-center gap-1">
-                  {i > 0 && <div className="w-px h-6 bg-white/20 mx-1" />}
-                  <div>
-                    <p className="text-base font-bold text-white leading-none">{s.value}</p>
-                    <p className="text-[10px] text-white/60">{s.label}</p>
-                  </div>
-                </div>
-              ))
-            )}
+          <div>
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>Bienvenido,</p>
+            <h2 className="text-2xl font-black mt-0.5" style={{ color: "var(--text-primary)" }}>
+              {user?.alias_anonimo ?? "Ciudadano"}
+            </h2>
+            <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+              Reporta incidencias y ayuda a mejorar tu ciudad.
+            </p>
           </div>
-        </div>
 
-        {/* Acciones rápidas */}
-        <div className="animate-slide-up" style={{ animationDelay: "0.06s" }}>
-          <h3
-            className="text-xs font-semibold uppercase tracking-widest mb-3"
-            style={{ color: "var(--text-muted)" }}
-          >
-            Acciones rápidas
-          </h3>
-          <div className={`grid gap-3 ${quickActions.length === 4 ? "grid-cols-4" : "grid-cols-3"}`}>
-            {quickActions.map((a) => (
-              <Link key={a.href} href={a.href}>
-                <div
-                  className="rounded-xl p-3.5 text-center transition-all duration-150 active:scale-95"
-                  style={{
-                    background: "var(--bg-card)",
-                    border: "1px solid var(--border-subtle)",
-                    boxShadow: "var(--shadow-card)",
-                  }}
-                >
-                  <div
-                    className="w-10 h-10 mx-auto rounded-xl flex items-center justify-center text-xl mb-2"
-                    style={{ background: a.bg, boxShadow: a.shadow }}
-                  >
-                    {a.icon}
-                  </div>
-                  <p className="text-xs font-semibold leading-tight" style={{ color: "var(--text-primary)" }}>
-                    {a.label}
-                  </p>
-                  <p className="text-[9px] mt-0.5" style={{ color: "var(--text-muted)" }}>
-                    {a.sub}
-                  </p>
+          <div className="flex items-center gap-4 bg-gray-50 border border-[var(--border)] p-4 self-start md:self-auto">
+            {[
+              { value: String(totalActive),      label: "Activos" },
+              { value: String(totalResueltos),    label: "Resueltos" },
+              { value: String(totalValidaciones), label: "Validaciones" },
+            ].map((s, i) => (
+              <div key={s.label} className="flex items-center gap-1">
+                {i > 0 && <div className="w-px h-8 bg-gray-200 mx-2" />}
+                <div className="text-center">
+                  <p className="text-lg font-black leading-none" style={{ color: "var(--text-primary)" }}>{s.value}</p>
+                  <p className="text-[9px] font-semibold uppercase tracking-wider mt-0.5" style={{ color: "var(--text-muted)" }}>{s.label}</p>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         </div>
 
-        {/* Incidencias recientes */}
-        <div className="animate-slide-up" style={{ animationDelay: "0.12s" }}>
-          <div className="flex items-center justify-between mb-3">
-            <h3
-              className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: "var(--text-muted)" }}
-            >
-              Incidencias recientes
-            </h3>
-            <Link href="/map" className="text-xs font-medium" style={{ color: "var(--qhali-primary)" }}>
-              Ver mapa →
-            </Link>
-          </div>
+        {/* Responsive Layout Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-          {statsLoading ? (
-            <div className="space-y-2">
-              {[...Array(3)].map((_, i) => (
-                <div
-                  key={i}
-                  className="rounded-xl p-4 h-16 animate-pulse"
-                  style={{ background: "var(--bg-card)", border: "1px solid var(--border-subtle)" }}
-                />
-              ))}
-            </div>
-          ) : recentIncidents.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="text-3xl mb-2">🎉</div>
-              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                No hay incidencias activas cerca.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {recentIncidents.map((inc) => (
-                <Card key={inc.id} hover className="p-4">
-                  <div className="flex items-center gap-3">
+          {/* Main Column (2/3 width on desktop) */}
+          <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
+
+            {/* Incidencias recientes */}
+            <div className="animate-slide-up" style={{ animationDelay: "0.12s" }}>
+              <div className="flex items-center justify-between mb-4">
+                <h3
+                  className="text-xs font-semibold uppercase tracking-widest"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  Incidencias recientes
+                </h3>
+                <Link href="/map" className="text-xs font-bold" style={{ color: "var(--qhali-primary)" }}>
+                  Ver mapa →
+                </Link>
+              </div>
+
+              {statsLoading ? (
+                <div className="space-y-2">
+                  {[...Array(3)].map((_, i) => (
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                      style={{ background: "var(--bg-primary)", border: "1px solid var(--border-subtle)" }}
-                    >
-                      {CATEGORY_ICONS[inc.category] ?? "📌"}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>
-                          {inc.description.length > 45
-                            ? inc.description.slice(0, 45) + "…"
-                            : inc.description}
-                        </p>
+                      key={i}
+                      className="p-4 h-16 animate-pulse border border-[var(--border)] bg-white"
+                    />
+                  ))}
+                </div>
+              ) : recentIncidents.length === 0 ? (
+                <div className="text-center py-12 border border-[var(--border)] bg-white">
+                  <div className="text-3xl mb-2">🎉</div>
+                  <p className="text-xs font-bold" style={{ color: "var(--text-muted)" }}>
+                    No hay incidencias activas cerca.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {recentIncidents.map((inc) => (
+                    <Card key={inc.id} className="overflow-hidden border border-[var(--text-primary)] rounded-none flex flex-col justify-between bg-white">
+                      {/* Post Header */}
+                      <div className="p-3 flex items-center justify-between border-b border-[var(--border)]">
+                        <div className="flex items-center gap-2.5">
+                          <div
+                            className="w-8 h-8 flex items-center justify-center text-white text-xs font-bold border border-[var(--text-primary)]"
+                            style={{ background: "var(--qhali-primary)" }}
+                          >
+                            {inc.public_alias?.[0]?.toUpperCase() ?? "C"}
+                          </div>
+                          <div>
+                            <p className="text-xs font-black leading-none" style={{ color: "var(--text-primary)" }}>{inc.public_alias}</p>
+                            <p className="text-[9px] mt-0.5" style={{ color: "var(--text-muted)" }}>{formatRelativeDate(inc.created_at)}</p>
+                          </div>
+                        </div>
                         <StatusBadge status={inc.status} />
                       </div>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                          {formatRelativeDate(inc.created_at)}
-                        </span>
-                        <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                          ✓ {inc.validation_count} validaciones
-                        </span>
+
+                      {/* Post Image */}
+                      {inc.image_url ? (
+                        <div className="relative w-full h-48 bg-gray-100 flex-shrink-0 border-b border-[var(--border)]">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={inc.image_url} alt="" className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-full h-48 flex-shrink-0 flex flex-col items-center justify-center bg-[var(--bg-primary)] border-b border-[var(--border)] relative overflow-hidden">
+                          <div className="absolute inset-0 opacity-5 bg-[radial-gradient(#FF6B35_1px,transparent_1px)] [background-size:16px_16px]" />
+                          <span className="text-5xl z-10">{CATEGORY_ICONS[inc.category] ?? "📌"}</span>
+                          <span className="text-[10px] uppercase font-bold tracking-widest mt-2 z-10 text-[var(--text-muted)]">#{inc.category}</span>
+                        </div>
+                      )}
+
+                      {/* Interaction Bar & Caption */}
+                      <div className="p-3 space-y-2">
+                        {/* Actions */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <button
+                              onClick={() => handleLikeValidate(inc.id, inc.latitude, inc.longitude)}
+                              disabled={validatingId === inc.id}
+                              className="flex items-center gap-1.5 text-xs font-bold hover:text-[var(--qhali-primary)] transition-colors cursor-pointer group"
+                              style={{ color: "var(--text-primary)" }}
+                            >
+                              <span className="text-base group-hover:scale-125 transition-transform duration-100">
+                                {validatingId === inc.id ? "⏳" : "🧡"}
+                              </span>
+                              <span>Validar</span>
+                            </button>
+
+                            <button
+                              onClick={() => handleShareWhatsApp(inc.id, inc.category, inc.description)}
+                              className="flex items-center gap-1.5 text-xs font-bold hover:text-[#25D366] transition-colors cursor-pointer group"
+                              style={{ color: "var(--text-primary)" }}
+                            >
+                              <span className="text-base group-hover:scale-125 transition-transform duration-100">
+                                💬
+                              </span>
+                              <span>Compartir</span>
+                            </button>
+                          </div>
+
+                          <span className="text-[10px] font-bold" style={{ color: "var(--text-muted)" }}>
+                            ✓ {inc.validation_count} validaciones
+                          </span>
+                        </div>
+
+                        {/* Caption */}
+                        <p className="text-xs leading-normal" style={{ color: "var(--text-primary)" }}>
+                          <span className="font-black mr-1.5">{inc.public_alias}</span>
+                          {inc.description}
+                        </p>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+
+          </div>
+
+          {/* Sidebar Column (1/3 width on desktop) */}
+          <div className="space-y-6 order-1 lg:order-2">
+
+            {/* Acciones rápidas */}
+            <div className="animate-slide-up" style={{ animationDelay: "0.06s" }}>
+              <h3
+                className="text-xs font-semibold uppercase tracking-widest mb-3"
+                style={{ color: "var(--text-muted)" }}
+              >
+                Acciones rápidas
+              </h3>
+              <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
+                {quickActions.map((a) => (
+                  <Link key={a.href} href={a.href}>
+                    <div
+                      className="p-4 text-center lg:text-left flex flex-col lg:flex-row lg:items-center lg:gap-4 transition-all duration-150 active:scale-95 cursor-pointer border border-[var(--text-primary)] rounded-none bg-white"
+                      style={{
+                        boxShadow: "var(--shadow-card)",
+                      }}
+                    >
+                      <div
+                        className="w-10 h-10 mx-auto lg:mx-0 flex items-center justify-center text-xl mb-2 lg:mb-0 flex-shrink-0 text-white border border-[var(--text-primary)]"
+                        style={{ background: a.bg }}
+                      >
+                        {a.icon}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold leading-tight" style={{ color: "var(--text-primary)" }}>
+                          {a.label}
+                        </p>
+                        <p className="text-[9px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+                          {a.sub}
+                        </p>
                       </div>
                     </div>
-                  </div>
-                </Card>
-              ))}
+                  </Link>
+                ))}
+              </div>
             </div>
-          )}
+
+          </div>
+
         </div>
 
       </div>

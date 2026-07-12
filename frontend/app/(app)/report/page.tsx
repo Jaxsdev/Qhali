@@ -2,9 +2,12 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import Button from "../../components/Button";
 import Card from "../../components/Card";
 import { api, type DuplicateCheckResponse } from "../../lib/api";
+
+const ReportMapView = dynamic(() => import("../../components/ReportMapView"), { ssr: false });
 
 const CATEGORIES = [
   { value: "bache",        label: "Bache",        icon: "🕳️" },
@@ -36,6 +39,7 @@ export default function ReportPage() {
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [gpsState, setGpsState] = useState<GpsState>("idle");
+  const [locMode, setLocMode] = useState<"gps" | "map">("gps");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -241,7 +245,7 @@ export default function ReportPage() {
             {([1, 2, 3] as const).map((s) => (
               <div
                 key={s}
-                className="h-1.5 rounded-full transition-all duration-300"
+                className="h-1.5 rounded-none transition-all duration-300"
                 style={{
                   width: s === step ? 24 : 8,
                   background: s <= step ? "var(--qhali-primary)" : "var(--border)",
@@ -252,11 +256,11 @@ export default function ReportPage() {
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
+      <div className="max-w-5xl mx-auto px-4 py-5 space-y-6">
 
         {/* ── Paso 1: Categoría ────────────────────────────────────── */}
         {step === 1 && (
-          <div className="animate-slide-up space-y-4">
+          <div className="animate-slide-up space-y-6">
             <div>
               <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
                 ¿Qué tipo de incidencia?
@@ -266,18 +270,18 @@ export default function ReportPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {CATEGORIES.map((cat) => {
                 const active = form.category === cat.value;
                 return (
                   <button
                     key={cat.value}
                     onClick={() => { setForm((f) => ({ ...f, category: cat.value })); setError(null); }}
-                    className="rounded-xl p-4 text-center transition-all duration-150 active:scale-95"
+                    className="rounded-none p-4 text-center transition-all duration-150 active:scale-95 border"
                     style={{
                       background: active ? "var(--qhali-primary-pale)" : "var(--bg-card)",
-                      border: active ? "1.5px solid var(--qhali-primary-light)" : "1px solid var(--border-subtle)",
-                      boxShadow: active ? "none" : "var(--shadow-card)",
+                      borderColor: active ? "var(--text-primary)" : "var(--border)",
+                      borderWidth: active ? "2px" : "1px",
                     }}
                   >
                     <span className="text-2xl">{cat.icon}</span>
@@ -302,7 +306,7 @@ export default function ReportPage() {
 
         {/* ── Paso 2: Descripción + Imagen ─────────────────────────── */}
         {step === 2 && (
-          <div className="animate-slide-up space-y-4">
+          <div className="animate-slide-up space-y-6">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xl">{selectedCat?.icon}</span>
@@ -315,93 +319,93 @@ export default function ReportPage() {
               </p>
             </div>
 
-            {/* Textarea descripción */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
-                  Descripción
-                </label>
-                <span className="text-[10px]" style={{ color: form.description.length > 230 ? "var(--color-error)" : "var(--text-muted)" }}>
-                  {form.description.length}/250
-                </span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+              {/* Left Column: Description */}
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
+                      Descripción
+                    </label>
+                    <span className="text-[10px]" style={{ color: form.description.length > 230 ? "var(--color-error)" : "var(--text-muted)" }}>
+                      {form.description.length}/250
+                    </span>
+                  </div>
+                  <textarea
+                    value={form.description}
+                    onChange={(e) => setForm((f) => ({ ...f, description: e.target.value.slice(0, 250) }))}
+                    placeholder="Ej: Bache profundo frente al colegio, lleva 2 semanas sin atención..."
+                    rows={6}
+                    className="w-full rounded-none text-sm px-4 py-3 resize-none focus:outline-none focus:ring-1 focus:ring-[var(--text-primary)] transition-all duration-150"
+                    style={{
+                      background: "var(--bg-card)",
+                      border: "1.5px solid var(--border)",
+                      color: "var(--text-primary)",
+                      lineHeight: "1.5",
+                    } as React.CSSProperties}
+                  />
+                  <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                    Mínimo 10 caracteres
+                  </p>
+                </div>
               </div>
-              <textarea
-                value={form.description}
-                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value.slice(0, 250) }))}
-                placeholder="Ej: Bache profundo frente al colegio, lleva 2 semanas sin atención..."
-                rows={4}
-                className="w-full rounded-lg text-sm px-4 py-3 resize-none focus:outline-none focus:ring-2 transition-all duration-150"
-                style={{
-                  background: "var(--bg-card)",
-                  border: "1.5px solid var(--border)",
-                  color: "var(--text-primary)",
-                  boxShadow: "var(--shadow-button)",
-                  lineHeight: "1.5",
-                } as React.CSSProperties}
-              />
-              <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                Mínimo 10 caracteres
-              </p>
-            </div>
 
-            {/* Upload de imagen */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="hidden"
-              onChange={handleImageChange}
-            />
-
-            {form.imagePreview ? (
-              <div className="relative rounded-xl overflow-hidden" style={{ border: "1px solid var(--border-subtle)" }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={form.imagePreview}
-                  alt="Vista previa"
-                  className="w-full object-cover max-h-52"
+              {/* Right Column: Image */}
+              <div className="space-y-4">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={handleImageChange}
                 />
-                <button
-                  onClick={() => setForm((f) => ({ ...f, imageFile: null, imagePreview: null }))}
-                  className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center"
-                  style={{ background: "rgba(0,0,0,0.55)" }}
-                >
-                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-                <div
-                  className="absolute bottom-2 left-2 text-[10px] px-2 py-1 rounded-full font-medium"
-                  style={{ background: "rgba(0,0,0,0.55)", color: "#fff" }}
-                >
-                  Foto adjunta
-                </div>
+
+                {form.imagePreview ? (
+                  <div className="relative rounded-none overflow-hidden border border-[var(--text-primary)]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={form.imagePreview}
+                      alt="Vista previa"
+                      className="w-full object-cover max-h-64"
+                    />
+                    <button
+                      onClick={() => setForm((f) => ({ ...f, imageFile: null, imagePreview: null }))}
+                      className="absolute top-2 right-2 w-8 h-8 rounded-none flex items-center justify-center border border-white text-white"
+                      style={{ background: "rgba(0,0,0,0.7)" }}
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                    <div
+                      className="absolute bottom-2 left-2 text-[10px] px-2 py-1 font-bold border border-white"
+                      style={{ background: "rgba(0,0,0,0.7)", color: "#fff" }}
+                    >
+                      Foto adjunta
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full rounded-none p-8 text-center transition-all duration-150 active:scale-[0.98] border border-dashed border-[var(--text-primary)] bg-white"
+                  >
+                    <div
+                      className="w-12 h-12 mx-auto flex items-center justify-center mb-3 text-2xl border border-[var(--text-primary)]"
+                      style={{ background: "var(--qhali-primary-pale)" }}
+                    >
+                      📷
+                    </div>
+                    <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
+                      Adjuntar fotografía
+                    </p>
+                    <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+                      Toca para tomar foto o elegir de la galería
+                    </p>
+                  </button>
+                )}
               </div>
-            ) : (
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full rounded-xl p-6 text-center transition-all duration-150 active:scale-[0.98]"
-                style={{
-                  background: "var(--bg-card)",
-                  border: "1.5px dashed var(--border)",
-                  boxShadow: "var(--shadow-card)",
-                }}
-              >
-                <div
-                  className="w-12 h-12 rounded-xl mx-auto flex items-center justify-center mb-3 text-2xl"
-                  style={{ background: "var(--qhali-primary-pale)" }}
-                >
-                  📷
-                </div>
-                <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-                  Adjuntar fotografía
-                </p>
-                <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-                  Toca para tomar foto o elegir de la galería
-                </p>
-              </button>
-            )}
+            </div>
 
             {error && <ErrorBanner message={error} />}
 
@@ -413,124 +417,200 @@ export default function ReportPage() {
 
         {/* ── Paso 3: Ubicación GPS + Enviar ───────────────────────── */}
         {step === 3 && (
-          <div className="animate-slide-up space-y-4">
+          <div className="animate-slide-up space-y-6">
             <div>
               <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
                 Ubicación del incidente
               </h2>
               <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-                El sistema captura tu posición GPS automáticamente
+                Selecciona cómo deseas registrar la ubicación de la incidencia
               </p>
             </div>
 
-            {/* Estado GPS */}
-            <Card className="p-5">
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                  style={{ background: "var(--bg-primary)", border: "1px solid var(--border-subtle)" }}
-                >
-                  📍
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-                    {gpsState === "loading" && "Obteniendo ubicación..."}
-                    {gpsState === "ok"      && "Ubicación obtenida"}
-                    {gpsState === "denied"  && "Permiso denegado"}
-                    {gpsState === "error"   && "Error de GPS"}
-                    {gpsState === "idle"    && "GPS no iniciado"}
-                  </p>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <div
-                      className="w-2 h-2 rounded-full"
-                      style={{
-                        background: gpsState === "ok" ? "#22C55E"
-                          : gpsState === "loading" ? "var(--qhali-primary)"
-                          : gpsState === "denied" || gpsState === "error" ? "var(--color-error)"
-                          : "var(--border)",
-                        ...(gpsState === "loading" || gpsState === "ok" ? { animation: "pulse 1.5s infinite" } : {}),
+            {/* Toggle ubicacion */}
+            <div className="flex border border-[var(--text-primary)] rounded-none overflow-hidden max-w-md bg-white">
+              <button
+                onClick={() => {
+                  setLocMode("gps");
+                  setError(null);
+                  captureGps();
+                }}
+                className="flex-1 text-xs font-bold py-2.5 text-center cursor-pointer transition-colors"
+                style={{
+                  background: locMode === "gps" ? "var(--text-primary)" : "transparent",
+                  color: locMode === "gps" ? "#FFFFFF" : "var(--text-primary)",
+                  border: "none",
+                }}
+              >
+                📍 Mi ubicación (GPS)
+              </button>
+              <button
+                onClick={() => {
+                  setLocMode("map");
+                  setError(null);
+                }}
+                className="flex-1 text-xs font-bold py-2.5 text-center cursor-pointer transition-colors"
+                style={{
+                  background: locMode === "map" ? "var(--text-primary)" : "transparent",
+                  color: locMode === "map" ? "#FFFFFF" : "var(--text-primary)",
+                  border: "none",
+                }}
+              >
+                🗺️ Seleccionar en el mapa
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+              {/* Left Column: GPS info or Map */}
+              <div className="space-y-4">
+                
+                {locMode === "gps" && (
+                  <div className="space-y-4 animate-fade-in">
+                    {/* Estado GPS */}
+                    <Card className="p-5 border border-[var(--text-primary)] rounded-none bg-white">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div
+                          className="w-10 h-10 flex items-center justify-center text-xl flex-shrink-0 border border-[var(--text-primary)] bg-[var(--bg-primary)]"
+                        >
+                          📍
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
+                            {gpsState === "loading" && "Obteniendo ubicación..."}
+                            {gpsState === "ok"      && "Ubicación obtenida"}
+                            {gpsState === "denied"  && "Permiso denegado"}
+                            {gpsState === "error"   && "Error de GPS"}
+                            {gpsState === "idle"    && "GPS no iniciado"}
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <div
+                              className="w-2 h-2 rounded-none"
+                              style={{
+                                background: gpsState === "ok" ? "#22C55E"
+                                  : gpsState === "loading" ? "var(--qhali-primary)"
+                                  : gpsState === "denied" || gpsState === "error" ? "var(--color-error)"
+                                  : "var(--border)",
+                                ...(gpsState === "loading" || gpsState === "ok" ? { animation: "pulse 1.5s infinite" } : {}),
+                              }}
+                            />
+                            <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                              {gpsState === "loading" && "Solicitando permiso y posición..."}
+                              {gpsState === "ok" && form.locationAccuracy !== null
+                                ? `Precisión: ~${Math.round(form.locationAccuracy)} m`
+                                : gpsState === "ok" ? "Posición confirmada" : ""}
+                              {gpsState === "denied" && "Activa el permiso en el navegador"}
+                              {gpsState === "error"  && "Inténtalo de nuevo"}
+                              {gpsState === "idle"   && "Iniciando..."}
+                            </span>
+                          </div>
+                        </div>
+                        {(gpsState === "denied" || gpsState === "error") && (
+                          <Button
+                            onClick={() => { setError(null); captureGps(); }}
+                            size="sm"
+                          >
+                            Reintentar
+                          </Button>
+                        )}
+                      </div>
+
+                      {form.latitude !== null && (
+                        <div
+                          className="grid grid-cols-2 gap-3 p-3 border border-[var(--text-primary)]"
+                          style={{ background: "var(--bg-primary)" }}
+                        >
+                          <CoordField label="Latitud" value={form.latitude.toFixed(6)} />
+                          <CoordField label="Longitud" value={form.longitude!.toFixed(6)} />
+                        </div>
+                      )}
+                    </Card>
+                  </div>
+                )}
+
+                {locMode === "map" && (
+                  <div className="space-y-4 animate-fade-in">
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                      Haz clic en el mapa para marcar el punto exacto donde ocurre la incidencia:
+                    </p>
+                    <ReportMapView
+                      lat={form.latitude}
+                      lng={form.longitude}
+                      onSelect={(clickLat, clickLng) => {
+                        setForm((f) => ({
+                          ...f,
+                          latitude: clickLat,
+                          longitude: clickLng,
+                          locationAccuracy: 1, // Alta precisión al ser manual
+                        }));
+                        api.checkDuplicate(clickLat, clickLng, form.category)
+                          .then(setDuplicateWarning)
+                          .catch(() => {});
                       }}
                     />
-                    <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                      {gpsState === "loading" && "Solicitando permiso y posición..."}
-                      {gpsState === "ok" && form.locationAccuracy !== null
-                        ? `Precisión: ~${Math.round(form.locationAccuracy)} m`
-                        : gpsState === "ok" ? "Posición confirmada" : ""}
-                      {gpsState === "denied" && "Activa el permiso en el navegador"}
-                      {gpsState === "error"  && "Inténtalo de nuevo"}
-                      {gpsState === "idle"   && "Iniciando..."}
-                    </span>
+                    {form.latitude !== null && (
+                      <div
+                        className="grid grid-cols-2 gap-3 p-3 border border-[var(--text-primary)] bg-white"
+                        style={{ background: "var(--bg-primary)" }}
+                      >
+                        <CoordField label="Latitud" value={form.latitude.toFixed(6)} />
+                        <CoordField label="Longitud" value={form.longitude!.toFixed(6)} />
+                      </div>
+                    )}
                   </div>
-                </div>
-                {(gpsState === "denied" || gpsState === "error") && (
-                  <button
-                    onClick={() => { setError(null); captureGps(); }}
-                    className="text-xs font-semibold px-3 py-1.5 rounded-lg"
-                    style={{ background: "var(--qhali-primary-pale)", color: "var(--qhali-primary)" }}
+                )}
+
+                {duplicateWarning?.has_duplicates && (
+                  <div
+                    className="border border-[#FED7AA] px-3 py-3 text-xs"
+                    style={{ background: "#FFF7ED", color: "#92400E" }}
                   >
-                    Reintentar
-                  </button>
+                    <p className="font-bold mb-1">
+                      Posible incidente duplicado
+                    </p>
+                    <p>
+                      Ya existe {duplicateWarning.duplicates.length} reporte similar de esta categoría
+                      a menos de 50 m. Puedes validarlo en &quot;Alertas&quot; o continuar si es un problema distinto.
+                    </p>
+                  </div>
                 )}
               </div>
 
-              {form.latitude !== null && (
-                <div
-                  className="grid grid-cols-2 gap-3 rounded-lg p-3"
-                  style={{ background: "var(--bg-primary)", border: "1px solid var(--border-subtle)" }}
+              {/* Right Column: Summary & Submit */}
+              <div className="space-y-4">
+                {/* Resumen del reporte */}
+                <Card className="p-4 border border-[var(--text-primary)] rounded-none bg-white">
+                  <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>
+                    Resumen
+                  </p>
+                  <div className="space-y-2">
+                    <SummaryRow icon={selectedCat?.icon ?? "📌"} label="Categoría" value={selectedCat?.label ?? ""} />
+                    <SummaryRow
+                      icon="📝"
+                      label="Descripción"
+                      value={form.description.length > 60 ? form.description.slice(0, 60) + "..." : form.description}
+                    />
+                    <SummaryRow icon="📷" label="Fotografía" value={form.imageFile ? "Adjunta" : "Sin foto"} />
+                  </div>
+                </Card>
+
+                {error && <ErrorBanner message={error} />}
+
+                <Button
+                  fullWidth
+                  size="lg"
+                  disabled={submitting || form.latitude === null}
+                  onClick={handleSubmit}
                 >
-                  <CoordField label="Latitud" value={form.latitude.toFixed(6)} />
-                  <CoordField label="Longitud" value={form.longitude!.toFixed(6)} />
-                </div>
-              )}
-            </Card>
+                  {submitting ? "Enviando reporte..." : "Enviar reporte"}
+                </Button>
 
-            {/* Resumen del reporte */}
-            <Card className="p-4">
-              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>
-                Resumen
-              </p>
-              <div className="space-y-2">
-                <SummaryRow icon={selectedCat?.icon ?? "📌"} label="Categoría" value={selectedCat?.label ?? ""} />
-                <SummaryRow
-                  icon="📝"
-                  label="Descripción"
-                  value={form.description.length > 60 ? form.description.slice(0, 60) + "..." : form.description}
-                />
-                <SummaryRow icon="📷" label="Fotografía" value={form.imageFile ? "Adjunta" : "Sin foto"} />
+                {form.latitude === null && gpsState !== "loading" && gpsState !== "denied" && (
+                  <p className="text-center text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+                    Esperando ubicación GPS para habilitar el envío...
+                  </p>
+                )}
               </div>
-            </Card>
-
-            {duplicateWarning?.has_duplicates && (
-              <div
-                className="rounded-lg px-3 py-3 text-xs"
-                style={{ background: "#FFF7ED", border: "1px solid #FED7AA", color: "#92400E" }}
-              >
-                <p className="font-semibold mb-1">
-                  Posible incidente duplicado
-                </p>
-                <p>
-                  Ya existe {duplicateWarning.duplicates.length} reporte similar de esta categoría
-                  a menos de 50 m. Puedes validarlo en &quot;Alertas&quot; o continuar si es un problema distinto.
-                </p>
-              </div>
-            )}
-
-            {error && <ErrorBanner message={error} />}
-
-            <Button
-              fullWidth
-              size="lg"
-              disabled={submitting || form.latitude === null}
-              onClick={handleSubmit}
-            >
-              {submitting ? "Enviando reporte..." : "Enviar reporte"}
-            </Button>
-
-            {form.latitude === null && gpsState !== "loading" && gpsState !== "denied" && (
-              <p className="text-center text-xs" style={{ color: "var(--text-muted)" }}>
-                Esperando ubicación GPS para habilitar el envío...
-              </p>
-            )}
+            </div>
           </div>
         )}
       </div>

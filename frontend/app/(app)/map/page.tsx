@@ -68,11 +68,11 @@ export default function MapPage() {
   }, []);
 
   return (
-    <div className="flex flex-col" style={{ height: "calc(100dvh - var(--bottom-nav-height))" }}>
+    <div className="flex flex-col h-[calc(100dvh-var(--bottom-nav-height))] md:h-screen">
 
       {/* Header */}
       <header className="flex-shrink-0 surface-header z-30">
-        <div className="max-w-lg mx-auto px-4 py-3">
+        <div className="max-w-5xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>

@@ -8,6 +8,7 @@ interface CardProps {
   hover?: boolean;
   glow?: boolean;
   onClick?: () => void;
+  activeAlert?: boolean;
 }
 
 export default function Card({
@@ -16,21 +17,23 @@ export default function Card({
   hover = false,
   glow: _glow = false,
   onClick,
+  activeAlert = false,
 }: CardProps) {
   return (
     <div
-      className={`rounded-xl surface-card ${className}`}
+      className={`surface-card ${className}`}
       style={{
-        transition: hover ? "box-shadow 0.15s, border-color 0.15s" : undefined,
+        transition: hover ? "background-color 0.15s, border-color 0.15s" : undefined,
         cursor: hover || onClick ? "pointer" : undefined,
+        borderLeft: activeAlert ? "4px solid var(--qhali-primary)" : undefined,
       }}
       onMouseEnter={hover ? (e) => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 16px rgba(2,132,199,0.12)";
-        (e.currentTarget as HTMLDivElement).style.borderColor = "var(--qhali-primary-light)";
+        (e.currentTarget as HTMLDivElement).style.borderColor = "var(--text-primary)";
+        (e.currentTarget as HTMLDivElement).style.backgroundColor = "var(--bg-primary)";
       } : undefined}
       onMouseLeave={hover ? (e) => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "var(--shadow-card)";
-        (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border-subtle)";
+        (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border)";
+        (e.currentTarget as HTMLDivElement).style.backgroundColor = "";
       } : undefined}
       onClick={onClick}
     >

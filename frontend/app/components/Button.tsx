@@ -22,7 +22,7 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-all duration-150 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 cursor-pointer select-none";
+    "inline-flex items-center justify-center gap-2 font-bold rounded-none border border-[var(--text-primary)] transition-all duration-150 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 cursor-pointer select-none";
 
   const variants: Record<string, string> = {
     primary:

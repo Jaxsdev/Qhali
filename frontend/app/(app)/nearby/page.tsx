@@ -68,6 +68,25 @@ export default function NearbyPage() {
     );
   }, [fetchNearby]);
 
+  const [validatingId, setValidatingId] = useState<number | null>(null);
+
+  async function handleLikeValidate(incId: number, lat: number, lng: number) {
+    try {
+      setValidatingId(incId);
+      const res = await api.validateIncident(incId, lat, lng);
+      handleValidated(incId, res.validation_count, res.status);
+    } catch (err: any) {
+      alert(err.message || "Error al validar");
+    } finally {
+      setValidatingId(null);
+    }
+  }
+
+  function handleShareWhatsApp(id: number, category: string, description: string) {
+    const text = `🚨 *QHALI — Reporte Ciudadano* 🚨\n\n*Categoría:* #${category}\n*Detalle:* ${description}\n\nAyúdanos a confirmar este reporte para alertar a las autoridades. Consúltalo aquí:\n${window.location.origin}/post/${id}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
+  }
+
   function handleValidated(incidentId: number, newCount: number, newStatus: string) {
     setIncidents((prev) =>
       prev
@@ -86,8 +105,8 @@ export default function NearbyPage() {
     <div className="min-h-screen pb-6" style={{ background: "var(--bg-primary)" }}>
 
       {/* Header */}
-      <header className="sticky top-0 z-40 surface-header">
-        <div className="max-w-lg mx-auto px-4 py-3">
+      <header className="sticky top-0 z-40 surface-header md:hidden">
+        <div className="max-w-5xl mx-auto px-4 py-3">
           <h1 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
             Incidentes cercanos
           </h1>
@@ -131,7 +150,7 @@ export default function NearbyPage() {
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 mt-4 space-y-3">
+      <div className="max-w-5xl mx-auto px-4 mt-6 space-y-4">
 
         {/* GPS denied / unavailable */}
         {(gpsState === "denied" || gpsState === "unavailable") && (
@@ -217,86 +236,87 @@ export default function NearbyPage() {
                 </button>
               </div>
             ) : (
-              incidents.map((inc, i) => (
-                <div key={inc.id} className="animate-slide-up" style={{ animationDelay: `${i * 0.05}s` }}>
-                  <Card className="p-4">
-                    <div className="flex items-start gap-3">
-                      {/* Icon / thumbnail */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {incidents.map((inc, i) => (
+                  <div key={inc.id} className="animate-slide-up" style={{ animationDelay: `${i * 0.05}s` }}>
+                    <Card className="overflow-hidden border border-[var(--text-primary)] rounded-none flex flex-col justify-between bg-white h-full">
+                      {/* Post Header */}
+                      <div className="p-3 flex items-center justify-between border-b border-[var(--border)]">
+                        <div className="flex items-center gap-2.5">
+                          <div
+                            className="w-8 h-8 flex items-center justify-center text-white text-xs font-bold border border-[var(--text-primary)]"
+                            style={{ background: "var(--qhali-primary)" }}
+                          >
+                            {inc.public_alias?.[0]?.toUpperCase() ?? "C"}
+                          </div>
+                          <div>
+                            <p className="text-xs font-black leading-none" style={{ color: "var(--text-primary)" }}>{inc.public_alias}</p>
+                            <p className="text-[9px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+                              📍 {formatDistance(inc.distance_meters)} • {formatDate(inc.created_at)}
+                            </p>
+                          </div>
+                        </div>
+                        <StatusBadge status={inc.status} />
+                      </div>
+
+                      {/* Post Image */}
                       {inc.image_url ? (
-                        <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
+                        <div className="relative w-full h-48 bg-gray-100 flex-shrink-0 border-b border-[var(--border)]">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={inc.image_url} alt="" className="w-full h-full object-cover" />
                         </div>
                       ) : (
-                        <div
-                          className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
-                          style={{ background: "var(--bg-primary)", border: "1px solid var(--border-subtle)" }}
-                        >
-                          {CATEGORY_ICONS[inc.category] ?? "📌"}
+                        <div className="w-full h-48 flex-shrink-0 flex flex-col items-center justify-center bg-[var(--bg-primary)] border-b border-[var(--border)] relative overflow-hidden">
+                          <div className="absolute inset-0 opacity-5 bg-[radial-gradient(#FF6B35_1px,transparent_1px)] [background-size:16px_16px]" />
+                          <span className="text-5xl z-10">{CATEGORY_ICONS[inc.category] ?? "📌"}</span>
+                          <span className="text-[10px] uppercase font-bold tracking-widest mt-2 z-10 text-[var(--text-muted)]">#{inc.category}</span>
                         </div>
                       )}
 
-                      <div className="flex-1 min-w-0">
-                        {/* Distance badge + status */}
-                        <div className="flex items-center gap-2 mb-1">
-                          <span
-                            className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                            style={{
-                              background: "var(--qhali-primary-pale)",
-                              color: "var(--qhali-primary)",
-                            }}
-                          >
-                            📍 {formatDistance(inc.distance_meters)}
-                          </span>
-                          <StatusBadge status={inc.status} size="sm" />
-                        </div>
+                      {/* Interaction Bar & Caption */}
+                      <div className="p-3 space-y-2">
+                        {/* Actions */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <button
+                              onClick={() => handleLikeValidate(inc.id, userLat ?? inc.latitude, userLng ?? inc.longitude)}
+                              disabled={validatingId === inc.id}
+                              className="flex items-center gap-1.5 text-xs font-bold hover:text-[var(--qhali-primary)] transition-colors cursor-pointer group"
+                              style={{ color: "var(--text-primary)" }}
+                            >
+                              <span className="text-base group-hover:scale-125 transition-transform duration-100">
+                                {validatingId === inc.id ? "⏳" : "🧡"}
+                              </span>
+                              <span>Validar</span>
+                            </button>
 
-                        {/* Description */}
-                        <p
-                          className="text-sm leading-snug"
-                          style={{ color: "var(--text-primary)" }}
-                        >
-                          {inc.description.length > 80
-                            ? inc.description.slice(0, 80) + "…"
-                            : inc.description}
-                        </p>
+                            <button
+                              onClick={() => handleShareWhatsApp(inc.id, inc.category, inc.description)}
+                              className="flex items-center gap-1.5 text-xs font-bold hover:text-[#25D366] transition-colors cursor-pointer group"
+                              style={{ color: "var(--text-primary)" }}
+                            >
+                              <span className="text-base group-hover:scale-125 transition-transform duration-100">
+                                💬
+                              </span>
+                              <span>Compartir</span>
+                            </button>
+                          </div>
 
-                        {/* Meta row */}
-                        <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                          <span
-                            className="text-[10px] capitalize px-1.5 py-0.5 rounded"
-                            style={{ background: "var(--bg-secondary)", color: "var(--text-muted)" }}
-                          >
-                            {inc.category}
-                          </span>
-                          <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                          <span className="text-[10px] font-bold" style={{ color: "var(--text-muted)" }}>
                             ✓ {inc.validation_count} validaciones
                           </span>
-                          <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                            {formatDate(inc.created_at)}
-                          </span>
-                          <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                            {inc.public_alias}
-                          </span>
                         </div>
 
-                        {/* Validate button */}
-                        <div className="mt-3">
-                          <ValidateButton
-                            incidentId={inc.id}
-                            incidentStatus={inc.status}
-                            userLat={userLat}
-                            userLng={userLng}
-                            onValidated={(count, newStatus) =>
-                              handleValidated(inc.id, count, newStatus)
-                            }
-                          />
-                        </div>
+                        {/* Caption */}
+                        <p className="text-xs leading-normal" style={{ color: "var(--text-primary)" }}>
+                          <span className="font-black mr-1.5">{inc.public_alias}</span>
+                          {inc.description}
+                        </p>
                       </div>
-                    </div>
-                  </Card>
-                </div>
-              ))
+                    </Card>
+                  </div>
+                ))}
+              </div>
             )}
           </>
         )}

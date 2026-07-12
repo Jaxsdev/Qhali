@@ -7,59 +7,58 @@
 
 :root {
   /* ── Superficies ── */
-  --bg-primary:   #F0F5FA;
-  --bg-secondary: #E4ECF4;
+  --bg-primary:   #F4F4F6; /* 60% Dominante: Gris claro / Blanco humo */
+  --bg-secondary: #E5E7EB;
   --bg-card:      #FFFFFF;
-  --bg-elevated:  #F7FAFD;
-  --bg-header:    #FFFFFF;
+  --bg-elevated:  #FFFFFF;
+  --bg-header:    #FFFFFF; /* Cambiado a blanco para eliminar el plomo oscuro */
 
-  /* ── Azul celeste institucional ── */
-  --qhali-primary:       #0284C7;
-  --qhali-primary-hover: #0369A1;
-  --qhali-primary-light: #38BDF8;
-  --qhali-primary-pale:  #E0F2FE;
+  /* ── Naranja vibrante (10% Acento / Alerta) ── */
+  --qhali-primary:       #FF6B35;
+  --qhali-primary-hover: #E05A2B;
+  --qhali-primary-light: #FFA382;
+  --qhali-primary-pale:  #FFF0EB;
 
-  /* ── Naranja formal (acento secundario) ── */
-  --qhali-orange:        #EA580C;
-  --qhali-orange-hover:  #C2410C;
-  --qhali-orange-light:  #FED7AA;
+  --qhali-orange:        #FF6B35;
+  --qhali-orange-hover:  #E05A2B;
+  --qhali-orange-light:  #FFA382;
 
   /* ── Semánticos ── */
-  --color-success: #15803D;
-  --color-warning: #D97706;
-  --color-error:   #DC2626;
+  --color-success: #2C3E50; /* Cambiado de verde neón a color neutro */
+  --color-warning: #FF6B35;
+  --color-error:   #EF4444;
 
   /* ── Texto ── */
-  --text-primary:   #0F172A;
-  --text-secondary: #334155;
-  --text-muted:     #64748B;
+  --text-primary:   #2D3142; /* Gris oscuro / Carbón */
+  --text-secondary: #4B5563;
+  --text-muted:     #9CA3AF;
 
   /* ── Bordes ── */
   --border:        #CBD5E1;
   --border-subtle: #E2E8F0;
 
-  /* ── Status badges ── */
-  --status-pending-bg:    #FEF3C7;
-  --status-pending-text:  #92400E;
-  --status-pending-border:#FDE68A;
+  /* ── Status badges (Sin colores neón) ── */
+  --status-pending-bg:    #F3F4F6;
+  --status-pending-text:  #4B5563;
+  --status-pending-border:#E5E7EB;
 
-  --status-confirmed-bg:    #DCFCE7;
-  --status-confirmed-text:  #166534;
-  --status-confirmed-border:#BBF7D0;
+  --status-confirmed-bg:    #FFF0EB;
+  --status-confirmed-text:  #FF6B35;
+  --status-confirmed-border:#FFA382;
 
-  --status-review-bg:    #E0F2FE;
-  --status-review-text:  #075985;
-  --status-review-border:#BAE6FD;
+  --status-review-bg:    #E5E7EB;
+  --status-review-text:  #2D3142;
+  --status-review-border:#D1D5DB;
 
-  --status-resolved-bg:    #EDE9FE;
-  --status-resolved-text:  #4C1D95;
-  --status-resolved-border:#DDD6FE;
+  --status-resolved-bg:    #2D3142;
+  --status-resolved-text:  #FFFFFF;
+  --status-resolved-border:#2D3142;
 
   /* ── Sombras ── */
-  --shadow-card:    0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
-  --shadow-button:  0 1px 3px rgba(0,0,0,0.15);
-  --shadow-primary: 0 2px 10px rgba(2,132,199,0.3);
-  --shadow-header:  0 1px 0 #CBD5E1;
+  --shadow-card:    none; /* Eliminadas sombras difusas para un look más plano/geométrico */
+  --shadow-button:  none;
+  --shadow-primary: none;
+  --shadow-header:  none;
 
   /* ── Layout ── */
   --bottom-nav-height: 68px;
@@ -86,18 +85,31 @@ body {
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg-secondary); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 0px; }
 
 /* ── Superficies ── */
 .surface-card {
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border);
 }
 
 .surface-header {
   background: var(--bg-header);
-  box-shadow: var(--shadow-header);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary) !important;
+}
+.surface-header h1, 
+.surface-header h2, 
+.surface-header h3, 
+.surface-header p, 
+.surface-header span,
+.surface-header div {
+  color: var(--text-primary) !important;
+}
+.surface-header a,
+.surface-header button {
+  --text-muted: var(--text-muted) !important;
+  --text-primary: var(--text-primary) !important;
 }
 
 /* ── Marca ── */
@@ -152,3 +164,30 @@ body {
 }
 
 .touch-target { min-height: 44px; min-width: 44px; }
+
+/* ── Custom Leaflet Popup Styling ── */
+.leaflet-popup-content-wrapper {
+  background: var(--bg-card, #FFFFFF) !important;
+  color: var(--text-primary, #0F172A) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid var(--border-subtle, #E2E8F0) !important;
+  padding: 4px !important;
+}
+
+.leaflet-popup-content {
+  margin: 8px 12px !important;
+  line-height: inherit !important;
+}
+
+.leaflet-popup-tip {
+  background: var(--bg-card, #FFFFFF) !important;
+  border: 1px solid var(--border-subtle, #E2E8F0) !important;
+  box-shadow: none !important;
+}
+
+.leaflet-popup-close-button {
+  color: var(--text-muted, #64748B) !important;
+  padding: 8px !important;
+}
+

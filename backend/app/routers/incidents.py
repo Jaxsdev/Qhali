@@ -374,3 +374,33 @@ def validate_incident(
         status=incident.status,
         message=msg,
     )
+
+
+# ── DELETE /{incident_id} — Eliminar incidente ───────────────────────────────
+
+@router.delete("/{incident_id}", status_code=status.HTTP_200_OK)
+async def delete_incident(
+    incident_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Elimina un incidente. El creador del incidente o un administrador puede eliminarlo.
+    """
+    incident = db.query(Incident).filter(Incident.id == incident_id).first()
+    if not incident:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Incidente no encontrado.",
+        )
+
+    # Permitir si es el creador o si es administrador
+    if incident.user_id != current_user.id and current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permiso para eliminar este incidente.",
+        )
+
+    db.delete(incident)
+    db.commit()
+    return {"message": "Incidente eliminado exitosamente."}

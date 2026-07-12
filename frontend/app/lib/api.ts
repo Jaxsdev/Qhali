@@ -149,6 +149,16 @@ export const api = {
     return request<IncidentResponse[]>("/incidents/my");
   },
 
+  getIncident(id: number | string) {
+    return request<IncidentResponse>(`/incidents/${id}`);
+  },
+
+  deleteIncident(id: number | string) {
+    return request<{ message: string }>(`/incidents/${id}`, {
+      method: "DELETE",
+    });
+  },
+
   getPublicIncidents(category?: string) {
     const qs = category ? `?category=${encodeURIComponent(category)}` : "";
     return request<IncidentResponse[]>(`/incidents/public${qs}`);
@@ -164,6 +174,12 @@ export const api = {
     return request<ValidateResponse>(`/incidents/${incidentId}/validate`, {
       method: "POST",
       body: JSON.stringify({ latitude, longitude }),
+    });
+  },
+
+  deleteIncident(incidentId: number) {
+    return request<{ message: string }>(`/incidents/${incidentId}`, {
+      method: "DELETE",
     });
   },
 
