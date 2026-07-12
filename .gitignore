@@ -35,3 +35,6 @@ Thumbs.db
 
 # Project specific
 backend/uploads/
+*.db
+.claude/
+

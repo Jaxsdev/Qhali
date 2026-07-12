@@ -1,0 +1,1428 @@
+Perfecto. Vamos con el Sprint 2 más específico, igual que el anterior, pero ya entrando en
+desarrollo real.
+Sprint 2 — Autenticación básica e identidad anónima
+Duración
+1 semana: lunes a viernes
+Objetivo del sprint
+Implementar el primer flujo funcional del MVP: que un ciudadano pueda registrarse, iniciar
+sesión, mantener su sesión activa y ser identificado públicamente mediante un alias
+anónimo, sin exponer su correo ni datos reales.
+Este sprint prepara la base para que en el Sprint 3 el usuario ya pueda reportar incidentes con
+foto, categoría, descripción y GPS.
+Sprint Goal
+Al finalizar el Sprint 2, QHALI debe permitir que un ciudadano cree una cuenta, inicie
+sesión, mantenga sesión persistente y navegue dentro de la PWA usando un alias público
+anónimo generado automáticamente.
+Historias de usuario trabajadas en Sprint 2
+Código
+Historia de usuario
+Prioridad
+HU-01
+Como ciudadano, quiero registrarme con correo y contraseña para 
+acceder a QHALI.
+P0
+HU-02
+Como ciudadano, quiero iniciar sesión para usar las funciones de la 
+plataforma.
+P0
+HU-03
+Como ciudadano, quiero que el sistema me asigne un alias público 
+para proteger mi identidad.
+P0
+HU-04
+Como ciudadano, quiero mantener mi sesión activa para no iniciar 
+sesión cada vez que abra la PWA.
+P0
+
+---PAGE BREAK---
+Código
+Historia de usuario
+Prioridad
+HU-05
+Como ciudadano, quiero cerrar sesión cuando lo decida.
+P1
+Entregables obligatorios del Sprint 2
+Entregable
+Responsable principal
+Estado esperado
+Pantalla de registro
+Frontend PWA
+Funcional
+Pantalla de login
+Frontend PWA
+Funcional
+Endpoint de registro
+Backend/API
+Funcional
+Endpoint de login
+Backend/API
+Funcional
+Endpoint /me
+Backend/API
+Funcional
+Generación de alias anónimo
+GeoData/IA + Backend
+Funcional
+Persistencia de sesión
+Frontend + Backend
+Funcional
+Protección de rutas internas
+Frontend
+Funcional
+Pruebas de autenticación
+Scrum Master / QA
+Ejecutadas
+Historias aceptadas o rechazadas
+Product Owner Técnico
+Cerradas
+Product Backlog seleccionado para Sprint 2
+Código
+Ítem
+Prioridad
+Responsable
+PB-13
+Crear formulario de registro
+P0
+Frontend PWA
+PB-14
+Crear formulario de login
+P0
+Frontend PWA
+PB-15
+Crear endpoint de registro
+P0
+Backend/API
+PB-16
+Crear endpoint de login
+P0
+Backend/API
+PB-17
+Crear modelo definitivo de usuario
+P0
+Backend/API
+PB-18
+Generar alias público automático
+P0
+GeoData/IA + Backend
+PB-19
+Implementar sesión persistente
+P0
+Frontend + Backend
+PB-20
+Crear endpoint /me
+P0
+Backend/API
+PB-21
+Crear botón de cierre de sesión
+P1
+Frontend PWA
+
+---PAGE BREAK---
+Código
+Ítem
+Prioridad
+Responsable
+PB-22
+Probar flujo completo de autenticación
+P0
+Scrum Master / QA
+Lunes — Diseño final del flujo de autenticación
+Objetivo del día
+Cerrar cómo funcionará el registro, login, sesión, alias y navegación protegida antes de
+programar de forma fuerte.
+Persona 1 — Product Owner Técnico
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación
+1
+Revisar HU-01, HU-02, 
+HU-03, HU-04 y HU-05.
+P0
+Historias confirmadas 
+para el sprint.
+Define lo que 
+construirán los 
+demás.
+2
+Validar criterios de 
+aceptación de registro, 
+login, alias y sesión.
+P0
+Criterios listos para QA.
+Base para 
+pruebas del 
+viernes.
+3
+Definir qué datos 
+mínimos tendrá el 
+usuario en MVP.
+P0
+Campos definidos: id, 
+email, password_hash, 
+alias, created_at.
+Guía al 
+Backend/API.
+4
+Confirmar que no se 
+usará DNI ni RENIEC 
+en este sprint.
+P0
+Alcance protegido.
+Evita sobrecarga 
+técnica.
+5
+Revisar con Frontend 
+qué pantallas exactas 
+entran: login, registro, 
+home privada.
+P1
+Flujo visual cerrado.
+Conecta 
+producto con 
+interfaz.
+Persona 2 — Scrum Master / QA Técnico
+
+---PAGE BREAK---
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación
+1
+Crear checklist de 
+prueba para registro.
+P0
+Casos de prueba de 
+registro listos.
+Servirá el jueves y 
+viernes.
+2
+Crear checklist de 
+prueba para login.
+P0
+Casos de prueba de 
+login listos.
+Valida Backend y 
+Frontend.
+3
+Crear checklist de 
+prueba para sesión 
+persistente.
+P0
+Pruebas de 
+recarga/cierre de 
+navegador definidas.
+Relacionado con 
+HU-04.
+4
+Crear checklist de 
+privacidad del alias 
+público.
+P0
+Validación de no 
+exposición del correo.
+Relacionado con 
+seguridad del MVP.
+5
+Actualizar tablero 
+Scrum con tareas del 
+Sprint 2.
+P0
+Sprint Backlog cargado 
+y asignado.
+Controla la 
+ejecución semanal.
+Persona 3 — Developer Frontend PWA
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación
+1
+Revisar pantalla /login  
+creada en Sprint 1.
+P0
+Pantalla lista para 
+convertir en 
+funcional.
+Base del login.
+2
+Crear pantalla /register  si 
+aún no existe.
+P0
+Ruta de registro 
+visible.
+Necesaria para 
+HU-01.
+3
+Definir campos del 
+formulario de registro: 
+correo, contraseña, 
+confirmar contraseña.
+P0
+Formulario 
+estructurado.
+Debe coincidir con 
+Backend.
+4
+Definir campos del 
+formulario de login: correo y 
+contraseña.
+P0
+Formulario 
+estructurado.
+Debe coincidir con 
+endpoint de login.
+5
+Preparar navegación entre 
+login, registro y home.
+P1
+Flujo visual básico.
+Permite probar 
+autenticación.
+
+---PAGE BREAK---
+Persona 4 — Developer Backend/API
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación
+1
+Revisar modelo User  
+creado en Sprint 1.
+P0
+Modelo validado para 
+autenticación.
+Base de la 
+tabla usuarios.
+2
+Definir campos finales del 
+usuario para MVP.
+P0
+id , email , 
+password_hash , 
+alias , created_at .
+Debe coincidir 
+con PO.
+3
+Definir estrategia de 
+contraseña segura.
+P0
+Uso de hash, no texto 
+plano.
+Requisito no 
+funcional de 
+seguridad.
+4
+Definir estrategia de token 
+o sesión.
+P0
+JWT o sesión 
+persistente elegida.
+Base para 
+/me  y rutas 
+privadas.
+5
+Definir errores esperados 
+de auth: usuario existente, 
+contraseña incorrecta, 
+token inválido.
+P1
+Respuestas de error 
+claras.
+Facilita QA y 
+frontend.
+Persona 5 — Developer GeoData/IA
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación
+1
+Diseñar formato de alias 
+anónimo.
+P0
+Ejemplo: 
+Vecino_7K2 , 
+Vecino_45X .
+Base de HU-03.
+2
+Definir regla para evitar 
+alias repetidos.
+P0
+Validación de 
+unicidad.
+Debe integrarse 
+con Backend.
+3
+Crear función lógica de 
+generación de alias.
+P0
+Algoritmo listo para 
+implementar.
+Será usado en 
+registro.
+4
+Definir qué datos del 
+usuario serán públicos y 
+privados.
+P0
+Público: alias. 
+Privado: email.
+Protege 
+identidad.
+5
+Coordinar con Backend 
+dónde se ejecutará la 
+generación del alias.
+P1
+Decisión: backend al 
+registrar usuario.
+Evita duplicación 
+de lógica.
+
+---PAGE BREAK---
+Resultado obligatorio del lunes
+Al cerrar el lunes, debe existir:
+Martes — Construcción de registro y modelo de usuario
+Objetivo del día
+Crear el registro funcional: interfaz, endpoint, modelo de usuario, hash de contraseña y alias
+automático.
+Persona 1 — Product Owner Técnico
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación
+1
+Revisar que el flujo de 
+registro tenga máximo los 
+campos necesarios.
+P0
+Registro simple y 
+no pesado.
+Mantiene 
+usabilidad del 
+MVP.
+2
+Validar mensajes esperados 
+para registro exitoso y 
+registro fallido.
+P1
+Mensajes 
+definidos.
+Guía a Frontend y 
+QA.
+3
+Revisar que el alias se 
+muestre después del registro.
+P0
+Criterio visible 
+definido.
+Conecta backend 
+y frontend.
+4
+Validar que el correo no 
+aparezca en pantallas 
+públicas.
+P0
+Criterio de 
+privacidad 
+reforzado.
+Relacionado con 
+RNF seguridad.
+5
+Actualizar backlog si alguna 
+tarea de auth se vuelve 
+demasiado grande.
+P1
+Backlog ajustado.
+Control de alcance.
+historias del sprint confirmadas
+criterios de aceptación listos
+campos del usuario definidos
+formularios definidos
+estrategia de token/sesión decidida
+lógica de alias anónimo definida
+tablero del sprint actualizado
+
+---PAGE BREAK---
+Persona 2 — Scrum Master / QA Técnico
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación
+1
+Crear casos de prueba 
+para registro válido.
+P0
+Prueba: correo válido + 
+contraseña válida.
+Valida HU-01.
+2
+Crear casos de prueba 
+para correo inválido.
+P0
+Prueba de error en 
+frontend/backend.
+Valida control 
+de errores.
+3
+Crear casos de prueba 
+para correo duplicado.
+P0
+Prueba de usuario ya 
+existente.
+Valida 
+Backend.
+4
+Crear casos de prueba 
+para contraseña débil o 
+vacía.
+P1
+Pruebas de validación de 
+formulario.
+Mejora 
+seguridad 
+básica.
+5
+Revisar avance diario en 
+tablero y registrar 
+bloqueos.
+P0
+Tablero actualizado.
+Control Scrum.
+Persona 3 — Developer Frontend PWA
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación
+1
+Implementar formulario 
+visual de registro en 
+/register .
+P0
+Formulario visible y 
+usable.
+HU-01.
+2
+Agregar validación de 
+campos vacíos.
+P0
+No permite enviar 
+datos incompletos.
+Reduce errores 
+al backend.
+3
+Agregar validación básica 
+de formato de correo.
+P0
+Detecta correo inválido 
+antes de enviar.
+Mejora UX.
+4
+Agregar campo de 
+confirmación de 
+contraseña.
+P1
+Evita errores de 
+escritura.
+Mejora registro.
+5
+Crear estado visual de 
+carga durante registro.
+P1
+Botón muestra 
+“Registrando…”.
+Mejora 
+percepción de 
+calidad.
+
+---PAGE BREAK---
+Persona 4 — Developer Backend/API
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación
+1
+Crear migración o tabla 
+users .
+P0
+Tabla de usuarios 
+creada.
+Base para 
+auth.
+2
+Implementar hash de 
+contraseña.
+P0
+Contraseña segura 
+almacenada como 
+hash.
+RNF seguridad.
+3
+Crear endpoint POST 
+/auth/register .
+P0
+Registro disponible.
+Conecta con 
+Frontend.
+4
+Validar correo duplicado en 
+backend.
+P0
+No permite dos 
+usuarios con el mismo 
+correo.
+Criterio de 
+aceptación.
+5
+Integrar generación de 
+alias al registrar usuario.
+P0
+Usuario creado con 
+alias automático.
+Conecta con 
+Persona 5.
+Persona 5 — Developer GeoData/IA
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación
+1
+Implementar función de 
+generación de alias.
+P0
+Función lista para 
+backend.
+HU-03.
+2
+Probar generación de 
+múltiples alias simulados.
+P0
+No se repiten en 
+pruebas básicas.
+Valida unicidad.
+3
+Definir longitud mínima del 
+sufijo aleatorio.
+P1
+Regla: 3 o 4 
+caracteres 
+alfanuméricos.
+Mejora 
+escalabilidad.
+4
+Coordinar con Backend 
+respuesta del registro 
+incluyendo alias.
+P0
+API devuelve alias al 
+frontend.
+Permite 
+mostrarlo al 
+usuario.
+5
+Documentar regla de alias 
+en archivo técnico.
+P1
+Regla versionada.
+Mantiene 
+trazabilidad.
+Resultado obligatorio del martes
+
+---PAGE BREAK---
+Al cerrar el martes, debe existir:
+Miércoles — Login, token y sesión inicial
+Objetivo del día
+Permitir que un usuario registrado inicie sesión y reciba una sesión/token válido.
+Persona 1 — Product Owner Técnico
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación
+1
+Validar flujo esperado después 
+del login.
+P0
+Usuario debe ir a 
+/home .
+Guía al 
+frontend.
+2
+Validar qué datos debe mostrar 
+la home privada.
+P1
+Alias visible, no 
+correo público.
+Refuerza 
+privacidad.
+3
+Revisar que los errores de 
+login sean comprensibles.
+P1
+Mensajes definidos.
+Mejora UX.
+4
+Confirmar que login no pide 
+datos innecesarios.
+P0
+Solo correo y 
+contraseña.
+Mantiene MVP 
+simple.
+5
+Revisar avance de Sprint 2 
+contra objetivo del sprint.
+P0
+Riesgos 
+detectados 
+temprano.
+Control de 
+alcance.
+Persona 2 — Scrum Master / QA Técnico
+formulario de registro visible
+tabla de usuarios creada
+endpoint de registro creado
+contraseña guardada con hash
+alias generado automáticamente
+pruebas de registro definidas
+
+---PAGE BREAK---
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación
+1
+Crear prueba de login 
+correcto.
+P0
+Usuario válido entra 
+al sistema.
+HU-02.
+2
+Crear prueba de contraseña 
+incorrecta.
+P0
+Sistema rechaza 
+acceso.
+Seguridad 
+básica.
+3
+Crear prueba de correo no 
+registrado.
+P0
+Sistema responde 
+error controlado.
+Calidad 
+backend.
+4
+Crear prueba de token 
+inválido o ausente.
+P1
+Acceso protegido 
+bloqueado.
+Relacionado 
+con /me .
+5
+Revisar tablero y mover 
+tareas a Testing cuando 
+corresponda.
+P0
+Seguimiento real.
+Scrum 
+operativo.
+Persona 3 — Developer Frontend PWA
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación
+1
+Implementar formulario 
+funcional de login.
+P0
+Formulario envía 
+correo y 
+contraseña.
+HU-02.
+2
+Conectar login con 
+endpoint del backend.
+P0
+Login consume 
+API real.
+Integra 
+Frontend/Backend.
+3
+Guardar token o sesión en 
+almacenamiento local 
+seguro según decisión 
+técnica.
+P0
+Sesión persiste 
+temporalmente.
+HU-04.
+4
+Redirigir a /home  después 
+del login exitoso.
+P0
+Flujo funcional.
+UX mínima.
+5
+Mostrar mensajes de error 
+en login fallido.
+P1
+Usuario entiende 
+el problema.
+Mejora pruebas QA.
+Persona 4 — Developer Backend/API
+
+---PAGE BREAK---
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación
+1
+Crear endpoint POST 
+/auth/login .
+P0
+Login disponible.
+HU-02.
+2
+Validar contraseña contra hash 
+almacenado.
+P0
+Autenticación 
+segura.
+Seguridad 
+básica.
+3
+Generar token de sesión o 
+JWT.
+P0
+Token devuelto al 
+frontend.
+Base de rutas 
+protegidas.
+4
+Crear respuesta de login con 
+usuario mínimo: id y alias.
+P0
+Frontend puede 
+mostrar usuario.
+Protege email 
+público.
+5
+Manejar errores de login: 
+credenciales inválidas, usuario 
+inexistente.
+P1
+Respuestas 
+controladas.
+Facilita QA.
+Persona 5 — Developer GeoData/IA
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación
+1
+Verificar que alias esté disponible 
+después del login.
+P0
+Alias llega al 
+frontend.
+HU-03.
+2
+Validar que el alias sea el 
+identificador público del usuario.
+P0
+Confirmación 
+técnica.
+Privacidad.
+3
+Revisar que ningún endpoint 
+público devuelva correo 
+innecesariamente.
+P0
+Privacidad 
+validada.
+RNF 
+seguridad.
+4
+Preparar datos de usuarios falsos 
+para pruebas.
+P1
+Cuentas demo 
+listas.
+Servirá para 
+QA y demo.
+5
+Documentar estructura 
+pública/privada del usuario.
+P1
+Documento 
+actualizado.
+Claridad 
+técnica.
+Resultado obligatorio del miércoles
+Al cerrar el miércoles, debe existir:
+
+---PAGE BREAK---
+Jueves — Sesión persistente, /me , rutas protegidas y
+logout
+Objetivo del día
+Hacer que la sesión se mantenga, que el sistema reconozca al usuario autenticado y que las
+rutas privadas estén protegidas.
+Persona 1 — Product Owner Técnico
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación
+1
+Validar comportamiento al 
+recargar la PWA.
+P0
+Usuario sigue 
+autenticado.
+HU-04.
+2
+Validar comportamiento al 
+cerrar sesión.
+P1
+Usuario vuelve a 
+login.
+HU-05.
+3
+Revisar qué rutas deben ser 
+privadas en MVP.
+P0
+/home , /report , 
+/map , /my-reports .
+Guía frontend.
+4
+Validar que una sesión 
+inválida no permita ingresar.
+P0
+Criterio de seguridad 
+definido.
+Relacionado 
+con QA.
+5
+Revisar si el Sprint 2 llegará 
+completo al viernes.
+P0
+Ajustes si hay 
+retrasos.
+Control del 
+sprint.
+Persona 2 — Scrum Master / QA Técnico
+endpoint de login funcional
+formulario de login conectado
+token o sesión inicial funcionando
+redirección a home
+alias visible tras login
+errores básicos controlados
+
+---PAGE BREAK---
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación
+1
+Probar persistencia de sesión 
+al recargar navegador.
+P0
+Prueba documentada.
+HU-04.
+2
+Probar acceso a rutas 
+privadas sin sesión.
+P0
+Acceso bloqueado.
+Seguridad.
+3
+Probar cierre de sesión.
+P1
+Token eliminado y 
+redirección correcta.
+HU-05.
+4
+Probar endpoint /me  con 
+token válido.
+P0
+Devuelve usuario actual.
+Backend.
+5
+Probar endpoint /me  con 
+token inválido.
+P0
+Devuelve error 
+controlado.
+Seguridad.
+Persona 3 — Developer Frontend PWA
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación
+1
+Implementar protección 
+de rutas privadas.
+P0
+Sin sesión redirige a login.
+HU-04.
+2
+Consumir endpoint /me  
+al cargar la app.
+P0
+Usuario autenticado 
+reconocido.
+Integra 
+backend.
+3
+Mostrar alias del usuario 
+en /home .
+P0
+Alias visible en área 
+privada.
+HU-03.
+4
+Implementar botón de 
+cerrar sesión.
+P1
+Usuario puede salir.
+HU-05.
+5
+Limpiar token/sesión al 
+cerrar sesión.
+P1
+Acceso privado bloqueado 
+después de logout.
+Seguridad 
+mínima.
+Persona 4 — Developer Backend/API
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación
+1
+Crear endpoint GET /auth/me .
+P0
+Devuelve usuario 
+autenticado.
+HU-04.
+
+---PAGE BREAK---
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación
+2
+Crear middleware o 
+dependencia para validar 
+token.
+P0
+Rutas protegidas 
+posibles.
+Seguridad.
+3
+Validar expiración o formato 
+de token.
+P0
+Tokens inválidos 
+rechazados.
+QA.
+4
+Ajustar respuestas para no 
+exponer contraseña ni hash.
+P0
+Respuesta segura.
+RNF 
+privacidad.
+5
+Preparar endpoint o lógica de 
+logout si aplica.
+P1
+Logout definido en 
+frontend o backend.
+HU-05.
+Persona 5 — Developer GeoData/IA
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación
+1
+Revisar que /auth/me  
+devuelva alias correctamente.
+P0
+Alias disponible 
+para interfaz.
+HU-03.
+2
+Verificar que el correo no sea 
+necesario para vistas públicas.
+P0
+Privacidad 
+mantenida.
+RNF seguridad.
+3
+Crear usuarios demo con alias 
+diferenciados.
+P1
+Datos listos para 
+pruebas futuras.
+Servirá Sprint 3 
+y 5.
+4
+Coordinar con QA prueba de 
+privacidad de usuario.
+P0
+Caso probado.
+Evita filtrado de 
+datos.
+5
+Actualizar documentación 
+técnica de identidad anónima.
+P1
+Documento de 
+reglas actualizado.
+Trazabilidad 
+técnica.
+Resultado obligatorio del jueves
+Al cerrar el jueves, debe existir:
+sesión persistente funcionando
+endpoint /auth/me
+rutas privadas protegidas
+alias mostrado en home
+
+---PAGE BREAK---
+Viernes — Pruebas, corrección, review y cierre del sprint
+Objetivo del día
+Cerrar Sprint 2 con el flujo completo de autenticación funcionando desde navegador móvil.
+Persona 1 — Product Owner Técnico
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación
+1
+Revisar HU-01: registro de 
+ciudadano.
+P0
+Historia aceptada 
+o rechazada.
+Cierre Scrum.
+2
+Revisar HU-02: inicio de sesión.
+P0
+Historia aceptada 
+o rechazada.
+Cierre Scrum.
+3
+Revisar HU-03: alias anónimo.
+P0
+Historia aceptada 
+o rechazada.
+Privacidad.
+4
+Revisar HU-04: sesión 
+persistente.
+P0
+Historia aceptada 
+o rechazada.
+Base de futuros 
+sprints.
+5
+Definir qué pasa al Sprint 3: 
+reporte con foto/GPS/categoría.
+P0
+Sprint 3 
+preparado.
+Continuidad del 
+MVP.
+Persona 2 — Scrum Master / QA Técnico
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación
+1
+Ejecutar prueba completa: 
+registro → login → home.
+P0
+Flujo validado.
+Cierre técnico.
+2
+Ejecutar prueba: recargar 
+navegador y mantener sesión.
+P0
+Sesión validada.
+HU-04.
+logout básico
+pruebas de sesión iniciadas
+
+---PAGE BREAK---
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación
+3
+Ejecutar prueba: logout y 
+bloqueo de rutas privadas.
+P1
+Seguridad básica 
+validada.
+HU-05.
+4
+Registrar bugs encontrados y 
+clasificarlos por severidad.
+P0
+Bugs 
+documentados.
+Decide cierre o 
+corrección.
+5
+Realizar retrospectiva corta 
+del Sprint 2.
+P1
+Mejoras para 
+Sprint 3.
+Scrum continuo.
+Persona 3 — Developer Frontend PWA
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación
+1
+Corregir errores visuales del 
+login y registro.
+P0
+Pantallas limpias.
+Demo usable.
+2
+Corregir errores de 
+navegación privada.
+P0
+Rutas protegidas 
+estables.
+QA.
+3
+Verificar funcionamiento en 
+navegador móvil.
+P0
+Prueba móvil 
+exitosa.
+MVP PWA.
+4
+Documentar variables o 
+comandos del frontend.
+P1
+README 
+actualizado.
+Facilita 
+integración.
+5
+Preparar mini demo visual del 
+flujo auth.
+P1
+Evidencia para 
+Sprint Review.
+Presentación.
+Persona 4 — Developer Backend/API
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación
+1
+Corregir errores del endpoint de 
+registro.
+P0
+Registro estable.
+QA.
+2
+Corregir errores del endpoint de 
+login.
+P0
+Login estable.
+QA.
+3
+Corregir errores del endpoint 
+/auth/me .
+P0
+Sesión estable.
+QA.
+
+---PAGE BREAK---
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación
+4
+Revisar que no se devuelva 
+password_hash  en ninguna 
+respuesta.
+P0
+Seguridad validada.
+RNF 
+privacidad.
+5
+Actualizar README backend 
+con endpoints de autenticación.
+P1
+Documentación 
+mínima lista.
+Equipo y 
+demo técnica.
+Persona 5 — Developer GeoData/IA
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación
+1
+Verificar unicidad de alias en 
+varios registros.
+P0
+Alias no repetidos.
+HU-03.
+2
+Verificar que el alias sea 
+visible en home y no el 
+correo.
+P0
+Privacidad demostrada.
+RNF 
+seguridad.
+3
+Preparar usuarios demo 
+para Sprint 3 y Sprint 5.
+P1
+Cuentas listas para 
+reportes y validaciones.
+Continuidad.
+4
+Documentar pruebas de 
+alias anónimo.
+P1
+Evidencia técnica.
+Cierre Sprint 
+2.
+5
+Coordinar con Backend 
+ajuste final si algún alias 
+falla.
+P0
+Generación estable.
+Integración.
+Resultado obligatorio del viernes
+Al cerrar el viernes, el equipo debe poder mostrar:
+1. Usuario nuevo se registra.
+2. El sistema genera alias anónimo automático.
+3. Usuario inicia sesión.
+4. Usuario entra a /home .
+5. La PWA muestra su alias.
+6. Al recargar, la sesión se mantiene.
+7. Si cierra sesión, vuelve al login.
+
+---PAGE BREAK---
+Definition of Done del Sprint 2
+Criterio
+Obligatorio
+Registro funcional desde frontend
+Sí
+Login funcional desde frontend
+Sí
+Usuario guardado en base de datos
+Sí
+Contraseña almacenada con hash
+Sí
+Alias generado automáticamente
+Sí
+Alias visible en home privada
+Sí
+Correo no visible públicamente
+Sí
+Sesión persistente funcionando
+Sí
+Rutas privadas protegidas
+Sí
+Logout básico implementado
+Sí, si alcanza como P1
+Pruebas QA ejecutadas
+Sí
+Bugs críticos corregidos
+Sí
+Sprint Review realizado
+Sí
+Incremento esperado al final del Sprint 2
+8. Si intenta entrar sin sesión a una ruta privada, se bloquea.
+9. El correo no aparece en vistas públicas.
+10. El backend no expone contraseña ni hash.
+QHALI MVP - Incremento Sprint 2
+├── Registro de ciudadano
+├── Inicio de sesión
+├── Alias público anónimo
+├── Sesión persistente
+├── Rutas privadas protegidas
+├── Home privada básica
+├── Logout básico
+├── Endpoint POST /auth/register
+├── Endpoint POST /auth/login
+
+---PAGE BREAK---
+Cierre del Sprint 2
+Sprint Review
+Se debe demostrar este flujo:
+abrir PWA → registrarse → recibir alias → iniciar sesión → entrar a home → recargar
+navegador → mantener sesión → cerrar sesión.
+Retrospectiva
+Preguntas mínimas:
+Resultado final del Sprint 2
+Al terminar este sprint, QHALI ya no será solo una maqueta.
+Tendrá una base funcional de usuarios, necesaria para que en el Sprint 3 cada reporte
+pueda quedar asociado a un ciudadano real internamente, pero visible públicamente solo
+mediante su alias.
+├── Endpoint GET /auth/me
+└── Pruebas funcionales de autenticación
+1. ¿Qué parte de autenticación tomó más tiempo?
+2. ¿Hubo problemas conectando frontend y backend?
+3. ¿La sesión persistente quedó suficientemente estable?
+4. ¿El alias protege correctamente la identidad del usuario?
+5. ¿Qué debe quedar listo antes de empezar reportes con foto y GPS?
+
+---PAGE BREAK---

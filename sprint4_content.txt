@@ -1,0 +1,1174 @@
+Total pages: 28
+Vamos con el Sprint 4 .
+Este sprint debe tomar como entrada directa lo logrado en el Sprint 3: ya existe usuario
+autenticado y ya se pueden crear reportes con foto, categor?a, descripci?n y GPS.
+Ahora el objetivo es que esos reportes se vean y se consulten .
+Sprint 4 ? Mapa ciudadano, detalle de incidente e
+historial privado
+Duraci?n
+1 semana: lunes a viernes
+Objetivo del sprint
+Implementar la visualizaci?n ciudadana de incidentes urbanos mediante un mapa interactivo,
+mostrar los reportes como pines geolocalizados, permitir abrir el detalle de cada incidente y
+habilitar el historial privado de reportes emitidos por el usuario autenticado.
+Este sprint convierte los reportes guardados en informaci?n visible y ?til para el ciudadano.
+Sprint Goal
+Al finalizar el Sprint 4, QHALI debe permitir que el ciudadano visualice incidentes en un
+mapa, abra el detalle de cada reporte y consulte su historial privado de reportes emitidos.
+Historias de usuario trabajadas en Sprint 4
+C?digo Historia de usuario Prioridad
+HU-13 Como ciudadano, quiero ver los incidentes reportados en un mapa 
+para conocer qu? ocurre cerca de mi zona.P0
+HU-14 Como ciudadano, quiero diferenciar los incidentes por estado 
+mediante colores para identificar r?pidamente su situaci?n.P0
+
+C?digo Historia de usuario Prioridad
+HU-15 Como ciudadano, quiero abrir un incidente del mapa para ver su 
+categor?a, descripci?n, foto, fecha, estado y n?mero de validaciones.P0
+HU-16 Como ciudadano, quiero ver una lista privada de mis reportes para 
+conocer su estado actual.P0
+HU-17 Como ciudadano, quiero que el mapa no muestre reportes 
+pendientes antiguos sin confirmaci?n para evitar informaci?n 
+desactualizada.P1
+HU-18 Como ciudadano, quiero que el mapa cargue r?pido en m?vil para 
+usarlo en la calle sin dificultad.P1
+Entregables obligatorios del Sprint 4
+Entregable Responsable principal Estado esperado
+Endpoint GET /incidents/public Backend/API Funcional
+Endpoint GET /incidents/my Backend/API Funcional
+Endpoint GET /incidents/{id} Backend/API Funcional
+Mapa interactivo en /map Frontend PW A Funcional
+Pines por coordenadas Frontend PW A Funcional
+Colores por estado Frontend PW A Funcional
+Modal o tarjeta de detalle Frontend PW A Funcional
+Pantalla /my-reports Frontend PW A Funcional
+Validaci?n de coordenadas para mapa GeoData/IA Funcional
+Dataset de prueba con varios incidentes GeoData/IA Listo
+Pruebas de mapa, detalle e historial Scrum Master / QA Ejecutadas
+Historias aceptadas por PO Product Owner T?cnico Cerradas
+Product Backlog seleccionado para Sprint 4
+
+C?digo ?tem Prioridad Responsable
+PB-35 Crear endpoint p?blico de incidentes 
+visiblesP0 Backend/API
+PB-36 Crear endpoint de historial privado P0 Backend/API
+PB-37 Crear endpoint de detalle de incidente P0 Backend/API
+PB-38 Integrar mapa en /map P0 Frontend PW A
+PB-39 Renderizar pines seg?n coordenadas P0 Frontend PW A
+PB-40 Aplicar colores seg?n estado P0 Frontend PW A
+PB-41 Crear detalle visual del incidente P0 Frontend PW A
+PB-42 Crear pantalla /my-reports P0 Frontend PW A
+PB-43 Preparar datos geogr?ficos para mapa P0 GeoData/IA
+PB-44 Implementar filtro temporal de pendientes 
+antiguosP1 Backend/API + 
+GeoData/IA
+PB-45 Optimizar carga b?sica del mapa P1 Frontend PW A
+PB-46 Probar mapa, detalle e historial P0 Scrum Master / QA
+Reglas t?cnicas del Sprint 4
+Datos m?nimos que debe devolver un incidente p?blico
+Estados y colores inicialesincident_id
+category
+description
+image_url
+latitude
+longitude
+status
+created_at
+public_alias
+validation_count
+Pendiente   ? gris
+Confirmado  ? rojo
+
+Reglas de visibilidad p?blica
+Historial privado del usuario
+Debe mostrar solo reportes donde:
+Lunes ? Definici?n final del mapa, endpoints y datos
+visibles
+Objetivo del d?a
+Cerrar qu? informaci?n se mostrar? en el mapa, qu? datos ser?n p?blicos, qu? datos ser?n
+privados y qu? endpoints necesita construir el backend.
+Persona 1 ? Product Owner T?cnico
+N.? Tarea Prioridad Resultado esperado Relaci?n 
+secuencial
+1 Revisar historias HU-13 a 
+HU-18 y confirmar cu?les 
+son obligatorias para Sprint 
+4.P0 Historias confirmadas. Define el 
+alcance exacto.
+2 Definir qu? datos se 
+mostrar?n en el pin del 
+mapa.P0 Pin muestra estado y 
+categor?a como 
+m?nimo.Gu?a al 
+Frontend.En revisi?n ? azul
+Resuelto    ? verde
+1. Mostrar incidentes pendientes recientes.
+2. Mostrar incidentes confirmados, en revisi?n y resueltos.
+3. Ocultar incidentes pendientes con m?s de 24 horas si no tienen
+validaciones.
+4. No mostrar correo, user_id ni datos privados del ciudadano.
+incident.user_id = usuario_autenticado.id
+
+N.? Tarea Prioridad Resultado esperado Relaci?n 
+secuencial
+3 Definir qu? datos se 
+mostrar?n en el detalle del 
+incidente.P0 Categor?a, 
+descripci?n, foto, 
+fecha, estado y 
+validaciones.Gu?a al 
+Frontend y 
+Backend.
+4 Definir qu? datos estar?n 
+prohibidos en vistas 
+p?blicas.P0 No mostrar correo, 
+user_id, datos 
+privados.Gu?a a 
+Backend y QA.
+5 Definir colores oficiales por 
+estado.P0 Gris, rojo, azul y verde 
+aprobados.Frontend los 
+implementa.
+6 Definir si el filtro de 24 
+horas entra como P1 o se 
+posterga.P1 Decisi?n de alcance 
+cerrada.Evita retrasos.
+7 Validar que el sprint no 
+incluya todav?a validaci?n 
+cruzada ciudadana.P0 Alcance protegido. Eso queda 
+para Sprint 5.
+8 Actualizar criterios de 
+aceptaci?n de mapa, 
+detalle e historial.P0 Criterios listos para 
+QA.QA los usar? 
+desde martes.
+Persona 2 ? Scrum Master / QA T?cnico
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Crear checklist de prueba 
+para endpoint p?blico de 
+incidentes.P0 Casos API 
+definidos.Depende de reglas 
+del PO.
+2 Crear checklist de prueba 
+para mapa con pines.P0 Casos UI 
+definidos.Se usar? 
+mi?rcoles/jueves.
+3 Crear checklist de prueba 
+para colores por estado.P0 Validaci?n visual 
+definida.Depende de 
+colores oficiales.
+4 Crear checklist de prueba 
+para detalle de incidente.P0 Casos de 
+modal/tarjeta 
+definidos.Se usar? jueves.
+5 Crear checklist de prueba 
+para historial privado.P0 Casos de 
+privacidad 
+definidos.Se usar? 
+jueves/viernes.
+
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+6 Crear prueba de seguridad: 
+usuario A no ve historial 
+privado de usuario B.P0 Caso de prueba 
+definido.Depende de 
+/incidents/my.
+7 Crear prueba de privacidad: 
+endpoints p?blicos no 
+devuelven correo ni 
+user_id.P0 Caso de prueba 
+definido.Protege identidad.
+8 Actualizar tablero Scrum 
+con tareas del Sprint 4.P0 Sprint Backlog 
+cargado.Control semanal.
+Persona 3 ? Developer Frontend PWA
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Revisar pantalla /map creada 
+en Sprint 1.P0 Base 
+identificada.Punto de partida.
+2 Elegir o confirmar librer?a de 
+mapa: Leaflet, Mapbox u otra.P0 Librer?a definida. Impacta 
+implementaci?n.
+3 Preparar layout m?vil de la 
+pantalla de mapa.P0 Contenedor 
+visible y 
+responsive.Base para los 
+pines.
+4 Crear componente 
+IncidentMap.P0 Componente 
+principal creado.Ser? alimentado 
+por API.
+5 Crear componente 
+IncidentMarker.P0 Pin reutilizable 
+preparado.Depende de 
+estados y colores.
+6 Crear componente 
+IncidentDetailModal.P0 Modal 
+preparado.Se conectar? el 
+mi?rcoles/jueves.
+7 Crear estructura visual inicial 
+de /my-reports.P0 Pantalla de 
+historial 
+preparada.Se conectar? con 
+API.
+8 Definir estado local para lista 
+de incidentes: loading, error , 
+data.P1 Estados UI 
+listos.Mejora integraci?n.
+
+Persona 4 ? Developer Backend/API
+N.? Tarea Prioridad Resultado esperado Relaci?n 
+secuencial
+1 Revisar modelo Incident 
+generado en Sprint 3.P0 Modelo listo para 
+consulta.Base de 
+endpoints.
+2 Definir contrato de GET 
+/incidents/public.P0 Response p?blica 
+definida.Frontend 
+consumir? 
+este endpoint.
+3 Definir contrato de GET 
+/incidents/my.P0 Response privada 
+definida.Historial 
+depende de 
+esto.
+4 Definir contrato de GET 
+/incidents/{id}.P0 Response de detalle 
+definida.Modal 
+depende de 
+esto.
+5 Definir qu? campos p?blicos 
+se devolver?n.P0 Sin correo ni datos 
+privados.Depende de 
+PO y QA.
+6 Definir forma de contar 
+validaciones aunque a?n no 
+existan.P1validation_count = 
+0 temporal.Prepara Sprint 
+5.
+7 Definir filtro inicial de 
+visibilidad p?blica.P0 Pendientes y activos 
+visibles.Base del 
+mapa.
+8 Preparar consultas base 
+para listar incidentes por 
+fecha descendente.P1 Orden inicial definido. Mejora UX.
+Persona 5 ? Developer GeoData/IA
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Revisar reportes creados en 
+Sprint 3 y verificar 
+coordenadas completas.P0 Datos v?lidos para 
+mapa.Base de 
+visualizaci?n.
+2 Preparar dataset de m?nimo 
+8 incidentes simulados en 
+Huancayo.P0 Datos suficientes 
+para probar mapa.Frontend y QA  lo 
+usar?n.
+
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+3 Definir coordenadas de 
+prueba distribuidas en 
+diferentes puntos.P0 Pins no quedan 
+superpuestos.Mejora prueba 
+visual.
+4 Definir estructura geogr?fica 
+que necesita el frontend: 
+latitud, longitud, estado.P0 Formato 
+confirmado.Backend debe 
+devolverlo.
+5 Revisar si las coordenadas 
+se devuelven como n?mero y 
+no como texto.P0 Formato 
+consistente.Evita errores en 
+mapa.
+6 Definir regla del filtro 
+temporal de pendientes 
+antiguos.P1 Regla 
+documentada.Si entra, backend 
+la implementa.
+7 Preparar casos de 
+coordenadas nulas para QA.P1 Casos negativos 
+definidos.Evita errores de 
+render .
+8 Coordinar con Backend la 
+salida geogr?fica del 
+endpoint p?blico.P0 Contrato geo 
+cerrado.Frontend 
+depende de esto.
+Resultado obligatorio del lunes
+Al cerrar lunes debe existir:
+Martes ? Endpoints de consulta y estructura visual del
+mapahistorias del Sprint 4 confirmadas
+datos visibles y privados definidos
+contratos de endpoints definidos
+colores por estado definidos
+componentes frontend planificados
+dataset geogr?fico de prueba planificado
+checklist QA  preparado
+tablero Sprint 4 actualizado
+
+Objetivo del d?a
+Construir los endpoints principales de consulta y dejar el mapa visualmente preparado para
+recibir datos reales.
+Persona 1 ? Product Owner T?cnico
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Revisar que GET 
+/incidents/public no exponga 
+datos privados.P0 Criterio de 
+privacidad 
+validado.Depende del 
+backend.
+2 Revisar que la pantalla de mapa 
+tenga estructura comprensible 
+para el ciudadano.P0 Layout aprobado 
+o ajustes 
+indicados.Depende del 
+frontend.
+3 Revisar que /my-reports no 
+parezca dashboard 
+administrativo.P1 Historial 
+ciudadano claro.Evita 
+confusi?n de 
+roles.
+4 Validar textos de estados: 
+Pendiente, Confirmado, En 
+revisi?n, Resuelto.P0 Nomenclatura 
+final.Frontend los 
+muestra.
+5 Definir mensaje cuando no 
+existan incidentes en el mapa.P1 Texto aprobado. Frontend lo 
+implementa.
+6 Definir mensaje cuando el 
+usuario no tenga reportes 
+propios.P1 Texto aprobado. Frontend lo 
+implementa.
+7 Revisar avance contra Sprint 
+Goal.P0 Riesgos 
+detectados 
+temprano.Control de 
+sprint.
+8 Confirmar que no se 
+implementen a?n validaciones 
+ciudadanas.P0 Alcance protegido. Mantiene 
+secuencia.
+Persona 2 ? Scrum Master / QA T?cnico
+
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Probar GET 
+/incidents/public desde 
+Postman/Swagger .P0 Lista p?blica 
+responde.Depende de 
+Backend.
+2 Verificar que el endpoint p?blico 
+devuelva coordenadas.P0 Latitud/longitud 
+presentes.Necesario 
+para mapa.
+3 Verificar que el endpoint p?blico 
+no devuelva email.P0 Privacidad validada. RNF 
+seguridad.
+4 Verificar que el endpoint p?blico 
+no devuelva password_hash.P0 Seguridad validada. Obligatorio.
+5 Probar GET /incidents/my sin 
+token.P0 Acceso rechazado. Seguridad.
+6 Probar GET /incidents/my con 
+token v?lido.P0 Devuelve reportes 
+del usuario.Historial.
+7 Actualizar tablero con bugs de 
+endpoints.P0 Bugs visibles. Correcci?n 
+mi?rcoles.
+8 Preparar prueba visual de mapa 
+para mi?rcoles.P1 Casos listos. Depende de 
+frontend.
+Persona 3 ? Developer Frontend PWA
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Instalar/configurar librer?a de 
+mapa seleccionada.P0 Librer?a 
+funcionando.Base de 
+/map.
+2 Renderizar mapa centrado en 
+Huancayo o ubicaci?n inicial 
+definida.P0 Mapa visible. Primer avance 
+visual.
+3 Crear estado para almacenar 
+incidentes recibidos de API.P0incidents[] 
+preparado.Se usar? 
+mi?rcoles.
+4 Crear funci?n 
+fetchPublicIncidents().P0 Funci?n lista 
+para consumir 
+API.Depende de 
+endpoint.
+5 Crear placeholder de carga del 
+mapa.P1 Loading visible. Mejora UX.
+
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+6 Crear placeholder de error al 
+cargar incidentes.P1 Error controlado. Ayuda QA.
+7 Crear estructura visual de tarjeta 
+de historial en /my-reports.P0 Tarjeta lista. Se llenar? con 
+API.
+8 Definir estilos base de colores por 
+estado en frontend.P0 Mapa visual 
+preparado.Depende de 
+estados 
+oficiales.
+Persona 4 ? Developer Backend/API
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Implementar GET 
+/incidents/public.P0 Endpoint 
+funcional.Base del mapa.
+2 Filtrar campos privados en 
+respuesta p?blica.P0 No devuelve 
+email ni datos 
+sensibles.Seguridad.
+3 Incluir public_alias en 
+respuesta p?blica.P0 Identidad 
+an?nima visible.Depende de 
+usuarios Sprint 
+2.
+4 Incluir latitude y longitude 
+en respuesta p?blica.P0 Mapa puede 
+renderizar pines.Depende de 
+Sprint 3.
+5 Incluir status, category, 
+created_at, image_url.P0 Detalle b?sico 
+disponible.Frontend lo 
+consume.
+6 Implementar GET /incidents/my 
+protegido por token.P0 Historial privado 
+funcional.Requiere auth.
+7 Asegurar que /incidents/my 
+solo devuelva reportes del 
+usuario autenticado.P0 Privacidad 
+interna.QA lo probar?.
+8 Documentar ambos endpoints en 
+Swagger/README.P1 Contrato visible. Facilita 
+integraci?n.
+
+Persona 5 ? Developer GeoData/IA
+N.? Tarea Prioridad Resultado esperado Relaci?n 
+secuencial
+1 Insertar o preparar m?nimo 8 
+incidentes de prueba con 
+coordenadas.P0 Datos visibles en 
+mapa.Frontend los 
+usar?.
+2 Verificar que todos los 
+incidentes tengan latitud y 
+longitud v?lidas.P0 No hay errores de 
+mapa.QA lo verifica.
+3 Verificar que los datos de 
+prueba tengan diferentes 
+estados.P0 Permite probar 
+colores.Depende de 
+backend.
+4 Verificar que los datos de 
+prueba tengan diferentes 
+categor?as.P1 Permite probar filtros 
+futuros.?til para 
+dashboard.
+5 Revisar que coordenadas 
+sean num?ricas.P0 Compatibilidad con 
+librer?a de mapa.Evita errores 
+frontend.
+6 Probar manualmente si las 
+coordenadas aparecen 
+dentro de Huancayo.P0 Pines coherentes. Mejora demo.
+7 Preparar caso de incidente 
+con coordenadas inv?lidas 
+para QA.P1 Caso negativo listo. No debe 
+renderizarse.
+8 Coordinar con Backend 
+orden de salida de incidentes 
+para mapa.P1 Fecha descendente 
+o prioridad b?sica.Mejora 
+visualizaci?n.
+Resultado obligatorio del martes
+Al cerrar martes debe existir:
+GET /incidents/public funcional
+GET /incidents/my funcional
+mapa renderizado en /map
+dataset m?nimo de incidentes geolocalizados
+estructura visual de historial
+pruebas iniciales de endpoints
+
+Mi?rcoles ? Pines reales, detalle de incidente y
+endpoint individual
+Objetivo del d?a
+Conectar los datos reales del backend al mapa, renderizar pines y permitir abrir el detalle de un
+incidente.
+Persona 1 ? Product Owner T?cnico
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n secuencial
+1 Revisar que los pines 
+representen claramente 
+los incidentes.P0 Pines 
+comprensibles.Depende de 
+Frontend.
+2 Validar que los colores 
+por estado se entiendan 
+visualmente.P0 Colores aceptados. Depende de 
+Frontend.
+3 Revisar contenido del 
+modal de detalle.P0 Informaci?n 
+suficiente pero no 
+saturada.Depende de 
+Frontend/Backend.
+4 Validar que el alias 
+p?blico sea visible si se 
+muestra autor .P0 Privacidad 
+mantenida.Depende de 
+Backend.
+5 Validar que la foto del 
+incidente se vea 
+correctamente en detalle.P0 Evidencia visible. Depende de Sprint 3.
+6 Definir si detalle usa 
+datos del endpoint 
+p?blico o endpoint 
+individual.P0 Decisi?n cerrada. Afecta 
+Frontend/Backend.
+7 Revisar si el mapa debe 
+mostrar todos los 
+incidentes o solo activos.P1 Regla de visibilidad 
+ajustada.Backend la aplica.privacidad b?sica verificada
+
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n secuencial
+8 Actualizar criterios de 
+aceptaci?n si cambia la 
+vista de detalle.P0 QA sincronizado. Evita pruebas 
+incorrectas.
+Persona 2 ? Scrum Master / QA T?cnico
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Probar que el mapa cargue 
+incidentes reales desde API.P0 Datos visibles. Depende de 
+integraci?n.
+2 Probar que cada pin est? en 
+coordenadas correctas.P0 Ubicaci?n 
+validada.Depende de 
+GeoData.
+3 Probar que el color del pin 
+coincida con el estado.P0 Estados 
+visualmente 
+correctos.Depende de 
+Frontend.
+4 Probar que al hacer clic en un pin 
+se abra detalle.P0 Modal funcional. Depende de 
+Frontend.
+5 Probar que el detalle muestre 
+categor?a, descripci?n, foto, fecha 
+y estado.P0 Informaci?n 
+completa.Depende de 
+Backend.
+6 Probar que el detalle no muestre 
+correo ni datos privados.P0 Privacidad 
+validada.Obligatorio.
+7 Probar GET /incidents/{id} 
+con ID v?lido.P0 Detalle responde. Depende de 
+Backend.
+8 Probar GET /incidents/{id} 
+con ID inexistente.P1 Error controlado. Calidad API.
+Persona 3 ? Developer Frontend PWA
+
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Conectar 
+fetchPublicIncidents() con 
+GET /incidents/public.P0 Incidentes llegan 
+al frontend.Depende de 
+Backend.
+2 Renderizar pines reales usando 
+latitud y longitud.P0 Pines aparecen 
+en mapa.Depende de 
+datos v?lidos.
+3 Aplicar colores por estado a cada 
+pin.P0 Diferenciaci?n 
+visual activa.Depende de 
+estados.
+4 Implementar evento click/tap 
+sobre pin.P0 Usuario puede 
+abrir detalle.Base del 
+modal.
+5 Conectar IncidentDetailModal 
+con datos del incidente.P0 Modal muestra 
+informaci?n 
+b?sica.Depende de 
+API.
+6 Mostrar imagen del incidente 
+dentro del modal.P0 Evidencia visible. Depende de 
+image_url.
+7 Mostrar estado, categor?a, fecha y 
+alias en el modal.P0 Detalle completo. Depende de 
+contrato API.
+8 Manejar error si el incidente no 
+tiene imagen o coordenadas 
+v?lidas.P1 UI no se rompe. Calidad visual.
+9 Ajustar mapa para navegaci?n 
+m?vil t?ctil.P1 Mejor experiencia 
+m?vil.PWA.
+Persona 4 ? Developer Backend/API
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Implementar GET 
+/incidents/{id}.P0 Endpoint de 
+detalle funcional.Base del modal 
+si se usa.
+2 Proteger campos sensibles en 
+endpoint de detalle.P0 No expone 
+correo, hash ni 
+datos privados.Seguridad.
+
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+3 Devolver datos completos del 
+incidente: categor?a, 
+descripci?n, foto, estado, fecha, 
+alias.P0 Modal puede 
+completarse.Frontend 
+depende de 
+esto.
+4 Agregar validation_count 
+temporal con valor 0 si a?n no 
+hay validaciones.P1 Preparado para 
+Sprint 5.Continuidad.
+5 Manejar error 404 si el 
+incidente no existe.P1 Error controlado. QA lo probar?.
+6 Revisar formato de fecha para 
+frontend.P1 Fecha legible o 
+parseable.Mejora visual.
+7 Ajustar GET 
+/incidents/public si faltan 
+campos para los pines.P0 Frontend no 
+necesita 
+llamadas 
+innecesarias.Optimizaci?n.
+8 Documentar GET 
+/incidents/{id}.P1 Contrato 
+actualizado.Mantenibilidad.
+Persona 5 ? Developer GeoData/IA
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Verificar que los pines se 
+ubiquen correctamente en el 
+mapa.P0 Coordenadas 
+visualmente 
+correctas.Depende de 
+Frontend.
+2 Ajustar dataset si los pines 
+quedan fuera del ?rea 
+esperada.P0 Datos corregidos. Mejora demo.
+3 Verificar que incidentes con 
+coordenadas nulas no se 
+devuelvan o no se rendericen.P0 Evita errores 
+visuales.Coordina con 
+Backend.
+4 Probar incidentes con estados 
+distintos para confirmar colores.P0 Colores testeables. Depende de 
+Frontend.
+5 Preparar datos de prueba para 
+historial del usuario actual.P1 Usuario tiene 
+reportes propios.Servir? jueves.
+
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+6 Revisar si existe precisi?n 
+suficiente para diferenciar 
+varios pines cercanos.P1 Problemas 
+detectados.Mejora mapa.
+7 Documentar coordenadas 
+usadas para demo.P1 Dataset trazable. Facilita 
+presentaci?n.
+8 Coordinar con QA  los casos de 
+coordenadas problem?ticas.P0 Casos cerrados. Control de 
+calidad.
+Resultado obligatorio del mi?rcoles
+Al cerrar mi?rcoles debe existir:
+Jueves ? Historial privado, filtros de visibilidad y
+estabilizaci?n
+Objetivo del d?a
+Completar el historial privado del usuario, estabilizar el mapa y aplicar reglas b?sicas de
+visibilidad.
+Persona 1 ? Product Owner T?cnicomapa consumiendo API real
+pines renderizados por coordenadas
+colores por estado funcionando
+detalle de incidente visible
+imagen visible en detalle
+endpoint GET /incidents/{id} funcional
+pruebas de privacidad y detalle iniciadas
+
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Revisar pantalla /my-
+reports desde 
+perspectiva del 
+ciudadano.P0 Historial aceptable. Depende de 
+Frontend.
+2 Validar que el historial 
+muestre solo reportes 
+propios.P0 Privacidad funcional. Depende de 
+Backend/QA.
+3 Definir orden del 
+historial: m?s recientes 
+primero.P0 Regla aprobada. Backend/Frontend 
+la aplican.
+4 Revisar tarjeta de 
+reporte del historial.P0 Debe mostrar 
+categor?a, estado, 
+fecha y foto 
+peque?a.Gu?a a Frontend.
+5 Validar si entra filtro 
+temporal de 24 horas en 
+este sprint.P1 Decisi?n cerrada. Si no, queda 
+pendiente.
+6 Revisar que el mapa no 
+se sobrecargue 
+visualmente.P1 Ajustes visuales 
+definidos.Frontend los aplica.
+7 Confirmar que no se 
+agregue todav?a 
+dashboard administrativo.P0 Alcance protegido. Sprint 6.
+8 Preparar historias para 
+aceptaci?n del viernes.P0 Cierre del sprint 
+preparado.PO listo para review .
+Persona 2 ? Scrum Master / QA T?cnico
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n secuencial
+1 Probar /my-reports con 
+usuario que tiene reportes.P0 Historial 
+muestra datos.Depende de 
+Backend/Frontend.
+2 Probar /my-reports con 
+usuario sin reportes.P1 Mensaje vac?o 
+correcto.UX.
+
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n secuencial
+3 Probar que usuario A no 
+vea reportes privados de 
+usuario B.P0 Privacidad 
+validada.Cr?tico.
+4 Probar orden por fecha 
+descendente.P0 M?s recientes 
+primero.Depende de regla 
+PO.
+5 Probar que los estados se 
+muestren igual que en 
+mapa.P0 Consistencia 
+visual.Frontend.
+6 Probar filtro de 24 horas si 
+fue implementado.P1 Pendientes 
+antiguos ocultos.Backend/GeoData.
+7 Ejecutar prueba completa: 
+crear reporte ? verlo en 
+mapa ? verlo en historial.P0 Flujo completo 
+validado.Integra Sprint 3 y 4.
+8 Clasificar bugs en cr?ticos, 
+medios y menores.P0 Correcciones 
+priorizadas.Cierre viernes.
+9 Actualizar tablero con 
+evidencias de pruebas.P1 QA 
+documentado.Sprint Review .
+Persona 3 ? Developer Frontend PWA
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Conectar /my-reports con 
+GET /incidents/my.P0 Historial 
+consume API 
+real.Depende de 
+Backend.
+2 Renderizar tarjetas de reportes 
+propios.P0 Lista visible. Depende de 
+datos.
+3 Mostrar categor?a, estado, 
+fecha y miniatura de imagen en 
+historial.P0 Informaci?n 
+m?nima visible.PO lo valida.
+4 Mostrar mensaje si el usuario 
+no tiene reportes.P1 Estado vac?o 
+controlado.Mejora UX.
+5 Implementar navegaci?n desde 
+una tarjeta de historial hacia 
+detalle.P1 Usuario puede 
+revisar reporte.Reutiliza modal o 
+vista detalle.
+
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+6 Corregir errores visuales del 
+mapa detectados por QA.P0 Mapa estable. Depende de 
+pruebas.
+7 Corregir errores del modal de 
+detalle detectados por QA.P0 Detalle estable. Depende de 
+pruebas.
+8 Optimizar renderizado b?sico 
+de pines si hay varios 
+incidentes.P1 Mapa m?s fluido. RNF rendimiento.
+9 Asegurar que /map y /my-
+reports sean rutas protegidas.P0 Sin sesi?n 
+redirige a login.Depende Sprint 
+2.
+Persona 4 ? Developer Backend/API
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Ajustar GET /incidents/my 
+para ordenar por fecha 
+descendente.P0 Historial correcto. Depende de 
+PO.
+2 Verificar que GET 
+/incidents/my use usuario del 
+token, no par?metro externo.P0 Privacidad 
+segura.QA lo probar?.
+3 Corregir errores de GET 
+/incidents/public.P0 Mapa estable. Depende de 
+QA.
+4 Corregir errores de GET 
+/incidents/{id}.P0 Detalle estable. Depende de 
+QA.
+5 Aplicar filtro de 24 horas para 
+pendientes antiguos si fue 
+aprobado.P1 Visibilidad p?blica 
+ajustada.Depende de 
+PO/GeoData.
+6 Revisar que ning?n endpoint 
+devuelva password_hash.P0 Seguridad 
+cerrada.Cr?tico.
+7 Revisar que ning?n endpoint 
+p?blico devuelva user_id si no 
+es necesario.P0 Privacidad 
+cerrada.Cr?tico.
+8 Mejorar manejo de errores de 
+endpoints de consulta.P1 Errores 
+controlados.Calidad API.
+
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+9 Actualizar documentaci?n API 
+con endpoints de consulta.P1 Documentaci?n 
+lista.Cierre t?cnico.
+Persona 5 ? Developer GeoData/IA
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Verificar datos del historial 
+privado con coordenadas 
+reales.P0 Reportes propios 
+correctos.Depende de 
+Backend.
+2 Validar que los incidentes 
+p?blicos no tengan 
+coordenadas nulas.P0 Mapa estable. Cr?tico.
+3 Ayudar a implementar regla de 
+pendientes antiguos si entra 
+como P1.P1 Filtro temporal 
+correcto.Depende de 
+PO.
+4 Confirmar que los reportes 
+creados en Sprint 3 aparecen 
+en mapa.P0 Continuidad 
+validada.Flujo completo.
+5 Confirmar que los reportes 
+creados en Sprint 3 aparecen 
+en historial del creador .P0 Trazabilidad 
+validada.Flujo completo.
+6 Revisar problemas de pines 
+superpuestos.P1 Observaciones 
+documentadas.Mejora visual 
+futura.
+7 Preparar dataset final para la 
+demo del Sprint 4.P1 Datos limpios para 
+Review .Apoya 
+presentaci?n.
+8 Coordinar con Frontend si 
+alg?n punto no se muestra 
+correctamente.P0 Ajustes de 
+coordenadas 
+realizados.Correcci?n 
+directa.
+9 Documentar reglas 
+geogr?ficas usadas en mapa.P1 Trazabilidad t?cnica. Cierre sprint.
+Resultado obligatorio del jueves
+
+Al cerrar jueves debe existir:
+Viernes ? Pruebas finales, Sprint Review y cierre
+Objetivo del d?a
+Cerrar el Sprint 4 con una demo funcional donde el usuario pueda crear un reporte, verlo en el
+mapa, abrir su detalle y consultarlo en su historial privado.
+Persona 1 ? Product Owner T?cnico
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Revisar HU-13: ver incidentes 
+en mapa.P0 Historia aceptada o 
+rechazada.Cierre 
+funcional.
+2 Revisar HU-14: colores por 
+estado.P0 Historia aceptada o 
+rechazada.Cierre 
+funcional.
+3 Revisar HU-15: detalle de 
+incidente.P0 Historia aceptada o 
+rechazada.Cierre 
+funcional.
+4 Revisar HU-16: historial 
+privado.P0 Historia aceptada o 
+rechazada.Cierre 
+funcional.
+5 Revisar HU-17: filtro temporal 
+si fue implementado.P1 Aceptada, 
+rechazada o 
+trasladada.Control de 
+alcance.
+6 Validar que los datos privados 
+no aparezcan en la demo.P0 Privacidad 
+aprobada.Obligatorio.
+7 Definir entrada del Sprint 5: 
+validaci?n ciudadana cercana.P0 Sprint 5 preparado. Continuidad.historial privado funcional
+mapa estable con datos reales
+detalle de incidente estable
+rutas protegidas
+privacidad verificada
+flujo crear reporte ? verlo en mapa ? verlo en historial funcionando
+bugs cr?ticos identificados y en correcci?n
+
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+8 Aprobar o rechazar el 
+incremento del Sprint 4.P0 Cierre formal. Scrum Review .
+Persona 2 ? Scrum Master / QA T?cnico
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Ejecutar prueba completa: login ? 
+crear reporte ? ver en mapa.P0 Flujo validado. Cierre central.
+2 Ejecutar prueba: abrir detalle desde 
+pin.P0 Modal validado. HU-15.
+3 Ejecutar prueba: ver reporte en 
+historial privado.P0 Historial 
+validado.HU-16.
+4 Ejecutar prueba: usuario sin sesi?n 
+no entra a /map.P0 Ruta protegida. Seguridad.
+5 Ejecutar prueba: usuario sin sesi?n 
+no entra a /my-reports.P0 Ruta protegida. Seguridad.
+6 Ejecutar prueba: endpoint p?blico 
+no expone datos privados.P0 Privacidad 
+validada.Cr?tico.
+7 Ejecutar prueba: historial de usuario 
+A no muestra reportes de usuario B.P0 Privacidad 
+validada.Cr?tico.
+8 Registrar bugs finales y confirmar si 
+son bloqueantes o no.P0 Criterio de 
+cierre claro.Sprint Review .
+9 Realizar retrospectiva del Sprint 4. P1 Mejoras 
+registradas.Prepara Sprint 
+5.
+Persona 3 ? Developer Frontend PWA
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Corregir bugs cr?ticos de 
+/map.P0 Mapa estable. Depende de QA.
+
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+2 Corregir bugs cr?ticos de 
+pines.P0 Pines visibles y 
+correctos.Depende de QA.
+3 Corregir bugs cr?ticos del 
+modal de detalle.P0 Detalle estable. Depende de QA.
+4 Corregir bugs cr?ticos de /my-
+reports.P0 Historial estable. Depende de QA.
+5 Verificar funcionamiento en 
+navegador m?vil.P0 PWA usable. MVP  m?vil.
+6 Mejorar mensaje de carga y 
+error en mapa.P1 UX m?s clara. Pulido.
+7 Preparar demo visual del flujo 
+mapa e historial.P1 Evidencia para 
+Review .Presentaci?n.
+8 Actualizar README frontend 
+con dependencias de mapa.P1 Documentaci?n 
+m?nima.Mantenibilidad.
+Persona 4 ? Developer Backend/API
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Corregir bugs cr?ticos de GET 
+/incidents/public.P0 Endpoint estable. Depende de 
+QA.
+2 Corregir bugs cr?ticos de GET 
+/incidents/my.P0 Historial estable. Depende de 
+QA.
+3 Corregir bugs cr?ticos de GET 
+/incidents/{id}.P0 Detalle estable. Depende de 
+QA.
+4 Verificar respuesta p?blica final 
+campo por campo.P0 Sin datos privados. Seguridad.
+5 Verificar respuesta privada final 
+campo por campo.P0 Solo datos del 
+usuario autenticado.Seguridad.
+6 Confirmar que todos los 
+endpoints protegidos exijan 
+token.P0 Acceso controlado. Seguridad.
+7 Actualizar documentaci?n API 
+final del Sprint 4.P1 Endpoints 
+documentados.Cierre t?cnico.
+
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+8 Preparar base para endpoint 
+de validaci?n del Sprint 5.P1 Dise?o preliminar 
+listo.Continuidad.
+Persona 5 ? Developer GeoData/IA
+N.? Tarea Prioridad Resultado 
+esperadoRelaci?n 
+secuencial
+1 Verificar coordenadas de todos 
+los incidentes usados en la 
+demo.P0 Datos correctos. Evita fallos 
+visuales.
+2 Verificar que los pines 
+aparezcan dentro del ?rea 
+esperada.P0 Demo coherente. Cierre visual.
+3 Verificar que reportes sin 
+coordenadas no rompan el 
+mapa.P0 Robustez 
+validada.QA.
+4 Preparar dataset final de demo 
+con m?nimo 5 incidentes visibles.P1 Demo m?s rica. Presentaci?n.
+5 Confirmar que los reportes del 
+usuario demo aparezcan en 
+historial.P0 Historial listo. Cierre funcional.
+6 Revisar que los datos est?n 
+listos para validaci?n cercana 
+del Sprint 5.P0 Coordenadas 
+usables.Continuidad 
+directa.
+7 Documentar limitaciones del 
+mapa actual.P1 Mejora futura 
+registrada.Retrospectiva.
+8 Coordinar con Backend datos 
+necesarios para validaciones 
+ciudadanas.P1 Entrada Sprint 5 
+preparada.Pr?ximo sprint.
+Resultado obligatorio del viernes
+Al cerrar viernes, el equipo debe poder demostrar:
+
+Definition of Done del Sprint 4
+Criterio Obligatorio
+GET /incidents/public funciona S?
+GET /incidents/my funciona S?
+GET /incidents/{id} funciona S?
+Mapa renderiza incidentes reales S?
+Pines usan coordenadas reales S?
+Pines tienen colores por estado S?
+Detalle de incidente funciona S?
+Detalle muestra imagen, categor?a, descripci?n, fecha y estado S?
+Historial privado funciona S?
+Historial solo muestra reportes del usuario autenticado S?
+Rutas /map y /my-reports est?n protegidas S?
+No se muestran datos privados en vistas p?blicas S?
+QA ejecut? pruebas funcionales y de privacidad S?
+Bugs cr?ticos corregidos S?
+Sprint Review realizado S?1. El ciudadano inicia sesi?n.
+2. Crea un reporte con foto, categor?a, descripci?n y GPS.
+3. Entra a /map.
+4. Ve el reporte como pin en el mapa.
+5. El pin tiene color seg?n estado.
+6. Abre el detalle del incidente.
+7. Ve foto, categor?a, descripci?n, fecha, estado y alias p?blico.
+8. Entra a /my-reports.
+9. Ve su historial privado de reportes.
+10. Otro usuario no puede ver ese historial privado.
+11. Los endpoints p?blicos no exponen correo ni datos sensibles.
+
+Incremento esperado al final del Sprint 4
+Sprint Review del Sprint 4
+La demo debe seguir este guion:QHALI MVP - Incremento Sprint 4
+??? GET /incidents/public
+??? GET /incidents/my
+??? GET /incidents/{id}
+??? Pantalla /map funcional
+??? Mapa interactivo
+??? Pines geolocalizados
+??? Colores por estado
+??? Modal de detalle de incidente
+??? Imagen visible en detalle
+??? Alias p?blico visible
+??? Pantalla /my-reports
+??? Historial privado del ciudadano
+??? Reglas b?sicas de visibilidad
+??? Pruebas de mapa, detalle, historial y privacidad
+1. Iniciar sesi?n como ciudadano.
+2. Crear un reporte nuevo desde /report.
+3. Ir a /map.
+4. Ver el nuevo incidente como pin.
+5. Ver color del pin seg?n estado Pendiente.
+6. Abrir el pin.
+7. Mostrar detalle:
+- categor?a
+- descripci?n
+- fotograf?a
+- fecha
+- estado
+- alias p?blico
+8. Ir a /my-reports.
+9. Confirmar que el reporte aparece en historial privado.
+10. Iniciar sesi?n con otro usuario.
+11. Confirmar que no ve el historial privado del primer usuario.
+
+Retrospectiva del Sprint 4
+Preguntas m?nimas:
+Entrada directa para Sprint 5
+Para empezar el Sprint 5, deben quedar listos:
+El Sprint 5  ser? el n?cleo social del MVP:
+validaci?n ciudadana cercana, bloqueo de autovalidaci?n, bloqueo de validaci?n
+duplicada y cambio autom?tico a Confirmado.1. ?Qu? fue m?s dif?cil: mapa, endpoints o privacidad?
+2. ?Los datos creados en Sprint 3 sirven bien para visualizaci?n?
+3. ?El mapa carga aceptablemente en m?vil?
+4. ?El detalle del incidente comunica suficiente informaci?n?
+5. ?El historial privado funciona de forma segura?
+6. ?Qu? se debe preparar antes de agregar validaci?n ciudadana cercana?
+1. Incidentes con coordenadas reales.
+2. Usuarios demo diferentes.
+3. Mapa funcionando.
+4. Endpoint p?blico estable.
+5. Historial privado estable.
+6. Modelo de datos preparado para tabla validations.
+7. Cada incidente con estado Pendiente o Confirmado.
+

@@ -1,0 +1,2498 @@
+=== PAGE 1 ===
+Vamos con el Sprint 7, que es el cierre del MVP.
+Este sprint no debe agregar módulos grandes. Su función es integrar, probar, corregir, pulir y
+dejar lista la demo final.
+Sprint 7 — Integración final, pruebas, pulido y demo del
+MVP
+Duración
+1 semana: lunes a viernes
+Objetivo del sprint
+Consolidar todos los módulos construidos en los sprints anteriores para entregar un MVP
+funcional, estable y demostrable de QHALI, validando el flujo completo desde el reporte
+ciudadano hasta la gestión administrativa, la validación comunitaria, la detección de duplicados
+y la actualización de estados.
+Sprint Goal
+Al finalizar el Sprint 7, QHALI debe estar listo para una presentación funcional completa,
+demostrando el flujo ciudadano, validación cercana, mapa, historial, dashboard, cambio de
+estado y detección de duplicados sin errores críticos.
+Historias de usuario trabajadas en Sprint 7
+Código
+Historia de usuario
+Prioridad
+HU-33
+Como ciudadano, quiero completar el flujo desde registro hasta 
+emisión de reporte para usar QHALI sin bloqueos.
+P0
+HU-34
+Como ciudadano, quiero ver mi reporte en el mapa y en mi historial 
+para confirmar que fue registrado correctamente.
+P0
+HU-35
+Como ciudadano cercano, quiero validar un incidente y ver cómo 
+cambia su conteo y estado.
+P0
+HU-36
+Como administrador, quiero ver el dashboard con datos reales para 
+gestionar incidentes reportados.
+P0
+
+=== PAGE 2 ===
+Código
+Historia de usuario
+Prioridad
+HU-37
+Como administrador, quiero cambiar el estado de un incidente y que 
+se actualice en todas las vistas.
+P0
+HU-38
+Como sistema, quiero detectar posibles duplicados para reducir 
+reportes repetidos.
+P0
+HU-39
+Como equipo, queremos preparar una demo final estable para 
+evidenciar el valor del MVP.
+P0
+HU-40
+Como equipo, queremos documentar limitaciones y backlog futuro 
+para explicar la evolución del producto.
+P1
+Entregables obligatorios del Sprint 7
+Entregable
+Responsable principal
+Estado esperado
+Flujo completo integrado
+Todo el equipo
+Funcional
+Pruebas end-to-end
+Scrum Master / QA
+Ejecutadas
+Bugs críticos corregidos
+Todo el equipo
+Cerrados
+Dataset de demo preparado
+Backend + GeoData
+Listo
+Dashboard estable
+Frontend + Backend
+Funcional
+Mapa estable
+Frontend + GeoData
+Funcional
+Validación ciudadana estable
+Backend + Frontend
+Funcional
+Detección de duplicados estable
+GeoData + Backend
+Funcional
+Guion de demo final
+Product Owner Técnico
+Terminado
+Backlog futuro V2
+Product Owner Técnico
+Terminado
+Documentación mínima técnica
+Backend + Frontend + GeoData
+Terminada
+Sprint Review final
+Todo el equipo
+Ejecutada
+Product Backlog seleccionado para Sprint 7
+Código
+Ítem
+Prioridad
+Responsable
+PB-71
+Ejecutar prueba completa de registro, login 
+y sesión
+P0
+Scrum Master / QA
+
+=== PAGE 3 ===
+Código
+Ítem
+Prioridad
+Responsable
+PB-72
+Ejecutar prueba completa de emisión de 
+reporte
+P0
+Scrum Master / QA
+PB-73
+Ejecutar prueba completa de mapa e 
+historial
+P0
+Scrum Master / QA
+PB-74
+Ejecutar prueba completa de validación 
+cruzada
+P0
+Scrum Master / QA
+PB-75
+Ejecutar prueba completa de dashboard
+P0
+Scrum Master / QA
+PB-76
+Ejecutar prueba completa de cambio de 
+estado
+P0
+Scrum Master / QA
+PB-77
+Ejecutar prueba completa de duplicados
+P0
+Scrum Master / QA
+PB-78
+Corregir bugs críticos del frontend
+P0
+Frontend 
+PWA/Dashboard
+PB-79
+Corregir bugs críticos del backend
+P0
+Backend/API
+PB-80
+Corregir errores geográficos y de datos
+P0
+GeoData/IA
+PB-81
+Preparar datos limpios para demo
+P0
+Backend + GeoData
+PB-82
+Preparar guion de presentación
+P0
+Product Owner Técnico
+PB-83
+Preparar explicación técnica del MVP
+P1
+Product Owner + 
+Backend
+PB-84
+Preparar backlog futuro V2
+P1
+Product Owner Técnico
+PB-85
+Congelar versión final del MVP
+P0
+Todo el equipo
+Reglas del Sprint 7
+Regla 1 — No agregar funcionalidades grandes
+En este sprint no se agregan módulos nuevos como:
+RENIEC
+Kafka
+notificaciones push avanzadas
+cuadrillas
+IA de imagen avanzada
+pagos
+reputación compleja
+comentarios ciudadanos
+
+=== PAGE 4 ===
+Regla 2 — Solo entran correcciones, integración y pulido
+Sí entra:
+Regla 3 — Todo debe poder demostrarse
+Una funcionalidad que no se puede mostrar en vivo no debe ocupar tiempo fuerte del Sprint 7.
+Regla 4 — Congelamiento técnico
+Desde el jueves por la tarde no se deben hacer cambios grandes.
+Solo correcciones críticas.
+Lunes — Auditoría general del MVP y preparación de
+pruebas integrales
+Objetivo del día
+Revisar todo lo construido, detectar errores críticos y preparar el plan de pruebas end-to-end.
+Persona 1 — Product Owner Técnico
+corregir bugs
+mejorar mensajes
+ajustar pantallas
+ordenar datos de demo
+probar flujos completos
+documentar endpoints
+preparar presentación
+
+=== PAGE 5 ===
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Revisar todos los módulos 
+construidos: auth, reporte, 
+mapa, historial, validación, 
+dashboard y duplicados.
+P0
+Lista completa de 
+módulos 
+revisados.
+Base para 
+cierre del MVP.
+2
+Definir el flujo principal de demo 
+ciudadana.
+P0
+Guion inicial 
+ciudadano.
+QA lo usará 
+para pruebas.
+3
+Definir el flujo principal de demo 
+administrativa.
+P0
+Guion inicial 
+admin.
+Dashboard se 
+prueba con ese 
+flujo.
+4
+Definir qué bugs serán 
+considerados bloqueantes.
+P0
+Criterio de 
+severidad 
+definido.
+Scrum Master 
+lo usará.
+5
+Definir qué funcionalidades P1 
+pueden quedar fuera sin afectar 
+la demo.
+P0
+Alcance final 
+protegido.
+Evita perder 
+tiempo.
+6
+Crear lista de mensajes finales 
+que deben verse en la demo.
+P1
+Textos revisados.
+Frontend los 
+ajusta.
+7
+Revisar si el MVP cumple la 
+promesa central: reportar, 
+validar, visualizar y gestionar.
+P0
+Valor del 
+producto 
+confirmado.
+Base narrativa.
+8
+Preparar estructura del discurso: 
+problema, solución, demo, 
+arquitectura, impacto.
+P1
+Presentación 
+orientada.
+Se usará 
+viernes.
+9
+Definir qué se explicará como 
+V2 y no como MVP.
+P1
+Backlog futuro 
+preliminar.
+Evita vender 
+humo.
+10
+Actualizar criterios de 
+aceptación finales del MVP.
+P0
+Criterios listos 
+para QA.
+Pruebas 
+integrales.
+Persona 2 — Scrum Master / QA Técnico
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Crear matriz final de pruebas end-to-
+end.
+P0
+Matriz lista.
+Guía toda la 
+semana.
+
+=== PAGE 6 ===
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+2
+Crear prueba E2E 1: registro → 
+login → sesión.
+P0
+Caso definido.
+Auth.
+3
+Crear prueba E2E 2: crear reporte 
+con foto, categoría, descripción y 
+GPS.
+P0
+Caso definido.
+Reporte.
+4
+Crear prueba E2E 3: ver reporte en 
+mapa.
+P0
+Caso definido.
+Mapa.
+5
+Crear prueba E2E 4: ver reporte en 
+historial privado.
+P0
+Caso definido.
+Historial.
+6
+Crear prueba E2E 5: validar con 
+cinco usuarios distintos.
+P0
+Caso definido.
+Validación.
+7
+Crear prueba E2E 6: cambiar 
+estado desde dashboard.
+P0
+Caso definido.
+Admin.
+8
+Crear prueba E2E 7: detectar 
+duplicado cercano.
+P0
+Caso definido.
+GeoData.
+9
+Crear registro único de bugs con 
+severidad: crítica, media, menor.
+P0
+Tablero de 
+bugs listo.
+Corrección 
+ordenada.
+10
+Actualizar tablero Scrum con tareas 
+finales del Sprint 7.
+P0
+Sprint final 
+visible.
+Control 
+semanal.
+Persona 3 — Developer Frontend PWA/Dashboard
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Revisar navegación completa de 
+la PWA ciudadana.
+P0
+Rutas sin cortes.
+Base de demo.
+2
+Revisar pantalla de login y 
+registro.
+P0
+Sin errores 
+críticos.
+Auth.
+3
+Revisar pantalla /report .
+P0
+Formulario 
+estable.
+Reporte.
+4
+Revisar captura visual de 
+imagen y GPS.
+P0
+Sin errores 
+críticos.
+Reporte.
+5
+Revisar pantalla /map .
+P0
+Mapa estable.
+Visualización.
+
+=== PAGE 7 ===
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+6
+Revisar modal de detalle de 
+incidente.
+P0
+Información 
+correcta.
+Mapa.
+7
+Revisar pantalla /my-reports .
+P0
+Historial estable.
+Privacidad.
+8
+Revisar sección de incidentes 
+cercanos y botón validar.
+P0
+Validación usable.
+Sprint 5.
+9
+Revisar /admin/dashboard .
+P0
+Dashboard 
+estable.
+Sprint 6.
+10
+Crear lista de bugs visuales 
+críticos y menores.
+P0
+Correcciones 
+priorizadas.
+Martes.
+Persona 4 — Developer Backend/API
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Revisar endpoints de 
+autenticación.
+P0
+Auth estable.
+Base de todo.
+2
+Revisar endpoint POST 
+/incidents .
+P0
+Reporte estable.
+Core del MVP.
+3
+Revisar endpoints GET 
+/incidents/public , /my , 
+/{id} .
+P0
+Consulta estable.
+Mapa/historial.
+4
+Revisar endpoints de validación 
+ciudadana.
+P0
+Validación 
+estable.
+Sprint 5.
+5
+Revisar endpoints admin.
+P0
+Dashboard 
+estable.
+Sprint 6.
+6
+Revisar endpoint o lógica de 
+duplicados.
+P0
+Duplicidad 
+estable.
+Sprint 6.
+7
+Revisar respuestas para evitar 
+exposición de datos sensibles.
+P0
+Privacidad 
+protegida.
+RNF seguridad.
+8
+Revisar errores controlados: 400, 
+401, 403, 404.
+P1
+API más robusta.
+QA.
+9
+Crear lista de bugs backend 
+críticos y menores.
+P0
+Correcciones 
+priorizadas.
+Martes.
+
+=== PAGE 8 ===
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+10
+Revisar estado de 
+documentación 
+Swagger/README.
+P1
+Pendientes 
+identificados.
+Jueves.
+Persona 5 — Developer GeoData/IA
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Revisar cálculo de distancia para 
+incidentes cercanos.
+P0
+Distancia 
+funcional.
+Validación 
+cercana.
+2
+Revisar regla de 300 m para 
+validación ciudadana.
+P0
+Regla estable.
+Sprint 5.
+3
+Revisar regla de 50 m para 
+duplicados.
+P0
+Regla estable.
+Sprint 6.
+4
+Revisar coordenadas de 
+incidentes usados en demo.
+P0
+Datos limpios.
+Mapa.
+5
+Revisar coordenadas de usuarios 
+demo.
+P0
+Validaciones 
+posibles.
+Prueba de 5 
+usuarios.
+6
+Revisar casos positivos y 
+negativos de duplicados.
+P0
+Datos 
+controlados.
+QA.
+7
+Preparar dataset final con 
+incidentes pendientes, 
+confirmados, en revisión y 
+resueltos.
+P0
+Dashboard con 
+variedad.
+Admin.
+8
+Detectar coordenadas nulas, 
+erróneas o fuera de zona.
+P0
+Datos corregidos.
+Evita fallos de 
+mapa.
+9
+Crear lista de bugs geográficos o 
+inconsistencias de datos.
+P0
+Correcciones 
+priorizadas.
+Martes.
+10
+Documentar limitaciones del 
+cálculo geográfico básico.
+P1
+Transparencia 
+técnica.
+Presentación.
+Resultado obligatorio del lunes
+
+=== PAGE 9 ===
+Al cerrar lunes debe existir:
+Martes — Corrección de bugs críticos e integración de
+flujos
+Objetivo del día
+Corregir los errores críticos encontrados el lunes y asegurar que los módulos se comuniquen
+correctamente entre sí.
+Persona 1 — Product Owner Técnico
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Revisar lista de bugs 
+críticos y decidir cuáles 
+bloquean la demo.
+P0
+Bugs bloqueantes 
+priorizados.
+Guía al equipo.
+2
+Eliminar del cierre 
+cualquier mejora estética 
+que no aporte a la demo.
+P0
+Foco en estabilidad.
+Evita distracción.
+3
+Revisar que el flujo 
+ciudadano sea 
+demostrable de inicio a 
+fin.
+P0
+Flujo validado 
+conceptualmente.
+QA lo ejecuta.
+4
+Revisar que el flujo 
+admin sea demostrable 
+de inicio a fin.
+P0
+Flujo validado 
+conceptualmente.
+QA lo ejecuta.
+matriz de pruebas final
+bugs iniciales clasificados
+flujo de demo ciudadano definido
+flujo de demo administrativo definido
+dataset de demo identificado
+revisión completa de módulos
+tablero final actualizado
+criterios de cierre del MVP definidos
+
+=== PAGE 10 ===
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+5
+Validar datos mínimos 
+que deben existir para la 
+demo.
+P0
+Dataset requerido 
+confirmado.
+Backend/GeoData lo 
+preparan.
+6
+Ajustar guion de demo si 
+alguna funcionalidad P1 
+no estará lista.
+P1
+Guion realista.
+Evita fallar en vivo.
+7
+Revisar mensajes de 
+error más visibles en 
+interfaz.
+P1
+Textos claros.
+Frontend corrige.
+8
+Coordinar orden de 
+presentación técnica: 
+problema → arquitectura 
+→ demo.
+P1
+Narrativa 
+organizada.
+Cierre.
+9
+Confirmar que no se 
+agregan nuevas historias 
+al sprint.
+P0
+Alcance congelado.
+Control.
+10
+Revisar avance al cierre 
+del día contra bugs 
+críticos.
+P0
+Riesgos 
+actualizados.
+Miércoles.
+Persona 2 — Scrum Master / QA Técnico
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación 
+secuencial
+1
+Ejecutar prueba E2E de 
+autenticación.
+P0
+Auth validada o bug 
+registrado.
+Base.
+2
+Ejecutar prueba E2E de 
+creación de reporte.
+P0
+Reporte validado o 
+bug registrado.
+Core.
+3
+Ejecutar prueba E2E de 
+mapa.
+P0
+Mapa validado o bug 
+registrado.
+Visualización.
+4
+Ejecutar prueba E2E de 
+historial.
+P0
+Historial validado o 
+bug registrado.
+Privacidad.
+5
+Ejecutar prueba E2E de 
+validación cercana.
+P0
+Validación validada o 
+bug registrado.
+Core social.
+
+=== PAGE 11 ===
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación 
+secuencial
+6
+Ejecutar prueba E2E de 
+cambio automático a 
+Confirmado.
+P0
+Regla validada o bug 
+registrado.
+Sprint 5.
+7
+Ejecutar prueba E2E de 
+dashboard.
+P0
+Dashboard validado 
+o bug registrado.
+Admin.
+8
+Ejecutar prueba E2E de 
+cambio manual de estado.
+P0
+Estado validado o 
+bug registrado.
+Admin.
+9
+Ejecutar prueba E2E de 
+duplicados.
+P0
+Duplicidad validada o 
+bug registrado.
+GeoData.
+10
+Actualizar tablero con bugs 
+críticos asignados.
+P0
+Correcciones 
+distribuidas.
+Equipo.
+11
+Reprobar bugs corregidos 
+durante el día.
+P0
+Bugs cerrados o 
+reabiertos.
+QA continuo.
+Persona 3 — Developer Frontend PWA/Dashboard
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Corregir bug crítico de 
+navegación si existe.
+P0
+Rutas estables.
+Demo.
+2
+Corregir bug crítico de 
+login/registro visual si existe.
+P0
+Auth usable.
+Demo.
+3
+Corregir bug crítico del 
+formulario de reporte.
+P0
+Reporte funcional.
+Core.
+4
+Corregir bug crítico de imagen 
+o GPS en interfaz.
+P0
+Reporte completo.
+Core.
+5
+Corregir bug crítico de mapa o 
+pines.
+P0
+Mapa estable.
+Visualización.
+6
+Corregir bug crítico de modal 
+de detalle.
+P0
+Detalle estable.
+Demo.
+7
+Corregir bug crítico de historial.
+P0
+Historial estable.
+Privacidad.
+8
+Corregir bug crítico de botón 
+validar.
+P0
+Validación usable.
+Sprint 5.
+
+=== PAGE 12 ===
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+9
+Corregir bug crítico de 
+dashboard, filtros o cambio de 
+estado.
+P0
+Admin estable.
+Sprint 6.
+10
+Verificar que los mensajes de 
+error sean comprensibles.
+P1
+UX más clara.
+Pulido.
+11
+Subir cambios y solicitar 
+prueba de QA.
+P0
+Correcciones listas 
+para validar.
+QA.
+Persona 4 — Developer Backend/API
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Corregir bug crítico de 
+autenticación o tokens si existe.
+P0
+Sesión estable.
+Base.
+2
+Corregir bug crítico en POST 
+/incidents .
+P0
+Reporte estable.
+Core.
+3
+Corregir bug crítico en endpoints 
+de mapa/historial.
+P0
+Consulta 
+estable.
+Sprint 4.
+4
+Corregir bug crítico en validaciones 
+ciudadanas.
+P0
+Validación 
+estable.
+Sprint 5.
+5
+Corregir bug crítico en conteo de 
+validaciones.
+P0
+Conteo exacto.
+Sprint 5.
+6
+Corregir bug crítico en cambio 
+automático a Confirmado.
+P0
+Regla estable.
+Sprint 5.
+7
+Corregir bug crítico en dashboard 
+o métricas.
+P0
+Admin estable.
+Sprint 6.
+8
+Corregir bug crítico en cambio 
+manual de estado.
+P0
+Estado estable.
+Sprint 6.
+9
+Corregir bug crítico de duplicados 
+en backend.
+P0
+Duplicidad 
+estable.
+Sprint 6.
+10
+Revisar que todas las respuestas 
+críticas tengan errores controlados.
+P1
+API robusta.
+QA.
+11
+Subir cambios y solicitar reproceso 
+de pruebas QA.
+P0
+Correcciones 
+listas.
+QA.
+
+=== PAGE 13 ===
+Persona 5 — Developer GeoData/IA
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Corregir errores de coordenadas 
+en dataset de demo.
+P0
+Datos limpios.
+Mapa.
+2
+Corregir errores de cálculo de 
+distancia en validación cercana.
+P0
+Nearby estable.
+Sprint 5.
+3
+Corregir errores de cálculo de 
+duplicidad.
+P0
+Duplicados 
+estables.
+Sprint 6.
+4
+Verificar caso dentro de 300 m 
+para validación.
+P0
+Caso positivo 
+funciona.
+QA.
+5
+Verificar caso fuera de 300 m 
+para validación.
+P0
+Caso negativo 
+funciona.
+QA.
+6
+Verificar caso dentro de 50 m 
+para duplicado.
+P0
+Advertencia 
+funciona.
+QA.
+7
+Verificar caso fuera de 50 m para 
+duplicado.
+P0
+No advierte.
+QA.
+8
+Verificar que distintas categorías 
+no generen duplicado.
+P0
+Regla correcta.
+QA.
+9
+Verificar que reportes resueltos 
+no activen duplicidad.
+P0
+Regla correcta.
+QA.
+10
+Preparar dataset final limpio para 
+miércoles.
+P0
+Demo lista.
+Equipo.
+11
+Coordinar con Backend carga o 
+inserción de datos demo.
+P1
+Datos 
+consistentes.
+Integración.
+Resultado obligatorio del martes
+Al cerrar martes debe existir:
+bugs críticos principales corregidos o identificados
+pruebas E2E ejecutadas al menos una vez
+dataset de demo en preparación
+flujo ciudadano casi estable
+
+=== PAGE 14 ===
+Miércoles — Pruebas completas, datos de demo y
+pulido funcional
+Objetivo del día
+Dejar el MVP funcionalmente cerrado, con datos limpios para demostración y sin bugs críticos
+abiertos.
+Persona 1 — Product Owner Técnico
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Revisar la demo ciudadana 
+completa con datos reales.
+P0
+Flujo aceptado 
+o ajustes finales.
+QA/equipo.
+2
+Revisar la demo administrativa 
+completa con datos reales.
+P0
+Flujo aceptado 
+o ajustes finales.
+Dashboard.
+3
+Validar que el efecto “wow” 
+quede claro: validación + 
+dashboard + duplicados.
+P0
+Valor visible.
+Presentación.
+4
+Redactar guion final de demo 
+paso a paso.
+P0
+Guion versión 1 
+terminado.
+Se ensaya jueves.
+5
+Redactar explicación breve del 
+problema que resuelve QHALI.
+P1
+Texto listo.
+Presentación.
+6
+Redactar explicación breve de 
+la arquitectura MVP.
+P1
+Texto listo.
+Presentación 
+técnica.
+7
+Redactar explicación de qué 
+queda para V2.
+P1
+Backlog futuro 
+claro.
+Evita vender 
+funciones no 
+hechas.
+8
+Revisar que las historias P0 
+estén realmente terminadas.
+P0
+Estado final de 
+backlog.
+Cierre Scrum.
+9
+Decidir qué bugs menores se 
+aceptan como deuda técnica.
+P0
+Deuda 
+controlada.
+Evita retrasos.
+flujo admin casi estable
+duplicados y validaciones reprobad@s por QA
+tablero actualizado con bugs restantes
+
+=== PAGE 15 ===
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+10
+Preparar lista de beneficios del 
+MVP para la presentación.
+P1
+Impacto claro.
+Narrativa final.
+Persona 2 — Scrum Master / QA Técnico
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Ejecutar prueba E2E completa 
+desde cero con usuario nuevo.
+P0
+Flujo validado.
+Demo 
+ciudadana.
+2
+Ejecutar prueba E2E completa 
+con reporte nuevo.
+P0
+Reporte validado.
+Core.
+3
+Ejecutar prueba E2E completa 
+de mapa e historial.
+P0
+Visualización 
+validada.
+Sprint 4.
+4
+Ejecutar prueba E2E completa 
+con cinco validadores.
+P0
+Confirmado 
+automático validado.
+Sprint 5.
+5
+Ejecutar prueba E2E completa 
+de dashboard.
+P0
+Admin validado.
+Sprint 6.
+6
+Ejecutar prueba E2E completa 
+de cambio manual de estado.
+P0
+Consistencia 
+validada.
+Sprint 6.
+7
+Ejecutar prueba E2E completa 
+de duplicidad positiva y 
+negativa.
+P0
+Regla validada.
+Sprint 6.
+8
+Verificar que no queden bugs 
+críticos abiertos.
+P0
+Estado claro.
+Cierre.
+9
+Crear reporte final de QA: 
+pruebas pasadas, fallidas, 
+pendientes.
+P1
+Evidencia de 
+calidad.
+Review.
+10
+Preparar checklist de ensayo 
+para jueves.
+P1
+Guion de validación.
+Demo.
+11
+Actualizar Definition of Done 
+final.
+P0
+Criterios verificados.
+Cierre Scrum.
+
+=== PAGE 16 ===
+Persona 3 — Developer Frontend PWA/Dashboard
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Pulir pantalla de inicio/home para 
+orientar al usuario.
+P1
+Flujo más claro.
+Demo.
+2
+Pulir formulario de reporte sin 
+cambiar lógica.
+P1
+Mejor 
+presentación.
+Demo.
+3
+Pulir mensajes de GPS, imagen 
+y envío.
+P1
+UX más clara.
+Demo.
+4
+Pulir mapa y modal de detalle.
+P1
+Visual más 
+limpio.
+Demo.
+5
+Pulir historial privado.
+P1
+Lectura más 
+clara.
+Demo.
+6
+Pulir lista de incidentes cercanos 
+y botón validar.
+P1
+Acción más 
+clara.
+Demo.
+7
+Pulir dashboard, métricas y tabla.
+P1
+Impacto 
+institucional.
+Demo.
+8
+Ajustar responsive para celular y 
+pantalla de exposición.
+P0
+Demo estable.
+Presentación.
+9
+Revisar que no haya texto 
+técnico visible para usuario final.
+P1
+UI más 
+profesional.
+Producto.
+10
+Congelar componentes que ya 
+funcionan.
+P0
+Evita romper 
+lógica.
+Control.
+11
+Entregar versión visual candidata 
+a final.
+P0
+Lista para 
+ensayo.
+Jueves.
+Persona 4 — Developer Backend/API
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación 
+secuencial
+1
+Preparar base de datos 
+con usuarios demo.
+P0
+Usuarios listos.
+Demo.
+2
+Preparar base de datos 
+con incidentes demo.
+P0
+Reportes visibles.
+Mapa/dashboard.
+
+=== PAGE 17 ===
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación 
+secuencial
+3
+Preparar base de datos 
+con validaciones demo.
+P0
+Conteos listos.
+Validación.
+4
+Preparar incidentes en 
+estados variados.
+P0
+Métricas útiles.
+Dashboard.
+5
+Verificar endpoints 
+principales con datos 
+demo.
+P0
+API estable.
+QA.
+6
+Revisar logs de errores 
+durante pruebas E2E.
+P0
+Problemas 
+detectados.
+Corrección.
+7
+Corregir últimos errores 
+backend bloqueantes.
+P0
+API candidata final.
+Cierre.
+8
+Actualizar documentación 
+API mínima.
+P1
+README/Swagger 
+listo.
+Presentación 
+técnica.
+9
+Preparar backup o forma 
+rápida de restaurar datos 
+demo.
+P1
+Seguridad para 
+presentación.
+Demo.
+10
+Congelar endpoints 
+principales.
+P0
+No más cambios 
+grandes.
+Estabilidad.
+11
+Entregar versión backend 
+candidata a final.
+P0
+Lista para ensayo.
+Jueves.
+Persona 5 — Developer GeoData/IA
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Preparar coordenadas finales 
+para incidentes demo en 
+Huancayo.
+P0
+Mapa coherente.
+Demo.
+2
+Preparar coordenadas de 
+usuarios validadores cerca del 
+incidente principal.
+P0
+Validación de 5 
+posible.
+Demo.
+3
+Preparar un caso duplicado 
+positivo claro.
+P0
+Advertencia 
+visible.
+Demo.
+4
+Preparar un caso duplicado 
+negativo por categoría distinta.
+P0
+No advertencia.
+Demo.
+
+=== PAGE 18 ===
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+5
+Preparar un caso duplicado 
+negativo por distancia.
+P0
+No advertencia.
+Demo.
+6
+Verificar visualmente todos los 
+pines del mapa.
+P0
+Sin puntos fuera 
+de zona.
+Demo.
+7
+Verificar que las distancias 
+calculadas sean razonables.
+P0
+Sin incoherencias.
+QA.
+8
+Documentar dataset final usado 
+para la demo.
+P1
+Trazabilidad.
+Presentación 
+técnica.
+9
+Coordinar con Backend carga 
+final de datos.
+P0
+BD consistente.
+Demo.
+10
+Congelar reglas geográficas.
+P0
+No más cambios 
+de lógica.
+Estabilidad.
+11
+Entregar datos geográficos 
+candidatos a final.
+P0
+Listos para 
+ensayo.
+Jueves.
+Resultado obligatorio del miércoles
+Al cerrar miércoles debe existir:
+Jueves — Ensayo general, congelamiento y preparación
+final
+Objetivo del día
+MVP funcional sin bugs críticos abiertos
+dataset final casi listo
+guion de demo versión 1
+flujo ciudadano completo probado
+flujo admin completo probado
+frontend candidato final
+backend candidato final
+reglas geográficas candidatas finales
+
+=== PAGE 19 ===
+Ensayar la presentación completa, corregir solo errores bloqueantes y congelar la versión final
+del MVP.
+Persona 1 — Product Owner Técnico
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Dirigir ensayo general del flujo 
+completo.
+P0
+Demo ensayada.
+Todo el equipo.
+2
+Ajustar guion final según fallos 
+detectados.
+P0
+Guion final 
+estable.
+Viernes.
+3
+Preparar explicación de valor: 
+por qué no es solo una app de 
+reportes.
+P0
+Argumento fuerte.
+Presentación.
+4
+Preparar explicación del MVP: 
+qué hace y qué no hace.
+P0
+Alcance 
+transparente.
+Defensa.
+5
+Preparar explicación del 
+mercado inicial: 
+municipalidades, seguridad 
+urbana, gestión pública.
+P1
+Mercado claro.
+Presentación.
+6
+Preparar explicación de 
+diferenciación: validación 
+cercana, duplicados, 
+dashboard.
+P0
+Diferenciación 
+clara.
+Jurado/docente.
+7
+Preparar backlog futuro V2: IA 
+ligera, SLA, asignación distrital, 
+notificaciones.
+P1
+Evolución clara.
+Cierre.
+8
+Validar que ningún integrante 
+cambie funcionalidades críticas 
+sin autorización.
+P0
+Congelamiento 
+controlado.
+Estabilidad.
+9
+Revisar que todos sepan qué 
+parte explicarán.
+P0
+Roles de 
+exposición 
+asignados.
+Demo.
+10
+Aprobar versión candidata final 
+del MVP.
+P0
+Versión lista.
+Cierre técnico.
+
+=== PAGE 20 ===
+Persona 2 — Scrum Master / QA Técnico
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Ejecutar checklist final 
+completo antes del ensayo.
+P0
+Estado 
+validado.
+Ensayo.
+2
+Cronometrar demo completa.
+P1
+Tiempo medido.
+Presentación.
+3
+Registrar fallos ocurridos 
+durante ensayo.
+P0
+Lista breve.
+Corrección final.
+4
+Clasificar fallos del ensayo: 
+bloqueante o no bloqueante.
+P0
+Decisión clara.
+No se corrige todo.
+5
+Reprobar solo correcciones 
+bloqueantes.
+P0
+Estabilidad.
+Cierre.
+6
+Verificar que el flujo principal 
+funcione dos veces seguidas.
+P0
+Confianza 
+mínima.
+Demo.
+7
+Verificar que el dataset no se 
+rompa con la demo.
+P0
+Datos 
+consistentes.
+Backend/GeoData.
+8
+Preparar informe corto de 
+pruebas finales.
+P1
+Evidencia QA.
+Presentación 
+técnica.
+9
+Confirmar que no hay bugs 
+críticos abiertos.
+P0
+MVP aceptable.
+Cierre.
+10
+Marcar versión final como lista 
+para Review.
+P0
+Done final.
+Scrum.
+Persona 3 — Developer Frontend PWA/Dashboard
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Corregir solo bugs visuales 
+bloqueantes del ensayo.
+P0
+Demo estable.
+QA.
+2
+Verificar login, registro y home en 
+modo demo.
+P0
+Inicio estable.
+Demo.
+3
+Verificar reporte con imagen y GPS 
+en modo demo.
+P0
+Core estable.
+Demo.
+
+=== PAGE 21 ===
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+4
+Verificar mapa, pines y detalle en 
+modo demo.
+P0
+Visualización 
+estable.
+Demo.
+5
+Verificar historial privado en modo 
+demo.
+P0
+Historial 
+estable.
+Demo.
+6
+Verificar validación cercana en 
+modo demo.
+P0
+Flujo social 
+estable.
+Demo.
+7
+Verificar dashboard, filtros y cambio 
+de estado en modo demo.
+P0
+Admin estable.
+Demo.
+8
+Verificar advertencia de duplicado 
+en modo demo.
+P0
+Duplicados 
+estables.
+Demo.
+9
+Congelar frontend final.
+P0
+Sin cambios 
+grandes.
+Estabilidad.
+10
+Preparar navegador/dispositivo 
+para presentación.
+P1
+Demo lista.
+Viernes.
+Persona 4 — Developer Backend/API
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación 
+secuencial
+1
+Corregir solo bugs backend 
+bloqueantes del ensayo.
+P0
+API estable.
+QA.
+2
+Verificar endpoints principales 
+en modo demo.
+P0
+API responde.
+Demo.
+3
+Verificar que usuarios demo 
+existan.
+P0
+Datos listos.
+Demo.
+4
+Verificar que incidentes demo 
+existan.
+P0
+Datos listos.
+Demo.
+5
+Verificar que validaciones 
+demo o usuarios validadores 
+funcionen.
+P0
+Flujo listo.
+Demo.
+6
+Verificar métricas dashboard 
+con datos finales.
+P0
+Indicadores 
+correctos.
+Demo.
+7
+Preparar forma rápida de 
+reiniciar/restaurar backend si 
+P1
+Plan de contingencia.
+Presentación.
+
+=== PAGE 22 ===
+N.º
+Tarea
+Prioridad
+Resultado esperado
+Relación 
+secuencial
+falla.
+8
+Congelar backend final.
+P0
+Sin cambios grandes.
+Estabilidad.
+9
+Actualizar documentación 
+técnica final mínima.
+P1
+README/Swagger 
+cerrado.
+Entrega.
+10
+Confirmar despliegue/local 
+listo para demo.
+P0
+Entorno estable.
+Viernes.
+Persona 5 — Developer GeoData/IA
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Corregir solo errores geográficos 
+bloqueantes del ensayo.
+P0
+GeoData 
+estable.
+QA.
+2
+Verificar coordenadas del caso 
+principal de reporte.
+P0
+Punto correcto.
+Demo.
+3
+Verificar coordenadas de cinco 
+validadores cercanos.
+P0
+Validación 
+posible.
+Demo.
+4
+Verificar coordenadas del 
+duplicado positivo.
+P0
+Advertencia 
+segura.
+Demo.
+5
+Verificar coordenadas de casos 
+negativos de duplicado.
+P0
+Sin falsa alerta.
+Demo.
+6
+Verificar que dashboard tenga 
+datos distribuidos por estado y 
+categoría.
+P0
+Métricas útiles.
+Demo.
+7
+Preparar explicación simple de 
+reglas geográficas.
+P1
+Defensa técnica.
+Presentación.
+8
+Congelar dataset final.
+P0
+Datos no se 
+alteran.
+Estabilidad.
+9
+Documentar limitaciones 
+geográficas del MVP.
+P1
+Transparencia.
+Presentación.
+10
+Confirmar con QA que pruebas 
+geo finales pasaron.
+P0
+Validación 
+cerrada.
+Cierre.
+
+=== PAGE 23 ===
+Resultado obligatorio del jueves
+Al cerrar jueves debe existir:
+Viernes — Sprint Review final y cierre del MVP
+Objetivo del día
+Presentar el MVP final, validar el incremento completo y cerrar formalmente el proyecto Scrum
+acelerado.
+Persona 1 — Product Owner Técnico
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Presentar el problema: reportes 
+urbanos desordenados y gestión 
+manual.
+P0
+Contexto claro.
+Inicio de demo.
+2
+Presentar la solución QHALI 
+como MVP funcional.
+P0
+Propuesta clara.
+Narrativa.
+3
+Explicar alcance real del MVP.
+P0
+Transparencia.
+Defensa.
+4
+Dirigir la demo ciudadana.
+P0
+Flujo mostrado.
+Presentación.
+5
+Dirigir la demo administrativa.
+P0
+Dashboard 
+mostrado.
+Presentación.
+6
+Explicar diferenciadores: 
+validación cercana, duplicados, 
+P0
+Valor visible.
+Cierre.
+ensayo general completado
+guion final listo
+versión funcional congelada
+dataset final congelado
+frontend congelado
+backend congelado
+bugs críticos cerrados
+plan de contingencia mínimo
+distribución de exposición definida
+
+=== PAGE 24 ===
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+mapa y dashboard.
+7
+Explicar qué queda para V2.
+P1
+Evolución clara.
+Defensa.
+8
+Validar historias P0 como 
+aceptadas o no aceptadas.
+P0
+Cierre Scrum.
+Review.
+9
+Presentar conclusiones del MVP.
+P1
+Cierre claro.
+Final.
+10
+Registrar feedback recibido.
+P1
+Insumo futuro.
+Post-MVP.
+Persona 2 — Scrum Master / QA Técnico
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Ejecutar checklist previo antes 
+de presentar.
+P0
+Sistema listo.
+Seguridad.
+2
+Verificar conexión, navegador y 
+entorno.
+P0
+Demo preparada.
+Presentación.
+3
+Acompañar demo registrando 
+fallos si aparecen.
+P0
+Control en vivo.
+Review.
+4
+Validar que el flujo principal se 
+complete sin interrupciones.
+P0
+MVP demostrado.
+Cierre.
+5
+Presentar resumen de pruebas 
+realizadas si se solicita.
+P1
+Evidencia QA.
+Defensa.
+6
+Confirmar qué historias 
+quedaron aceptadas.
+P0
+Cierre Scrum.
+Review.
+7
+Confirmar qué bugs quedan 
+como deuda técnica menor.
+P1
+Transparencia.
+Cierre.
+8
+Dirigir retrospectiva final del 
+equipo.
+P1
+Aprendizajes 
+registrados.
+Scrum.
+9
+Cerrar tablero del Sprint 7.
+P1
+Sprint finalizado.
+Gestión.
+10
+Documentar feedback final 
+recibido.
+P1
+Mejora futura.
+Post-MVP.
+
+=== PAGE 25 ===
+Persona 3 — Developer Frontend PWA/Dashboard
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Preparar la PWA abierta en 
+login o home según guion.
+P0
+Inicio rápido.
+Demo.
+2
+Ejecutar parte visual de reporte 
+ciudadano si corresponde.
+P0
+Reporte mostrado.
+Demo.
+3
+Mostrar mapa, pines y detalle 
+de incidente.
+P0
+Visualización 
+demostrada.
+Demo.
+4
+Mostrar historial privado.
+P0
+Trazabilidad 
+ciudadana.
+Demo.
+5
+Mostrar incidentes cercanos y 
+botón validar.
+P0
+Validación social 
+visible.
+Demo.
+6
+Mostrar dashboard, filtros y 
+métricas.
+P0
+Valor institucional 
+visible.
+Demo.
+7
+Mostrar cambio de estado 
+desde dashboard.
+P0
+Gestión 
+demostrada.
+Demo.
+8
+Mostrar advertencia de 
+duplicado si entra en guion.
+P0
+Inteligencia 
+básica visible.
+Demo.
+9
+Resolver fallos menores de 
+interfaz si no afectan la demo.
+P1
+Continuidad.
+Presentación.
+10
+Apoyar explicación de 
+experiencia de usuario.
+P1
+Defensa UI/UX.
+Cierre.
+Persona 4 — Developer Backend/API
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Verificar backend activo antes de 
+la demo.
+P0
+API disponible.
+Demo.
+2
+Verificar base de datos activa 
+antes de la demo.
+P0
+Datos 
+disponibles.
+Demo.
+3
+Monitorear endpoints durante la 
+presentación.
+P0
+Fallos 
+detectables.
+Demo.
+
+=== PAGE 26 ===
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+4
+Apoyar si se necesita reiniciar 
+servicio o corregir entorno.
+P0
+Plan de 
+contingencia.
+Presentación.
+5
+Mostrar o explicar endpoints 
+principales si se solicita.
+P1
+Defensa 
+técnica.
+Evaluación.
+6
+Explicar seguridad básica: sesión, 
+token, no exposición de datos 
+sensibles.
+P1
+Defensa 
+técnica.
+Evaluación.
+7
+Explicar modelo de datos principal 
+si se solicita.
+P1
+Claridad 
+técnica.
+Evaluación.
+8
+Validar que cambios de estado se 
+guarden correctamente durante 
+demo.
+P0
+Consistencia.
+Demo.
+9
+Guardar evidencia final de datos 
+creados si se requiere.
+P1
+Registro final.
+Cierre.
+10
+Apoyar cierre técnico del MVP.
+P1
+Entrega 
+ordenada.
+Final.
+Persona 5 — Developer GeoData/IA
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+1
+Verificar coordenadas y casos geo 
+antes de la demo.
+P0
+Datos listos.
+Presentación.
+2
+Apoyar demo de mapa y pines 
+geolocalizados.
+P0
+Visualización 
+correcta.
+Demo.
+3
+Apoyar demo de validación 
+cercana de 300 m.
+P0
+Regla visible.
+Demo.
+4
+Apoyar demo de duplicados por 
+50 m.
+P0
+Advertencia 
+visible.
+Demo.
+5
+Explicar cálculo de distancia 
+usado en MVP si se solicita.
+P1
+Defensa técnica.
+Evaluación.
+6
+Explicar limitación: no se usa IA 
+avanzada ni comparación de 
+imagen todavía.
+P1
+Transparencia.
+Defensa.
+
+=== PAGE 27 ===
+N.º
+Tarea
+Prioridad
+Resultado 
+esperado
+Relación 
+secuencial
+7
+Explicar evolución futura: PostGIS 
+completo, polígonos distritales, 
+scoring inteligente.
+P1
+V2 clara.
+Cierre.
+8
+Validar que no aparezcan 
+coordenadas erróneas durante la 
+demo.
+P0
+Demo estable.
+Presentación.
+9
+Registrar observaciones sobre 
+precisión GPS.
+P1
+Mejora futura.
+Post-MVP.
+10
+Apoyar cierre técnico del 
+componente geográfico.
+P1
+Entrega 
+ordenada.
+Final.
+Resultado obligatorio del viernes
+Al cerrar viernes, el equipo debe haber demostrado:
+Definition of Done final del MVP
+1. Registro o login de ciudadano.
+2. Emisión de reporte con foto, categoría, descripción y GPS.
+3. Visualización del reporte en mapa.
+4. Detalle del incidente con información visible.
+5. Historial privado del ciudadano.
+6. Validación cercana por otros usuarios.
+7. Bloqueo de autovalidación.
+8. Bloqueo de validación duplicada.
+9. Cambio automático a Confirmado con cinco validaciones.
+10. Dashboard administrativo con incidentes.
+11. Filtros por estado y categoría.
+12. Indicadores básicos.
+13. Cambio manual de estado.
+14. Actualización del estado en mapa e historial.
+15. Advertencia de posible duplicado.
+16. Explicación clara del alcance y límites del MVP.
+
+=== PAGE 28 ===
+Criterio
+Obligatorio
+El usuario puede registrarse e iniciar sesión
+Sí
+El sistema genera alias anónimo
+Sí
+El ciudadano puede emitir reporte con foto, GPS, categoría y descripción
+Sí
+El reporte se guarda con estado “Pendiente”
+Sí
+El reporte aparece en el mapa
+Sí
+El usuario puede ver su historial privado
+Sí
+Otro usuario cercano puede validar el reporte
+Sí
+El creador no puede autovalidar
+Sí
+Un usuario no puede validar dos veces
+Sí
+El sistema cambia a “Confirmado” con cinco validaciones
+Sí
+El dashboard muestra incidentes
+Sí
+El dashboard filtra por estado y categoría
+Sí
+El dashboard muestra indicadores básicos
+Sí
+El administrador puede cambiar estados
+Sí
+Los cambios se reflejan en mapa e historial
+Sí
+El sistema detecta posibles duplicados por categoría y cercanía
+Sí
+No se exponen datos sensibles públicamente
+Sí
+El MVP fue probado de punta a punta
+Sí
+La demo final fue ensayada
+Sí
+No quedan bugs críticos abiertos
+Sí
+Incremento final esperado del MVP
+QHALI MVP - Incremento Final Sprint 7
+├── Autenticación ciudadana
+├── Alias público anónimo
+├── Reporte con foto, categoría, descripción y GPS
+├── Estado inicial Pendiente
+├── Mapa ciudadano con pines
+├── Detalle de incidente
+├── Historial privado
+├── Incidentes cercanos
+
+=== PAGE 29 ===
+Sprint Review final — Guion recomendado
+├── Validación ciudadana
+├── Bloqueo de autovalidación
+├── Bloqueo de validación duplicada
+├── Cambio automático a Confirmado
+├── Dashboard administrativo
+├── Filtros por estado y categoría
+├── Indicadores básicos
+├── Cambio manual de estado
+├── Detección básica de duplicados
+├── Pruebas end-to-end
+├── Dataset de demo
+├── Guion de presentación
+└── Backlog futuro V2
+1. Presentar problema:
+La gestión de incidentes urbanos es manual, dispersa y lenta.
+2. Presentar QHALI:
+Plataforma de triaje ciudadano y gestión inicial de incidentes urbanos.
+3. Demo ciudadana:
+- iniciar sesión
+- crear reporte con foto, GPS, categoría y descripción
+- ver reporte en mapa
+- ver historial privado
+4. Demo validación comunitaria:
+- otro usuario cercano ve el reporte
+- confirma el incidente
+- se bloquea autovalidación
+- se bloquea validación duplicada
+- con cinco validaciones pasa a Confirmado
+5. Demo administrativa:
+- abrir dashboard
+- ver indicadores
+- filtrar por estado
+- filtrar por categoría
+- cambiar estado manualmente
+- verificar actualización en mapa e historial
+
+=== PAGE 30 ===
+Retrospectiva final del Sprint 7
+Preguntas mínimas:
+Backlog futuro V2 recomendado
+Para cerrar bien la presentación, no digan que “falta todo”. Digan que el MVP deja preparada
+una evolución clara.
+Prioridad futura
+Funcionalidad V2
+Alta
+Asignación automática por distrito usando polígonos oficiales
+Alta
+SLA por categoría y criticidad
+Alta
+Notificaciones de cambio de estado
+Alta
+Roles reales: ciudadano, administrador, entidad responsable
+Media
+Validación con DNI o integración institucional
+Media
+Mapa de calor avanzado
+6. Demo de duplicados:
+- crear reporte similar cercano
+- mostrar advertencia de posible duplicado
+7. Cierre:
+- explicar impacto
+- explicar diferenciación
+- explicar límites del MVP
+- explicar evolución V2
+1. ¿Qué módulo generó más riesgo técnico?
+2. ¿Qué parte del MVP comunica mayor valor al usuario o jurado?
+3. ¿Qué se debería mejorar primero en una V2?
+4. ¿Qué deuda técnica quedó pendiente?
+5. ¿El equipo logró mantener el alcance bajo control?
+6. ¿Qué aprendieron sobre trabajar con Scrum acelerado?
+7. ¿Qué funcionalidad no debería haberse intentado en el MVP?
+8. ¿Qué funcionalidad debería priorizarse después del MVP?
+
+=== PAGE 31 ===
+Prioridad futura
+Funcionalidad V2
+Media
+Score de criticidad
+Media
+Clasificación ligera por imagen
+Baja
+Reputación ciudadana
+Baja
+Comentarios moderados
+Baja
+Integración con cuadrillas municipales
+Baja
+Analítica predictiva
+Cierre del Sprint 7
+El cierre debe quedar así:
+El MVP de QHALI demuestra que un incidente urbano puede ser reportado, geolocalizado,
+visualizado, validado por ciudadanos cercanos, gestionado desde un dashboard y filtrado
+contra posibles duplicados, manteniendo trazabilidad básica y protección de identidad
+ciudadana.
+Eso es lo que deben defender como producto mínimo viable funcional.
+
