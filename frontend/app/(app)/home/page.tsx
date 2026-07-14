@@ -154,7 +154,7 @@ export default function HomePage() {
     return true;
   });
   
-  const recentIncidents = filteredIncidents.slice(0, isAdmin ? 9 : 4);
+  const recentIncidents = filteredIncidents;
 
   // Opciones únicas para filtros
   const uniqueCategories = Array.from(new Set(incidents.map(i => i.category))).sort();
