@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FaArrowLeft } from "react-icons/fa";
 
 export default function TermsPage() {
   return (
@@ -7,9 +8,7 @@ export default function TermsPage() {
       <div className="sticky top-0 z-50 bg-white border-b" style={{ borderColor: "var(--border-subtle)" }}>
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center">
           <Link href="/login" className="flex items-center text-sm font-medium transition-colors" style={{ color: "var(--text-muted)" }}>
-            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-            </svg>
+            <FaArrowLeft className="mr-2" />
             Volver
           </Link>
           <div className="flex-1 text-center font-bold brand-text text-lg pr-12">
