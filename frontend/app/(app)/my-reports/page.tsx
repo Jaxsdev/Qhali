@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Card from "../../components/Card";
 import StatusBadge from "../../components/StatusBadge";
 import { useAuth } from "../../lib/auth";
@@ -70,6 +71,7 @@ function AdminStatusSelect({ incidentId, currentStatus, onStatusChanged }: { inc
 }
 
 export default function MyReportsPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const [reports, setReports] = useState<any[]>([]);
@@ -295,7 +297,6 @@ export default function MyReportsPage() {
                             <p className="text-[9px] mt-0.5" style={{ color: "var(--text-muted)" }}>
                               {formatDate(report.created_at)}
                             </p>
-                          </div>
                           </div>
                         </div>
                         {isAdmin ? (
