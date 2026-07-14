@@ -814,25 +814,36 @@ export default function HomePage() {
 
       {/* Resolution Modal */}
       {resolvingId && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-[var(--qhali-primary)] text-white p-4 font-bold flex justify-between items-center">
-              <span>Resolver Incidente</span>
-              <button onClick={() => setResolvingId(null)} className="text-white hover:opacity-75">✕</button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] w-full max-w-sm overflow-hidden transform transition-all" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-[var(--border)] flex justify-between items-center bg-[var(--qhali-surface)]">
+              <h3 className="text-base font-black text-[var(--text-primary)] tracking-tight">Resolver Incidente</h3>
+              <button onClick={() => setResolvingId(null)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors p-1 rounded-full hover:bg-[var(--qhali-surface-hover)]">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
             </div>
-            <form onSubmit={submitResolution} className="p-4 flex flex-col gap-4">
+            <form onSubmit={submitResolution} className="p-5 flex flex-col gap-5">
               <div>
-                <label className="block text-xs font-bold mb-1 text-[var(--text-primary)]">Foto de Evidencia (Requerido)</label>
-                <input 
-                  type="file" 
-                  accept="image/png, image/jpeg, image/webp"
-                  required
-                  onChange={(e) => setResolutionFile(e.target.files?.[0] || null)}
-                  className="w-full text-xs"
-                />
+                <label className="block text-xs font-bold mb-2 text-[var(--text-primary)]">Foto de Evidencia (Requerido)</label>
+                <div className="relative border-2 border-dashed border-[var(--border)] rounded-xl bg-[var(--qhali-surface)] hover:bg-[var(--qhali-surface-hover)] transition-colors group">
+                  <input 
+                    type="file" 
+                    accept="image/png, image/jpeg, image/webp"
+                    required
+                    onChange={(e) => setResolutionFile(e.target.files?.[0] || null)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                  <div className="p-6 flex flex-col items-center justify-center text-center gap-2 pointer-events-none">
+                    <span className="text-2xl opacity-70 group-hover:scale-110 transition-transform">📸</span>
+                    <span className="text-xs font-bold text-[var(--text-primary)]">
+                      {resolutionFile ? resolutionFile.name : "Toca para elegir una foto"}
+                    </span>
+                    {!resolutionFile && <span className="text-[10px] text-[var(--text-muted)]">PNG, JPG hasta 10MB</span>}
+                  </div>
+                </div>
               </div>
               <div>
-                <label className="block text-xs font-bold mb-1 text-[var(--text-primary)]">Descripción de la Solución (Requerido)</label>
+                <label className="block text-xs font-bold mb-2 text-[var(--text-primary)]">Descripción de la Solución (Requerido)</label>
                 <textarea 
                   required
                   rows={3}
@@ -840,13 +851,13 @@ export default function HomePage() {
                   value={resolutionComment}
                   onChange={(e) => setResolutionComment(e.target.value)}
                   placeholder="Explica brevemente cómo se resolvió..."
-                  className="w-full border border-[var(--border)] rounded p-2 text-xs outline-none focus:border-[var(--qhali-primary)]"
+                  className="w-full border border-[var(--border)] bg-[var(--qhali-surface)] rounded-xl p-3 text-sm outline-none focus:border-[var(--qhali-primary)] focus:ring-2 focus:ring-[var(--qhali-primary)]/20 transition-all resize-none"
                 />
               </div>
               <button 
                 type="submit" 
                 disabled={isResolving || !resolutionFile || resolutionComment.length < 5}
-                className="w-full py-2 bg-green-600 text-white rounded font-bold hover:bg-green-700 transition-colors disabled:opacity-50"
+                className="w-full py-3 bg-gradient-to-r from-[var(--qhali-primary)] to-[var(--qhali-primary-hover)] text-white rounded-xl font-bold shadow-lg shadow-[var(--qhali-primary)]/30 hover:shadow-[var(--qhali-primary)]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98]"
               >
                 {isResolving ? "Guardando..." : "Confirmar Resolución"}
               </button>
@@ -858,21 +869,25 @@ export default function HomePage() {
       {/* Evidence View Modal */}
       {viewingEvidence && (
         <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 cursor-pointer"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 cursor-pointer"
           onClick={() => setViewingEvidence(null)}
         >
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden cursor-default" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-blue-600 text-white p-4 font-bold flex justify-between items-center">
-              <span>Evidencia de Resolución</span>
-              <button onClick={() => setViewingEvidence(null)} className="text-white hover:opacity-75">✕</button>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden cursor-default transform scale-100 transition-transform" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-transparent absolute top-3 right-3 z-10">
+              <button onClick={() => setViewingEvidence(null)} className="bg-black/50 backdrop-blur-md text-white p-2 rounded-full hover:bg-black/70 transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
             </div>
-            <div className="p-0">
+            <div className="relative bg-[var(--qhali-surface)] flex items-center justify-center min-h-[200px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={viewingEvidence.url} alt="Evidencia" className="w-full h-auto max-h-[50vh] object-contain bg-gray-100" />
+              <img src={viewingEvidence.url} alt="Evidencia" className="w-full h-auto max-h-[60vh] object-contain" />
             </div>
-            <div className="p-4 bg-gray-50 border-t border-[var(--border)]">
-              <p className="text-xs text-[var(--text-primary)] font-medium leading-relaxed">
-                <span className="font-bold block mb-1">Comentario del Administrador:</span>
+            <div className="p-5 bg-white">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="bg-blue-100 text-blue-700 p-1.5 rounded-lg">✅</span>
+                <h4 className="font-black text-[var(--text-primary)] tracking-tight">Reporte Solucionado</h4>
+              </div>
+              <p className="text-sm text-[var(--text-primary)] font-medium leading-relaxed bg-[var(--qhali-surface)] p-3 rounded-xl border border-[var(--border)]">
                 "{viewingEvidence.comment}"
               </p>
             </div>
