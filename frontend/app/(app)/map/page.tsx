@@ -47,13 +47,21 @@ export default function MapPage() {
   const [viewMode, setViewMode] = useState<"points" | "heatmap">("points");
 
   useEffect(() => {
-    api.getPublicIncidents()
-      .then((data) => {
-        setIncidents(data);
-        setFiltered(data);
-      })
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false));
+    let isMounted = true;
+    function fetchMapData() {
+      api.getPublicIncidents()
+        .then((data) => {
+          if (isMounted) {
+            setIncidents(data);
+          }
+        })
+        .catch((e: Error) => { if (isMounted) setError(e.message); })
+        .finally(() => { if (isMounted) setLoading(false); });
+    }
+    
+    fetchMapData();
+    const interval = setInterval(fetchMapData, 10000);
+    return () => { isMounted = false; clearInterval(interval); };
   }, []);
 
   useEffect(() => {
@@ -62,7 +70,8 @@ export default function MapPage() {
     } else {
       setFiltered(incidents.filter((i) => i.category === activeCategory));
     }
-    setSelected(null);
+    // Mantener seleccionado si los datos se actualizan, sino limpiar al cambiar categoría (manualmente)
+    setSelected(prev => prev ? incidents.find(i => i.id === prev.id) || null : null);
   }, [activeCategory, incidents]);
 
   const handleSelect = useCallback((inc: IncidentResponse) => {

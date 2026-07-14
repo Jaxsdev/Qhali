@@ -80,18 +80,30 @@ export default function HomePage() {
   }
 
   useEffect(() => {
-    api.getPublicIncidents()
-      .then(setIncidents)
-      .catch(() => {})
-      .finally(() => setStatsLoading(false));
+    let isMounted = true;
+    
+    function fetchIncidents() {
+      api.getPublicIncidents()
+        .then(data => { if (isMounted) setIncidents(data); })
+        .catch(() => {})
+        .finally(() => { if (isMounted) setStatsLoading(false); });
+    }
+    
+    fetchIncidents();
+    const interval = setInterval(fetchIncidents, 10000);
       
     if (user?.role === "admin") {
       setAiSummaryLoading(true);
       api.getAiSummary()
-        .then(res => setAiSummary(res.summary))
-        .catch(() => setAiSummary("No se pudo cargar el resumen de IA."))
-        .finally(() => setAiSummaryLoading(false));
+        .then(res => { if (isMounted) setAiSummary(res.summary); })
+        .catch(() => { if (isMounted) setAiSummary("No se pudo cargar el resumen de IA."); })
+        .finally(() => { if (isMounted) setAiSummaryLoading(false); });
     }
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, [user]);
 
   function handleLogout() {

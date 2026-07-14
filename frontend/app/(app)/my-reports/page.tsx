@@ -73,14 +73,21 @@ export default function MyReportsPage() {
   }
 
   useEffect(() => {
-    // Si es administrador, vemos TODOS los reportes (getAdminIncidents)
-    // Si es ciudadano, solo vemos sus propios reportes (getMyIncidents)
-    const fetcher = isAdmin ? api.getAdminIncidents() : api.getMyIncidents();
+    let isMounted = true;
+    function fetchReports() {
+      // Si es administrador, vemos TODOS los reportes (getAdminIncidents)
+      // Si es ciudadano, solo vemos sus propios reportes (getMyIncidents)
+      const fetcher = isAdmin ? api.getAdminIncidents() : api.getMyIncidents();
+      
+      fetcher
+        .then(data => { if (isMounted) setReports(data); })
+        .catch((e: Error) => { if (isMounted) setError(e.message); })
+        .finally(() => { if (isMounted) setLoading(false); });
+    }
     
-    fetcher
-      .then(setReports)
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false));
+    fetchReports();
+    const interval = setInterval(fetchReports, 10000);
+    return () => { isMounted = false; clearInterval(interval); };
   }, [isAdmin]);
 
   const dateFiltered = reports.filter((r) => {
