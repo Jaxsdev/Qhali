@@ -204,10 +204,10 @@ def list_public_incidents(
     Lista pública de incidentes para el mapa ciudadano.
     Reglas de visibilidad (Sprint 4):
     - Confirmados, En revisión y Resueltos: siempre visibles.
-    - Pendientes: visibles solo si tienen <24h O tienen al menos 1 validación.
+    - Pendientes: visibles solo si tienen <7 días O tienen al menos 1 validación.
     No expone email, user_id ni datos privados.
     """
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=7)
 
     query = db.query(Incident).filter(
         Incident.latitude.isnot(None),
