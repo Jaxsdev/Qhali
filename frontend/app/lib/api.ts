@@ -197,12 +197,6 @@ export const api = {
     });
   },
 
-  deleteIncident(incidentId: number) {
-    return request<{ message: string }>(`/incidents/${incidentId}`, {
-      method: "DELETE",
-    });
-  },
-
   checkDuplicate(lat: number, lng: number, category: string) {
     return request<DuplicateCheckResponse>(
       `/incidents/check-duplicate?lat=${lat}&lng=${lng}&category=${encodeURIComponent(category)}`

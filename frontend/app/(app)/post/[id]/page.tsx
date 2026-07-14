@@ -7,6 +7,7 @@ import Card from "../../../components/Card";
 import StatusBadge from "../../../components/StatusBadge";
 import Button from "../../../components/Button";
 import { api, type IncidentResponse } from "../../../lib/api";
+import { useAuth } from "../../../lib/auth";
 
 const CATEGORY_ICONS: Record<string, string> = {
   bache: "🕳️", alumbrado: "💡", basura: "🗑️", agua: "💧",
@@ -25,15 +26,11 @@ export default function PostDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const [incident, setIncident] = useState<IncidentResponse | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [validating, setValidating] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    api.getProfile().then(setUser).catch(() => {});
-  }, []);
 
   useEffect(() => {
     if (!id) return;
