@@ -63,13 +63,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col relative" style={{ background: "var(--bg-primary)" }}>
+    <div className="min-h-screen flex flex-col relative bg-black">
       {/* Background Image Layer */}
       <div 
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 -z-10 bg-cover bg-center bg-no-repeat"
         style={{ 
           backgroundImage: "url('/bg-huancayo.png')",
-          filter: "blur(6px) brightness(0.4)"
+          filter: "blur(4px) brightness(0.4)"
         }}
       />
 
