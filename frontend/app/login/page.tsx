@@ -68,7 +68,7 @@ export default function LoginPage() {
       <div 
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{ 
-          backgroundImage: "url('/bg-huancayo.jpg')",
+          backgroundImage: "url('/bg-huancayo.png')",
           filter: "blur(6px) brightness(0.4)"
         }}
       />
