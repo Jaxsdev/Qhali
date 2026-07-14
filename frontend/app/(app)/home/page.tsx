@@ -470,7 +470,7 @@ export default function HomePage() {
                   </p>
                 </div>
               ) : (
-                <div className={`grid grid-cols-1 md:grid-cols-2 ${isAdmin ? 'lg:grid-cols-3' : ''} gap-4`}>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-4">
                   {recentIncidents.map((inc) => (
                     <Card 
                       key={inc.id} 
