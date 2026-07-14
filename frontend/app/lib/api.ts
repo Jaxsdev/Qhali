@@ -32,6 +32,15 @@ export interface UserPublic {
   created_at: string | null;
 }
 
+export interface CommentResponse {
+  id: number;
+  incident_id: number;
+  user_id: number;
+  public_alias: string;
+  content: string;
+  created_at: string;
+}
+
 export interface AuthResponse {
   access_token: string;
   token_type: string;
@@ -46,6 +55,7 @@ export interface IncidentResponse {
   image_url: string | null;
   latitude: number;
   longitude: number;
+  address?: string | null;
   status: string;
   validation_count: number;
   created_at: string;
@@ -63,6 +73,7 @@ export interface NearbyIncidentItem {
   image_url: string | null;
   latitude: number;
   longitude: number;
+  address?: string | null;
   status: string;
   validation_count: number;
   created_at: string;
@@ -85,6 +96,7 @@ export interface AdminIncident {
   image_url: string | null;
   latitude: number | null;
   longitude: number | null;
+  address?: string | null;
   status: string;
   validation_count: number;
   created_at: string;
@@ -197,6 +209,17 @@ export const api = {
     );
   },
 
+  getComments(incidentId: number) {
+    return request<CommentResponse[]>(`/incidents/${incidentId}/comments`);
+  },
+
+  postComment(incidentId: number, content: string, latitude: number, longitude: number) {
+    return request<CommentResponse>(`/incidents/${incidentId}/comments`, {
+      method: "POST",
+      body: JSON.stringify({ content, latitude, longitude }),
+    });
+  },
+
   getAdminIncidents(statusFilter?: string, category?: string) {
     const params = new URLSearchParams();
     if (statusFilter) params.append("status_filter", statusFilter);
@@ -227,6 +250,13 @@ export const api = {
     return request<{ suggested_category: string }>("/incidents/suggest-category", {
       method: "POST",
       body: JSON.stringify({ description }),
+    });
+  },
+
+  rewriteDescription(rawText: string) {
+    return request<{ text: string }>("/incidents/rewrite-description", {
+      method: "POST",
+      body: JSON.stringify({ raw_text: rawText }),
     });
   },
 };

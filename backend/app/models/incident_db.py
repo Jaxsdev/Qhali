@@ -20,6 +20,7 @@ class Incident(Base):
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
     location_accuracy = Column(Float, nullable=True)
+    address = Column(String, nullable=True)
     status = Column(String, default="Pendiente", nullable=False, index=True)
     validation_count = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -30,4 +31,15 @@ class Incident(Base):
     ai_priority = Column(String, nullable=True)
     ai_is_valid = Column(Boolean, nullable=True)
     ai_summary = Column(String, nullable=True)
+
+
+class IncidentComment(Base):
+    __tablename__ = "incident_comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    incident_id = Column(Integer, ForeignKey("incidents.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    public_alias = Column(String, nullable=False)
+    content = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 

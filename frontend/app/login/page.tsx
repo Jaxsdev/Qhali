@@ -73,13 +73,11 @@ export default function LoginPage() {
         {/* Logo + nombre */}
         <div className="animate-slide-up mb-7 text-center w-full max-w-sm">
           <div
-            className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-3"
-            style={{ background: "var(--qhali-primary)", boxShadow: "var(--shadow-primary)" }}
+            className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-3 bg-white p-2"
+            style={{ boxShadow: "var(--shadow-primary)" }}
           >
-            <svg className="w-9 h-9 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-            </svg>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="QHALI Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-3xl brand-text">QHALI</h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>

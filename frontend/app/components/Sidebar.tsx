@@ -76,10 +76,10 @@ export default function Sidebar() {
       {/* Brand Logo */}
       <div className="flex items-center gap-3 mb-8">
         <div
-          className="w-10 h-10 flex items-center justify-center text-white text-xl border border-white"
-          style={{ background: "var(--qhali-primary)" }}
+          className="w-10 h-10 flex items-center justify-center bg-white rounded-full p-1"
         >
-          📍
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="QHALI Logo" className="w-full h-full object-contain" />
         </div>
         <div>
           <h1 className="text-lg font-black tracking-tight leading-none text-white">QHALI</h1>

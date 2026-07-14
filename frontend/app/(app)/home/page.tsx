@@ -202,13 +202,10 @@ export default function HomePage() {
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: "var(--qhali-primary)" }}
+              className="w-8 h-8 rounded-lg flex items-center justify-center bg-white"
             >
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-              </svg>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.png" alt="QHALI Logo" className="w-full h-full object-contain" />
             </div>
             <div>
               <h1 className="text-base font-bold brand-text leading-none">QHALI</h1>
@@ -270,17 +267,17 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-4 bg-gray-50 border border-[var(--border)] p-4 self-start md:self-auto">
+            <div className="flex items-center gap-2 md:gap-4 bg-gray-50 border border-[var(--border)] p-2 md:p-4 self-start md:self-auto">
               {[
                 { value: String(totalActive),      label: "Activos" },
                 { value: String(totalResueltos),    label: "Resueltos" },
                 { value: String(totalValidaciones), label: "Validaciones" },
               ].map((s, i) => (
-                <div key={s.label} className="flex items-center gap-1">
-                  {i > 0 && <div className="w-px h-8 bg-gray-200 mx-2" />}
+                <div key={s.label} className="flex items-center gap-0.5 md:gap-1">
+                  {i > 0 && <div className="w-px h-6 md:h-8 bg-gray-200 mx-1 md:mx-2" />}
                   <div className="text-center">
-                    <p className="text-lg font-black leading-none" style={{ color: "var(--text-primary)" }}>{s.value}</p>
-                    <p className="text-[9px] font-semibold uppercase tracking-wider mt-0.5" style={{ color: "var(--text-muted)" }}>{s.label}</p>
+                    <p className="text-base md:text-lg font-black leading-none" style={{ color: "var(--text-primary)" }}>{s.value}</p>
+                    <p className="text-[8px] md:text-[9px] font-semibold uppercase tracking-wider mt-0.5" style={{ color: "var(--text-muted)" }}>{s.label}</p>
                   </div>
                 </div>
               ))}
@@ -474,7 +471,10 @@ export default function HomePage() {
                                 </span>
                               )}
                             </div>
-                            <p className="text-[9px] mt-1" style={{ color: "var(--text-muted)" }}>{formatRelativeDate(inc.created_at)}</p>
+                            <p className="text-[9px] mt-1" style={{ color: "var(--text-muted)" }}>
+                              {formatRelativeDate(inc.created_at)}
+                              {inc.address && ` • 📍 ${inc.address}`}
+                            </p>
                           </div>
                         </div>
                         <StatusBadge status={inc.status} />
@@ -588,7 +588,7 @@ export default function HomePage() {
                   {quickActions.map((a) => (
                     <Link key={a.href} href={a.href}>
                       <div
-                        className="p-2 py-3 text-center lg:text-left flex flex-col lg:flex-row lg:items-center lg:gap-3 transition-all duration-150 active:scale-95 cursor-pointer border border-[var(--text-primary)] rounded-none bg-white h-full justify-center"
+                        className="p-2 py-3 text-center lg:text-left flex flex-col lg:flex-row lg:items-center lg:gap-3 transition-all duration-150 active:scale-95 cursor-pointer border border-[var(--text-primary)] rounded-none bg-white h-full justify-center lg:justify-start"
                         style={{
                           boxShadow: "var(--shadow-card)",
                         }}

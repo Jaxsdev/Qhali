@@ -137,86 +137,13 @@ export default function MapView({ incidents, onSelect, selectedId, viewMode = "p
         const categoryEmoji = CATEGORY_ICONS[inc.category] ?? "📌";
         const statusMap = STATUS_MAPPINGS[key] ?? { bg: "#F3F4F6", text: "#374151", label: inc.status };
 
-        const imageHtml = inc.image_url ? `
-          <div style="margin-top: 8px; margin-bottom: 8px; border-radius: 8px; overflow: hidden; height: 90px; width: 100%;">
-            <img src="${inc.image_url}" alt="Foto del reporte" style="width: 100%; height: 100%; object-fit: cover;" />
-          </div>
-        ` : '';
-
-        const popupHtml = `
-          <div style="
-            font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
-            min-width: 210px;
-            max-width: 260px;
-            color: var(--text-primary, #0F172A);
-            padding: 2px;
-          ">
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
-              <span style="font-weight: 700; font-size: 13px; text-transform: capitalize; color: var(--text-primary);">
-                ${categoryEmoji} ${inc.category}
-              </span>
-              <span style="
-                font-size: 9px;
-                font-weight: 600;
-                padding: 1.5px 6px;
-                border-radius: 9999px;
-                background-color: ${statusMap.bg};
-                color: ${statusMap.text};
-                border: 1px solid rgba(0,0,0,0.05);
-              ">
-                ${statusMap.label}
-              </span>
-            </div>
-            
-            <p style="
-              font-size: 11.5px;
-              color: var(--text-secondary, #334155);
-              margin: 0 0 6px 0;
-              line-height: 1.35;
-              display: -webkit-box;
-              -webkit-line-clamp: 3;
-              -webkit-box-orient: vertical;
-              overflow: hidden;
-            ">
-              ${inc.description}
-            </p>
-            
-            ${imageHtml}
-            
-            <div style="
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              font-size: 9.5px;
-              color: var(--text-muted, #64748B);
-              border-top: 1px solid var(--border-subtle, #E2E8F0);
-              padding-top: 6px;
-              margin-top: 6px;
-            ">
-              <span style="font-weight: 500;">✓ ${inc.validation_count} validaciones</span>
-              <span>${new Date(inc.created_at).toLocaleDateString("es-PE", { day: "numeric", month: "short" })}</span>
-            </div>
-          </div>
-        `;
-
         const marker = L.marker([inc.latitude, inc.longitude], { icon })
           .addTo(mapRef.current!)
-          .bindPopup(popupHtml, {
-            closeButton: false,
-            offset: [0, -8],
-          })
           .on("click", () => onSelect(inc));
 
         markersRef.current.set(inc.id, marker);
       });
 
-      // Auto open popup for selected marker
-      if (selectedId && viewMode === "points") {
-        const selectedMarker = markersRef.current.get(selectedId);
-        if (selectedMarker) {
-          selectedMarker.openPopup();
-        }
-      }
   }, [mapReady, incidents, onSelect, selectedId, viewMode]);
 
   return (

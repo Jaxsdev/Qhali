@@ -131,7 +131,10 @@ export default function PostDetailPage() {
                   </div>
                   <div>
                     <p className="text-sm font-black leading-none" style={{ color: "var(--text-primary)" }}>{incident.public_alias}</p>
-                    <p className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>{formatDate(incident.created_at)}</p>
+                    <p className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+                      {formatDate(incident.created_at)}
+                      {incident.address && ` • 📍 ${incident.address}`}
+                    </p>
                   </div>
                 </div>
                 <StatusBadge status={incident.status} />

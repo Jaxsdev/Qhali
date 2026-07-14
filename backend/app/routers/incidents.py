@@ -24,9 +24,16 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from pydantic import BaseModel
-from app.models.incident_db import Incident
+
+class RewriteRequest(BaseModel):
+    raw_text: str
+
+class RewriteResponse(BaseModel):
+    text: str
+
+from app.models.incident_db import Incident, IncidentComment
 from app.models.user_db import User
-from app.schemas.incident import DuplicateCheckResponse, DuplicateItem, IncidentPublicItem, IncidentResponse
+from app.schemas.incident import DuplicateCheckResponse, DuplicateItem, IncidentPublicItem, IncidentResponse, CommentCreate, CommentResponse
 from app.schemas.validation import NearbyIncidentItem, ValidateRequest, ValidateResponse
 from app.utils.auth_utils import get_current_user
 from app.utils.geo import haversine_distance
@@ -59,6 +66,7 @@ async def create_incident(
     latitude: float = Form(...),
     longitude: float = Form(...),
     location_accuracy: Optional[float] = Form(None),
+    address: Optional[str] = Form(None),
     image: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -129,6 +137,7 @@ async def create_incident(
         latitude=latitude,
         longitude=longitude,
         location_accuracy=location_accuracy,
+        address=address,
         status=status_inicial,
         validation_count=0,
         ai_category=ai_res.get("suggested_category"),
@@ -141,6 +150,20 @@ async def create_incident(
     db.refresh(incident)
     return incident
 
+# ── POST /rewrite-description — Reescribir descripción con IA ───────────────
+
+@router.post("/rewrite-description", response_model=RewriteResponse)
+async def rewrite_description_endpoint(
+    req: RewriteRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Recibe un texto crudo transcrito por voz y devuelve una versión
+    concisa redactada por la IA. Requiere JWT.
+    """
+    from app.utils.ai import rewrite_incident_description
+    text_rewritten = rewrite_incident_description(req.raw_text)
+    return RewriteResponse(text=text_rewritten)
 
 # ── GET /public — Lista pública para el mapa ─────────────────────────────────
 
@@ -528,3 +551,57 @@ def suggest_category(req: SuggestCategoryRequest, _current_user: User = Depends(
     from app.utils.ai import analyze_incident_text
     res = analyze_incident_text(req.description)
     return {"suggested_category": res.get("suggested_category", "otro")}
+# ── POST /{incident_id}/comments — Comentar incidente ───────────────────────
+
+@router.post("/{incident_id}/comments", response_model=CommentResponse)
+def create_comment(
+    incident_id: int,
+    comment: CommentCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    incident = db.query(Incident).filter(Incident.id == incident_id).first()
+    if not incident:
+        raise HTTPException(status_code=404, detail="Incidente no encontrado.")
+
+    # Validar distancia
+    dist = haversine_distance(
+        comment.latitude, comment.longitude,
+        incident.latitude, incident.longitude
+    )
+    if dist > _NEARBY_RADIUS_MAX:
+        raise HTTPException(
+            status_code=403, 
+            detail=f"Estás a {int(dist)}m. Debes estar a menos de {int(_NEARBY_RADIUS_MAX)}m del incidente para participar en el foro."
+        )
+
+    new_comment = IncidentComment(
+        incident_id=incident_id,
+        user_id=current_user.id,
+        public_alias=current_user.alias_anonimo,
+        content=comment.content,
+    )
+    db.add(new_comment)
+    db.commit()
+    db.refresh(new_comment)
+    return new_comment
+
+
+# ── GET /{incident_id}/comments — Listar comentarios ───────────────────────
+
+from typing import List
+
+@router.get("/{incident_id}/comments", response_model=List[CommentResponse])
+def get_comments(
+    incident_id: int,
+    db: Session = Depends(get_db),
+):
+    incident = db.query(Incident).filter(Incident.id == incident_id).first()
+    if not incident:
+        raise HTTPException(status_code=404, detail="Incidente no encontrado.")
+
+    comments = db.query(IncidentComment)\
+                 .filter(IncidentComment.incident_id == incident_id)\
+                 .order_by(IncidentComment.created_at.asc())\
+                 .all()
+    return comments

@@ -33,6 +33,7 @@ interface FormState {
   latitude: number | null;
   longitude: number | null;
   locationAccuracy: number | null;
+  address: string | null;
 }
 
 export default function ReportPage() {
@@ -77,9 +78,89 @@ export default function ReportPage() {
     latitude: null,
     longitude: null,
     locationAccuracy: null,
+    address: null,
   });
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  async function fetchAddress(lat: number, lng: number) {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+      const data = await res.json();
+      if (data && data.address) {
+        const road = data.address.road || data.address.pedestrian || data.address.street;
+        const neighbourhood = data.address.neighbourhood || data.address.suburb || data.address.city;
+        let addr = road || "";
+        if (road && neighbourhood) addr += `, ${neighbourhood}`;
+        else if (!road && neighbourhood) addr = neighbourhood;
+        
+        setForm((f) => ({ ...f, address: addr || data.display_name || null }));
+      }
+    } catch (e) {
+      console.error("Error fetching address:", e);
+    }
+  }
+
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  
+  // ── Speech to Text (IA) ──────────────────────────────────────────────────
+  const [isRecording, setIsRecording] = useState(false);
+  const [isRewriting, setIsRewriting] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  const startRecording = () => {
+    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+      alert("Tu navegador no soporta dictado por voz. Intenta con Chrome o Edge.");
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+    recognition.lang = "es-PE";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsRecording(true);
+    };
+
+    recognition.onresult = async (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setIsRecording(false);
+      setIsRewriting(true);
+      try {
+        const res = await api.rewriteDescription(transcript);
+        setForm((f) => ({ ...f, description: res.text }));
+      } catch (err) {
+        alert("Error al redactar con IA. Se insertó el texto original.");
+        setForm((f) => ({ ...f, description: transcript }));
+      } finally {
+        setIsRewriting(false);
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      if (event.error === 'no-speech') {
+        console.warn("No se detectó voz.");
+      } else {
+        console.warn("Speech recognition error", event.error);
+      }
+      setIsRecording(false);
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
+
+    recognition.start();
+  };
+
+  const stopRecording = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+    }
+  };
 
   // ── GPS ──────────────────────────────────────────────────────────────────
   function captureGps() {
@@ -107,6 +188,7 @@ export default function ReportPage() {
         api.checkDuplicate(lat, lng, form.category)
           .then(setDuplicateWarning)
           .catch(() => {});
+        fetchAddress(lat, lng);
       },
       (err) => {
         if (err.code === err.PERMISSION_DENIED) {
@@ -181,6 +263,9 @@ export default function ReportPage() {
       if (form.locationAccuracy !== null) {
         fd.append("location_accuracy", String(form.locationAccuracy));
       }
+      if (form.address) {
+        fd.append("address", form.address);
+      }
       fd.append("image", form.imageFile);
 
       const result = await api.createIncident(fd);
@@ -228,7 +313,7 @@ export default function ReportPage() {
             onClick={() => {
               setSuccess(false);
               setStep(1);
-              setForm({ category: "", description: "", imageFile: null, imagePreview: null, latitude: null, longitude: null, locationAccuracy: null });
+              setForm({ category: "", description: "", imageFile: null, imagePreview: null, latitude: null, longitude: null, locationAccuracy: null, address: null });
               setGpsState("idle");
             }}
           >
@@ -379,9 +464,21 @@ export default function ReportPage() {
                     <label className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
                       Descripción
                     </label>
-                    <span className="text-[10px]" style={{ color: form.description.length > 230 ? "var(--color-error)" : "var(--text-muted)" }}>
-                      {form.description.length}/250
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        type="button"
+                        onClick={isRecording ? stopRecording : startRecording}
+                        disabled={isRewriting}
+                        className={`flex items-center gap-1.5 px-2 py-1 border border-[var(--text-primary)] text-[10px] font-bold uppercase transition-colors ${
+                          isRecording ? "bg-red-500 text-white animate-pulse" : "bg-white hover:bg-gray-50 text-[var(--text-primary)]"
+                        } disabled:opacity-50`}
+                      >
+                        {isRewriting ? "✨ Redactando..." : isRecording ? "⏹️ Detener" : "🎤 Dictar con IA"}
+                      </button>
+                      <span className="text-[10px]" style={{ color: form.description.length > 230 ? "var(--color-error)" : "var(--text-muted)" }}>
+                        {form.description.length}/250
+                      </span>
+                    </div>
                   </div>
                   <textarea
                     value={form.description}
@@ -405,10 +502,17 @@ export default function ReportPage() {
               {/* Right Column: Image */}
               <div className="space-y-4">
                 <input
-                  ref={fileInputRef}
+                  ref={cameraInputRef}
                   type="file"
                   accept="image/*"
                   capture="environment"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+                <input
+                  ref={galleryInputRef}
+                  type="file"
+                  accept="image/*"
                   className="hidden"
                   onChange={handleImageChange}
                 />
@@ -438,23 +542,37 @@ export default function ReportPage() {
                     </div>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full rounded-none p-8 text-center transition-all duration-150 active:scale-[0.98] border border-dashed border-[var(--text-primary)] bg-white"
-                  >
-                    <div
-                      className="w-12 h-12 mx-auto flex items-center justify-center mb-3 text-2xl border border-[var(--text-primary)]"
-                      style={{ background: "var(--qhali-primary-pale)" }}
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="w-full rounded-none p-6 text-center transition-all duration-150 active:scale-[0.98] border border-dashed border-[var(--text-primary)] bg-white"
                     >
-                      📷
-                    </div>
-                    <p className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
-                      Adjuntar fotografía
-                    </p>
-                    <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-                      Toca para tomar foto o elegir de la galería
-                    </p>
-                  </button>
+                      <div
+                        className="w-10 h-10 mx-auto flex items-center justify-center mb-3 text-xl border border-[var(--text-primary)]"
+                        style={{ background: "var(--qhali-primary-pale)" }}
+                      >
+                        📷
+                      </div>
+                      <p className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>
+                        Tomar Foto
+                      </p>
+                    </button>
+
+                    <button
+                      onClick={() => galleryInputRef.current?.click()}
+                      className="w-full rounded-none p-6 text-center transition-all duration-150 active:scale-[0.98] border border-dashed border-[var(--text-primary)] bg-white"
+                    >
+                      <div
+                        className="w-10 h-10 mx-auto flex items-center justify-center mb-3 text-xl border border-[var(--text-primary)]"
+                        style={{ background: "var(--qhali-primary-pale)" }}
+                      >
+                        📁
+                      </div>
+                      <p className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>
+                        Subir Imagen
+                      </p>
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -575,6 +693,11 @@ export default function ReportPage() {
                           <CoordField label="Longitud" value={form.longitude!.toFixed(6)} />
                         </div>
                       )}
+                      {form.address && (
+                        <div className="p-3 border-x border-b border-[var(--text-primary)] text-sm font-medium bg-white text-center">
+                          📍 {form.address}
+                        </div>
+                      )}
                     </Card>
                   </div>
                 )}
@@ -597,6 +720,7 @@ export default function ReportPage() {
                         api.checkDuplicate(clickLat, clickLng, form.category)
                           .then(setDuplicateWarning)
                           .catch(() => {});
+                        fetchAddress(clickLat, clickLng);
                       }}
                     />
                     {form.latitude !== null && (
@@ -606,6 +730,11 @@ export default function ReportPage() {
                       >
                         <CoordField label="Latitud" value={form.latitude.toFixed(6)} />
                         <CoordField label="Longitud" value={form.longitude!.toFixed(6)} />
+                      </div>
+                    )}
+                    {form.address && (
+                      <div className="p-3 border-x border-b border-[var(--text-primary)] text-sm font-medium bg-white text-center">
+                        📍 {form.address}
                       </div>
                     )}
                   </div>
@@ -642,6 +771,7 @@ export default function ReportPage() {
                       value={form.description.length > 60 ? form.description.slice(0, 60) + "..." : form.description}
                     />
                     <SummaryRow icon="📷" label="Fotografía" value={form.imageFile ? "Adjunta" : "Sin foto"} />
+                    {form.address && <SummaryRow icon="📍" label="Ubicación" value={form.address} />}
                   </div>
                 </Card>
 
@@ -666,6 +796,30 @@ export default function ReportPage() {
           </div>
         )}
       </div>
+
+      {/* ── Overlay de dictado por voz ── */}
+      {isRecording && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="flex flex-col items-center justify-center space-y-8 p-8">
+            <div className="relative">
+              <div className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-75"></div>
+              <div className="relative w-28 h-28 rounded-full bg-red-500 flex items-center justify-center shadow-[0_0_40px_rgba(239,68,68,0.6)]">
+                <span className="text-6xl text-white">🎤</span>
+              </div>
+            </div>
+            <p className="text-white text-2xl font-bold tracking-wide animate-pulse">
+              ... Dime, te escucho ...
+            </p>
+            <button
+              onClick={stopRecording}
+              className="mt-8 px-6 py-2 bg-white text-[var(--text-primary)] rounded-full font-bold shadow-lg transition-transform active:scale-95"
+            >
+              Detener grabación
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

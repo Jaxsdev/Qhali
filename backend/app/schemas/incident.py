@@ -15,6 +15,7 @@ class IncidentResponse(BaseModel):
     image_url: Optional[str]
     latitude: float
     longitude: float
+    address: Optional[str] = None
     status: str
     validation_count: int = 0
     created_at: datetime
@@ -35,6 +36,7 @@ class IncidentPublicItem(BaseModel):
     image_url: Optional[str]
     latitude: float
     longitude: float
+    address: Optional[str] = None
     status: str
     validation_count: int = 0
     created_at: datetime
@@ -57,3 +59,23 @@ class DuplicateItem(BaseModel):
 class DuplicateCheckResponse(BaseModel):
     has_duplicates: bool
     duplicates: list[DuplicateItem]
+
+
+class CommentBase(BaseModel):
+    content: str
+
+
+class CommentCreate(CommentBase):
+    latitude: float
+    longitude: float
+
+
+class CommentResponse(CommentBase):
+    id: int
+    incident_id: int
+    user_id: int
+    public_alias: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

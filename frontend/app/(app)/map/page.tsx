@@ -150,83 +150,77 @@ export default function MapPage() {
           />
         )}
 
-        {/* Bottom sheet — incident detail */}
+        {/* Side panel — incident detail */}
         {selected && (
-          <div className="absolute bottom-0 left-0 right-0 z-20 animate-slide-up">
-            <div
-              className="mx-auto max-w-lg rounded-t-2xl p-4 shadow-lg"
-              style={{
-                background: "var(--bg-card)",
-                borderTop: "1px solid var(--border-subtle)",
-                boxShadow: "0 -4px 24px rgba(0,0,0,0.12)",
-              }}
-            >
-              {/* Drag handle */}
-              <div className="w-8 h-1 rounded-full mx-auto mb-3" style={{ background: "var(--border)" }} />
-
-              <div className="flex items-start gap-3">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
-                  style={{ background: "var(--bg-primary)", border: "1px solid var(--border-subtle)" }}
-                >
-                  {CATEGORY_ICONS[selected.category] ?? "📌"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium capitalize" style={{ color: "var(--text-muted)" }}>
-                        {selected.category}
-                      </p>
-                      <StatusBadge status={selected.status} size="sm" />
-                    </div>
-                    <button
-                      onClick={() => setSelected(null)}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{
-                        background: "var(--bg-primary)",
-                        border: "1px solid var(--border-subtle)",
-                        color: "var(--text-muted)",
-                      }}
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  <p className="text-sm mt-2 leading-snug" style={{ color: "var(--text-primary)" }}>
-                    {selected.description}
-                  </p>
-
-                  <div className="flex items-center gap-3 mt-3">
-                    <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                      📍 {selected.latitude.toFixed(4)}, {selected.longitude.toFixed(4)}
-                    </span>
-                    <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                      ✓ {selected.validation_count} validaciones
-                    </span>
-                    <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                      {formatDate(selected.created_at)}
-                    </span>
-                  </div>
-
-                  <p className="text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>
-                    Reportado por {selected.public_alias}
-                  </p>
-                </div>
+          <div className="absolute top-4 right-4 bottom-4 z-[1000] w-[calc(100%-2rem)] md:w-96 animate-fade-in overflow-y-auto rounded-2xl"
+               style={{ background: "var(--bg-card)", border: "1px solid var(--border-subtle)", boxShadow: "0 10px 40px -10px rgba(0,0,0,0.15)" }}>
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Detalle del reporte</h3>
+                <button onClick={() => setSelected(null)} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
 
-              {selected.image_url && (
-                <div className="mt-3 rounded-xl overflow-hidden" style={{ maxHeight: "160px" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={selected.image_url}
-                    alt="Foto del incidente"
-                    className="w-full object-cover"
-                    style={{ maxHeight: "160px" }}
-                  />
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl" style={{ background: "var(--bg-primary)", border: "1px solid var(--border-subtle)" }}>
+                    {CATEGORY_ICONS[selected.category] ?? "📌"}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold capitalize" style={{ color: "var(--text-primary)" }}>{selected.category}</p>
+                    <StatusBadge status={selected.status} size="sm" />
+                  </div>
                 </div>
-              )}
+
+                <div className="space-y-1">
+                  <p className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Descripción</p>
+                  <p className="text-sm leading-relaxed" style={{ color: "var(--text-primary)" }}>{selected.description}</p>
+                </div>
+
+                <div className="space-y-3 bg-gray-50 p-4 rounded-xl border border-[var(--border-subtle)]">
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm">📍</span>
+                    <div>
+                      <p className="text-xs font-bold text-[var(--text-muted)]">Ubicación</p>
+                      <p className="text-xs">{selected.address || `${selected.latitude.toFixed(5)}, ${selected.longitude.toFixed(5)}`}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm">📅</span>
+                    <div>
+                      <p className="text-xs font-bold text-[var(--text-muted)]">Fecha</p>
+                      <p className="text-xs">{formatDate(selected.created_at)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm">👤</span>
+                    <div>
+                      <p className="text-xs font-bold text-[var(--text-muted)]">Reportado por</p>
+                      <p className="text-xs">{selected.public_alias}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm">✓</span>
+                    <div>
+                      <p className="text-xs font-bold text-[var(--text-muted)]">Validaciones</p>
+                      <p className="text-xs">{selected.validation_count}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {selected.image_url && (
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Fotografía</p>
+                    <div className="rounded-xl overflow-hidden border border-[var(--border-subtle)]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={selected.image_url} alt="Foto del incidente" className="w-full object-cover" />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -241,14 +235,14 @@ export default function MapPage() {
           boxShadow: "0 -1px 0 var(--border-subtle)",
         }}
       >
-        <div className="max-w-lg mx-auto flex items-stretch gap-2 overflow-x-auto py-1 scrollbar-thin">
+        <div className="w-full max-w-5xl mx-auto flex items-stretch md:justify-center gap-2 md:gap-4 overflow-x-auto py-1 scrollbar-thin">
           {CATEGORY_FILTERS.map((f) => {
             const active = activeCategory === f.key;
             return (
               <button
                 key={f.key}
                 onClick={() => setActiveCategory(f.key)}
-                className="flex-shrink-0 flex flex-col items-center justify-center p-2 rounded-none transition-all duration-150 active:scale-95 border cursor-pointer min-w-[72px]"
+                className="flex-shrink-0 flex flex-col items-center justify-center p-2 md:py-3 rounded-none transition-all duration-150 active:scale-95 border cursor-pointer min-w-[72px] md:min-w-[100px]"
                 style={{
                   background: active ? "var(--qhali-primary-pale)" : "var(--bg-card)",
                   borderColor: active ? "var(--text-primary)" : "var(--border)",

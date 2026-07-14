@@ -161,3 +161,62 @@ def generate_executive_summary(incidents_data: list) -> str:
         print(f"[AI Summary Error] Error al generar resumen con Claude: {e}")
         return "Error interno al conectar con la IA para generar el resumen."
 
+def rewrite_incident_description(raw_text: str) -> str:
+    """
+    Toma una transcripción de voz (raw_text) y usa Claude API para reescribirla
+    de forma concisa y profesional, extrayendo detalles clave (lugar, hora, problema).
+    """
+    if not ANTHROPIC_API_KEY:
+        # Fallback si no hay API Key configurada
+        return f"[Redacción simulada] {raw_text[:200]}..."
+
+    prompt = f"""
+    Eres un asistente de redacción para QHALI, una plataforma de reporte ciudadano.
+    A continuación recibirás una transcripción cruda de voz (dictado) de un ciudadano reportando un problema en la ciudad:
+    
+    "{raw_text}"
+    
+    Tu tarea es reescribir este reporte en un texto corto, claro y formal (máximo 250 caracteres).
+    Asegúrate de extraer y mantener los detalles más importantes como:
+    - Lugar (nombre de calle, zona, si se menciona).
+    - Hora o fecha (si se menciona).
+    - El problema exacto.
+    - El nivel de gravedad descrito.
+    
+    Responde ÚNICAMENTE con la descripción redactada. Sin comillas, sin introducciones ni saludos.
+    """
+
+    try:
+        headers = {
+            "x-api-key": ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json"
+        }
+        
+        with httpx.Client(timeout=10.0) as client:
+            response = client.post(
+                "https://api.anthropic.com/v1/messages",
+                headers=headers,
+                json={
+                    "model": "claude-haiku-4-5-20251001",
+                    "max_tokens": 150,
+                    "messages": [
+                        {"role": "user", "content": prompt}
+                    ]
+                }
+            )
+            
+            if response.status_code == 200:
+                res_data = response.json()
+                content_text = res_data["content"][0]["text"].strip()
+                return content_text
+            elif response.status_code == 404:
+                return f"[Simulado] {raw_text[:200]}..."
+            else:
+                print(f"[AI Rewrite Error] HTTP {response.status_code}: {response.text}")
+                return raw_text
+    except Exception as e:
+        print(f"[AI Rewrite Error] Error al reescribir con Claude: {e}")
+        return raw_text
+
+

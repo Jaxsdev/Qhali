@@ -37,7 +37,7 @@ export default function WeatherWidget({ embedded = false }: { embedded?: boolean
       {/* Decorative dots background pattern */}
       <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#FF6B35_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
 
-      <div className="relative z-10 space-y-4">
+      <div className="relative z-10 space-y-2">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -52,14 +52,14 @@ export default function WeatherWidget({ embedded = false }: { embedded?: boolean
         </div>
 
         {/* Current / Selected Day Hero Details */}
-        <div className="flex items-center justify-between p-4 bg-[var(--bg-primary)] border border-[var(--text-primary)]">
-          <div className="space-y-1">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+        <div className="flex items-center justify-between p-2.5 bg-[var(--bg-primary)] border border-[var(--text-primary)]">
+          <div className="space-y-0.5">
+            <p className="text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
               Pronóstico ({selectedDay.day})
             </p>
             <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-black text-[var(--text-primary)]">{selectedDay.tempMax}°C</span>
-              <span className="text-sm font-bold text-[var(--text-muted)]">/ {selectedDay.tempMin}°C</span>
+              <span className="text-xl font-black text-[var(--text-primary)]">{selectedDay.tempMax}°C</span>
+              <span className="text-xs font-bold text-[var(--text-muted)]">/ {selectedDay.tempMin}°C</span>
             </div>
             <p className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-1.5">
               <span>{selectedDay.icon}</span>
@@ -84,17 +84,17 @@ export default function WeatherWidget({ embedded = false }: { embedded?: boolean
               <button
                 key={day.day}
                 onClick={() => setSelectedDay(day)}
-                className={`py-2 px-1 text-center transition-all border duration-100 flex flex-col items-center justify-between cursor-pointer ${
+                className={`py-1 px-0.5 text-center transition-all border duration-100 flex flex-col items-center justify-between cursor-pointer ${
                   isSelected
                     ? "border-[var(--text-primary)] bg-[var(--qhali-primary)] text-white"
                     : "border-[var(--border)] bg-white hover:bg-[var(--bg-primary)] text-[var(--text-primary)]"
                 }`}
               >
-                <span className={`text-[10px] font-bold ${isSelected ? "text-white" : "text-[var(--text-muted)]"}`}>
+                <span className={`text-[9px] font-bold ${isSelected ? "text-white" : "text-[var(--text-muted)]"}`}>
                   {day.day}
                 </span>
-                <span className="text-lg my-1">{day.icon}</span>
-                <span className="text-[10px] font-black">{day.tempMax}°</span>
+                <span className="text-sm my-0.5">{day.icon}</span>
+                <span className="text-[9px] font-black">{day.tempMax}°</span>
               </button>
             );
           })}
