@@ -63,12 +63,20 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "var(--bg-primary)" }}>
+    <div className="min-h-screen flex flex-col relative" style={{ background: "var(--bg-primary)" }}>
+      {/* Background Image Layer */}
+      <div 
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        style={{ 
+          backgroundImage: "url('/bg-huancayo.jpg')",
+          filter: "blur(6px) brightness(0.4)"
+        }}
+      />
 
       {/* Franja superior de color */}
-      <div className="w-full h-2" style={{ background: "var(--qhali-primary)" }} />
+      <div className="relative z-10 w-full h-2" style={{ background: "var(--qhali-primary)" }} />
 
-      <div className="flex-1 flex flex-col items-center justify-center px-5 py-8">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 py-8">
 
         {/* Logo + nombre */}
         <div className="animate-slide-up mb-7 text-center w-full max-w-sm">
@@ -79,8 +87,8 @@ export default function LoginPage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="QHALI Logo" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-3xl brand-text">QHALI</h1>
-          <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
+          <h1 className="text-3xl brand-text" style={{ textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}>QHALI</h1>
+          <p className="text-sm mt-1 text-white font-medium" style={{ textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}>
             Reporte ciudadano · Huancayo, Junín
           </p>
         </div>
