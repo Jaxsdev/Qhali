@@ -23,6 +23,8 @@ class IncidentResponse(BaseModel):
     ai_priority: Optional[str] = None
     ai_is_valid: Optional[bool] = None
     ai_summary: Optional[str] = None
+    resolution_image_url: Optional[str] = None
+    resolution_comment: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -44,6 +46,8 @@ class IncidentPublicItem(BaseModel):
     ai_priority: Optional[str] = None
     ai_is_valid: Optional[bool] = None
     ai_summary: Optional[str] = None
+    resolution_image_url: Optional[str] = None
+    resolution_comment: Optional[str] = None
 
     class Config:
         from_attributes = True
