@@ -81,8 +81,8 @@ app.mount("/static/images", StaticFiles(directory=_UPLOADS_DIR), name="images")
 # ── CORS ──
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
