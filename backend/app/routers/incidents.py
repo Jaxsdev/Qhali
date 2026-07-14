@@ -33,6 +33,7 @@ class RewriteResponse(BaseModel):
 
 from app.models.incident_db import Incident, IncidentComment
 from app.models.user_db import User
+from app.models.validation_db import Validation
 from app.schemas.incident import DuplicateCheckResponse, DuplicateItem, IncidentPublicItem, IncidentResponse, CommentCreate, CommentResponse
 from app.schemas.validation import NearbyIncidentItem, ValidateRequest, ValidateResponse
 from app.utils.auth_utils import get_current_user
@@ -458,6 +459,10 @@ async def delete_incident(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="No tienes permiso para eliminar este incidente.",
         )
+
+    # Eliminar registros dependientes primero (validaciones y comentarios) para evitar error de Foreign Key
+    db.query(Validation).filter(Validation.incident_id == incident_id).delete(synchronize_session=False)
+    db.query(IncidentComment).filter(IncidentComment.incident_id == incident_id).delete(synchronize_session=False)
 
     db.delete(incident)
     db.commit()
