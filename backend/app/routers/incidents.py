@@ -111,6 +111,17 @@ async def create_incident(
             detail="La imagen supera el tamaño máximo de 10 MB.",
         )
 
+    # ── Integración de IA con Claude (Moderación Visual) ──
+    from app.utils.ai import analyze_incident_text
+    ai_res = analyze_incident_text(description, image_bytes=contents, image_mime=image.content_type)
+    
+    # Si la IA determina que no es un reporte válido o seguro, rechazamos de inmediato (Opción B)
+    if not ai_res.get("is_valid", True):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tu reporte o imagen han sido bloqueados por nuestras políticas de seguridad comunitaria. Asegúrate de subir contenido válido y respetuoso."
+        )
+
     os.makedirs(_UPLOAD_DIR, exist_ok=True)
     ext = "jpg"
     if image.filename and "." in image.filename:
@@ -147,14 +158,7 @@ async def create_incident(
         base = str(request.base_url).rstrip("/")
         image_url = f"{base}/static/images/{filename}"
 
-    # ── Integración de IA con Claude ──
-    from app.utils.ai import analyze_incident_text
-    ai_res = analyze_incident_text(description)
-    
-    # Si la IA determina que no es un reporte válido (spam, insulto), se modera automáticamente
     status_inicial = "Pendiente"
-    if not ai_res.get("is_valid", True):
-        status_inicial = "Moderado"
 
     incident = Incident(
         user_id=current_user.id,

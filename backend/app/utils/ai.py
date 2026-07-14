@@ -5,12 +5,14 @@ from app.config import settings
 # Usar el API Key configurado en settings
 ANTHROPIC_API_KEY = settings.ANTHROPIC_API_KEY
 
-def analyze_incident_text(description: str) -> dict:
+import base64
+
+def analyze_incident_text(description: str, image_bytes: bytes = None, image_mime: str = None) -> dict:
     """
-    Analiza la descripción de una incidencia urbana usando Claude API para:
+    Analiza la descripción e imagen (opcional) de una incidencia urbana usando Claude API para:
     - Sugerir una categoría adecuada.
     - Evaluar la urgencia / prioridad (Baja, Media, Alta, Crítica).
-    - Validar si es una descripción coherente y real de un problema urbano (True / False).
+    - Validar si es coherente, real y segura (True / False).
     - Crear un título corto de 5 palabras.
     """
     if not ANTHROPIC_API_KEY:
@@ -24,14 +26,14 @@ def analyze_incident_text(description: str) -> dict:
 
     prompt = f"""
     Eres un asistente de Inteligencia Artificial para la plataforma de reporte ciudadano de incidencias llamada QHALI.
-    Analiza la siguiente descripción de un problema de la ciudad y clasifícala en formato JSON.
+    Analiza la siguiente descripción de un problema de la ciudad y (si se proporciona) la imagen adjunta. Clasifícala en formato JSON.
 
     Descripción del ciudadano: "{description}"
 
     Debes responder únicamente con un objeto JSON válido con las siguientes claves exactas:
     1. "suggested_category": una de estas categorías exactas: "bache", "alumbrado", "basura", "agua", "alcantarillado", "señalización", "áreas_verdes", "ruido", "seguridad", "robos", "otro".
-    2. "priority": una prioridad exacta de urgencia: "Baja", "Media", "Alta", "Crítica". (Usa "Crítica" solo ante situaciones de peligro de vida inminente como cables de alta tensión expuestos, postes por caer o colapsos estructurales).
-    3. "is_valid": un booleano (true o false). Pon false si el texto es spam, insultos, bromas, información sin sentido lógico, o no describe ningún problema en la ciudad.
+    2. "priority": una prioridad exacta de urgencia: "Baja", "Media", "Alta", "Crítica". (Usa "Crítica" solo ante situaciones de peligro inminente).
+    3. "is_valid": un booleano (true o false). IMPORTANTE: Pon false si el texto es spam, insultos, bromas, o si la IMAGEN (si la hay) contiene desnudez, violencia explícita, material obsceno, o es un meme/imagen irrelevante que no muestra un problema urbano real.
     4. "summary": un resumen corto del problema en un título de 5 palabras como máximo (ej. "Bache profundo en pista").
 
     Responde exclusivamente el objeto JSON crudo. No agregues etiquetas de markdown como ```json o ```, ni explicaciones o introducciones.
@@ -43,9 +45,31 @@ def analyze_incident_text(description: str) -> dict:
             "anthropic-version": "2023-06-01",
             "content-type": "application/json"
         }
-        
+        # Preparar el contenido del mensaje (multimodal si hay imagen)
+        message_content = []
+        if image_bytes and image_mime:
+            # Claude 3.5 Haiku acepta imágenes en base64
+            img_b64 = base64.b64encode(image_bytes).decode("utf-8")
+            message_content.append({
+                "type": "image",
+                "source": {
+                    "type": "base64",
+                    "media_type": image_mime,
+                    "data": img_b64
+                }
+            })
+            # Aumentar timeout al subir imágenes
+            timeout_val = 20.0
+        else:
+            timeout_val = 10.0
+            
+        message_content.append({
+            "type": "text",
+            "text": prompt
+        })
+
         # Llamamos a Claude 3.5 Haiku por ser súper rápido y preciso
-        with httpx.Client(timeout=10.0) as client:
+        with httpx.Client(timeout=timeout_val) as client:
             response = client.post(
                 "https://api.anthropic.com/v1/messages",
                 headers=headers,
@@ -53,7 +77,7 @@ def analyze_incident_text(description: str) -> dict:
                     "model": "claude-haiku-4-5-20251001",
                     "max_tokens": 512,
                     "messages": [
-                        {"role": "user", "content": prompt}
+                        {"role": "user", "content": message_content}
                     ]
                 }
             )
