@@ -126,7 +126,10 @@ def generate_executive_summary(incidents_data: list) -> str:
     3. A qué horas suelen ocurrir o reportarse más frecuentemente estos problemas.
     4. La gravedad general (prioridades críticas o altas) y una breve recomendación para la gestión de la ciudad.
     
-    Usa un tono profesional, claro y directo. Empieza directamente con el resumen, sin saludos. Usa viñetas si es necesario para facilitar la lectura rápida.
+    REGLAS ESTRICTAS DE FORMATO:
+    - Usa un tono profesional, claro y directo. 
+    - Empieza directamente con los párrafos del resumen, sin saludos y sin poner títulos como "Resumen Ejecutivo".
+    - NO utilices NINGÚN tipo de formato Markdown (prohibido usar asteriscos **, símbolos #, o listas con viñetas). Todo debe ser texto plano continuo dividido solo por saltos de línea (párrafos).
     """
 
     try:

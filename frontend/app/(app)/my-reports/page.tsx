@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Card from "../../components/Card";
 import StatusBadge from "../../components/StatusBadge";
+import { useAuth } from "../../lib/auth";
 import { api, type IncidentResponse } from "../../lib/api";
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -16,7 +17,7 @@ type Tab = (typeof TABS)[number];
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("es-PE", {
-    day: "numeric", month: "short", year: "numeric",
+    day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
   });
 }
 
@@ -25,10 +26,13 @@ function normalizeStatus(raw: string): string {
 }
 
 export default function MyReportsPage() {
-  const [reports, setReports] = useState<IncidentResponse[]>([]);
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+  const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("Todos");
+  const [selectedDate, setSelectedDate] = useState<string>("");
   const [validatingId, setValidatingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
@@ -69,22 +73,33 @@ export default function MyReportsPage() {
   }
 
   useEffect(() => {
-    api.getMyIncidents()
+    // Si es administrador, vemos TODOS los reportes (getAdminIncidents)
+    // Si es ciudadano, solo vemos sus propios reportes (getMyIncidents)
+    const fetcher = isAdmin ? api.getAdminIncidents() : api.getMyIncidents();
+    
+    fetcher
       .then(setReports)
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [isAdmin]);
 
-  const filtered = reports.filter((r) => {
+  const dateFiltered = reports.filter((r) => {
+    if (!selectedDate) return true;
+    const d = new Date(r.created_at);
+    const rDateStr = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + String(d.getDate()).padStart(2, '0');
+    return rDateStr === selectedDate;
+  });
+
+  const filtered = dateFiltered.filter((r) => {
     const s = normalizeStatus(r.status);
     if (activeTab === "En proceso") return s === "pendiente" || s === "confirmado" || s === "en_revisión";
     if (activeTab === "Resueltos") return s === "resuelto";
     return true;
   });
 
-  const countPending  = reports.filter((r) => normalizeStatus(r.status) === "pendiente").length;
-  const countReview   = reports.filter((r) => normalizeStatus(r.status) === "confirmado" || normalizeStatus(r.status) === "en_revisión").length;
-  const countResolved = reports.filter((r) => normalizeStatus(r.status) === "resuelto").length;
+  const countPending  = dateFiltered.filter((r) => normalizeStatus(r.status) === "pendiente").length;
+  const countReview   = dateFiltered.filter((r) => normalizeStatus(r.status) === "confirmado" || normalizeStatus(r.status) === "en_revisión").length;
+  const countResolved = dateFiltered.filter((r) => normalizeStatus(r.status) === "resuelto").length;
 
   return (
     <div className="min-h-screen pb-6" style={{ background: "var(--bg-primary)" }}>
@@ -93,36 +108,62 @@ export default function MyReportsPage() {
       <header className="sticky top-0 z-40 surface-header">
         <div className="max-w-5xl mx-auto px-4 pt-3 pb-2">
           <h1 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
-            Mis reportes
+            {isAdmin ? "Historial de Reportes" : "Mis reportes"}
           </h1>
           <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-            {loading ? "Cargando…" : `${reports.length} reportes realizados`}
+            {loading ? "Cargando…" : `${filtered.length} reportes encontrados`}
           </p>
         </div>
 
-        <div className="max-w-5xl mx-auto px-4 pb-2 flex gap-1">
-          {TABS.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className="text-xs font-medium px-4 py-1.5 rounded-full transition-all cursor-pointer border"
-              style={
-                activeTab === tab
-                  ? {
-                      background: "var(--qhali-primary-pale)",
-                      color: "var(--qhali-primary)",
-                      borderColor: "var(--qhali-primary-light)",
-                    }
-                  : {
-                      color: "var(--text-muted)",
-                      borderColor: "transparent",
-                      background: "transparent",
-                    }
-              }
-            >
-              {tab}
-            </button>
-          ))}
+        <div className="max-w-5xl mx-auto px-4 pb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex gap-1">
+            {TABS.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className="text-xs font-medium px-4 py-1.5 rounded-full transition-all cursor-pointer border"
+                style={
+                  activeTab === tab
+                    ? {
+                        background: "var(--qhali-primary-pale)",
+                        color: "var(--qhali-primary)",
+                        borderColor: "var(--qhali-primary-light)",
+                      }
+                    : {
+                        color: "var(--text-muted)",
+                        borderColor: "transparent",
+                        background: "transparent",
+                      }
+                }
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          {isAdmin && (
+            <div className="flex items-center gap-2">
+              <label htmlFor="calendarFilter" className="text-xs font-bold" style={{ color: "var(--text-muted)" }}>
+                Filtrar por fecha:
+              </label>
+              <input 
+                id="calendarFilter"
+                type="date" 
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="text-xs p-1.5 border outline-none bg-white font-bold"
+                style={{ borderColor: "var(--border-subtle)", color: "var(--text-primary)" }}
+              />
+              {selectedDate && (
+                <button 
+                  onClick={() => setSelectedDate("")}
+                  className="text-xs hover:underline cursor-pointer"
+                  style={{ color: "var(--qhali-primary)" }}
+                >
+                  Limpiar
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </header>
 

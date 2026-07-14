@@ -113,7 +113,7 @@ export default function Sidebar() {
               <span className={`transition-transform duration-150 group-hover:scale-110`}>
                 {item.icon(isActive)}
               </span>
-              <span>{item.label}</span>
+              <span>{item.href === "/my-reports" && isAdmin ? "Historial de Reportes" : item.label}</span>
             </Link>
           );
         })}
