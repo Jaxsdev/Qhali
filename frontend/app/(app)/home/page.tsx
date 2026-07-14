@@ -472,12 +472,14 @@ export default function HomePage() {
               ) : (
                 <div className={`grid grid-cols-1 md:grid-cols-2 ${isAdmin ? 'lg:grid-cols-3' : ''} gap-4`}>
                   {recentIncidents.map((inc) => (
-                    <Card key={inc.id} className="overflow-hidden border border-[var(--text-primary)] rounded-none flex flex-col justify-between bg-white">
+                    <Card 
+                      key={inc.id} 
+                      className="overflow-hidden border border-[var(--text-primary)] rounded-none flex flex-col justify-between bg-white h-full"
+                      onClick={() => router.push(`/map?incidentId=${inc.id}`)}
+                      hover={true}
+                    >
                       {/* Post Header */}
-                      <div 
-                        className="p-3 flex items-center justify-between border-b border-[var(--border)] cursor-pointer hover:bg-gray-50 transition-colors"
-                        onClick={() => router.push(`/map?incidentId=${inc.id}`)}
-                      >
+                      <div className="p-3 flex items-center justify-between border-b border-[var(--border)]">
                         <div className="flex items-center gap-2.5">
                           <div
                             className="w-8 h-8 flex items-center justify-center text-white text-xs font-bold border border-[var(--text-primary)]"
@@ -522,7 +524,7 @@ export default function HomePage() {
                         <div 
                           className="relative w-full bg-gray-50 border-b border-[var(--border)] overflow-hidden flex items-center justify-center cursor-pointer"
                           style={{ minHeight: "180px", maxHeight: "300px" }}
-                          onClick={() => setZoomedImage(inc.image_url)}
+                          onClick={(e) => { e.stopPropagation(); setZoomedImage(inc.image_url); }}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img 
@@ -545,7 +547,7 @@ export default function HomePage() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
                             <button
-                              onClick={() => handleLikeValidate(inc.id, inc.latitude, inc.longitude)}
+                              onClick={(e) => { e.stopPropagation(); handleLikeValidate(inc.id, inc.latitude, inc.longitude); }}
                               disabled={validatingId === inc.id}
                               className="flex items-center gap-1.5 text-xs font-bold hover:text-[var(--qhali-primary)] transition-colors cursor-pointer group"
                               style={{ color: "var(--text-primary)" }}
@@ -557,7 +559,7 @@ export default function HomePage() {
                             </button>
 
                             <button
-                              onClick={() => handleShareWhatsApp(inc.id, inc.category, inc.description)}
+                              onClick={(e) => { e.stopPropagation(); handleShareWhatsApp(inc.id, inc.category, inc.description); }}
                               className="flex items-center gap-1.5 text-xs font-bold hover:text-[#25D366] transition-colors cursor-pointer group"
                               style={{ color: "var(--text-primary)" }}
                             >
@@ -738,6 +740,21 @@ export default function HomePage() {
           >
             💬
           </button>
+        </div>
+      )}
+      
+      {/* Image Zoom Modal */}
+      {zoomedImage && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 cursor-zoom-out p-4"
+          onClick={() => setZoomedImage(null)}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img 
+            src={zoomedImage} 
+            alt="Ampliación" 
+            className="max-w-full max-h-[90vh] object-contain rounded-sm"
+          />
         </div>
       )}
     </div>

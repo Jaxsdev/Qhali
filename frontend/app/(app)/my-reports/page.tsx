@@ -276,12 +276,13 @@ export default function MyReportsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filtered.map((report, i) => (
                   <div key={report.id} className="animate-slide-up" style={{ animationDelay: `${i * 0.05}s` }}>
-                    <Card className="overflow-hidden border border-[var(--text-primary)] rounded-none flex flex-col justify-between bg-white h-full">
+                    <Card 
+                      className="overflow-hidden border border-[var(--text-primary)] rounded-none flex flex-col justify-between bg-white h-full"
+                      onClick={() => router.push(`/map?incidentId=${report.id}`)}
+                      hover={true}
+                    >
                       {/* Post Header */}
-                      <div 
-                        className="p-3 flex items-center justify-between border-b border-[var(--border)] cursor-pointer hover:bg-gray-50 transition-colors"
-                        onClick={() => router.push(`/map?incidentId=${report.id}`)}
-                      >
+                      <div className="p-3 flex items-center justify-between border-b border-[var(--border)]">
                         <div className="flex items-center gap-2.5">
                           <div
                             className="w-8 h-8 flex items-center justify-center text-white text-xs font-bold border border-[var(--text-primary)]"
@@ -312,7 +313,7 @@ export default function MyReportsPage() {
                       {report.image_url ? (
                         <div 
                           className="relative w-full h-48 bg-gray-100 flex-shrink-0 border-b border-[var(--border)] cursor-pointer overflow-hidden"
-                          onClick={() => setZoomedImage(report.image_url)}
+                          onClick={(e) => { e.stopPropagation(); setZoomedImage(report.image_url); }}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={report.image_url} alt="" className="w-full h-full object-cover hover:scale-[1.02] transition-transform" />
@@ -331,7 +332,7 @@ export default function MyReportsPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
                             <button
-                              onClick={() => handleDeleteIncident(report.id)}
+                              onClick={(e) => { e.stopPropagation(); handleDeleteIncident(report.id); }}
                               disabled={deletingId === report.id}
                               className="flex items-center gap-1.5 text-xs font-bold hover:text-[var(--color-error)] transition-colors cursor-pointer group"
                               style={{ color: "var(--text-primary)" }}
@@ -343,7 +344,7 @@ export default function MyReportsPage() {
                             </button>
 
                             <button
-                              onClick={() => handleShareWhatsApp(report.id, report.category, report.description)}
+                              onClick={(e) => { e.stopPropagation(); handleShareWhatsApp(report.id, report.category, report.description); }}
                               className="flex items-center gap-1.5 text-xs font-bold hover:text-[#25D366] transition-colors cursor-pointer group"
                               style={{ color: "var(--text-primary)" }}
                             >
