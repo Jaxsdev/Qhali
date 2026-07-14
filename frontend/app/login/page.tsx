@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "../lib/auth";
 import Button from "../components/Button";
 import Input from "../components/Input";
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [newAlias, setNewAlias] = useState<string | null>(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const isRegister = mode === "register";
 
@@ -28,6 +30,7 @@ export default function LoginPage() {
     if (!password) return "La contraseña es obligatoria";
     if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres";
     if (isRegister && password !== confirmPassword) return "Las contraseñas no coinciden";
+    if (isRegister && !termsAccepted) return "Debes aceptar los términos y condiciones para registrarte";
     return null;
   }
 
@@ -112,7 +115,13 @@ export default function LoginPage() {
               <button
                 key={m}
                 type="button"
-                onClick={() => { setMode(m); setError(null); setNewAlias(null); setConfirmPassword(""); }}
+                onClick={() => { 
+                  setMode(m); 
+                  setError(null); 
+                  setNewAlias(null); 
+                  setConfirmPassword("");
+                  setTermsAccepted(false);
+                }}
                 className="flex-1 py-2 rounded-md text-sm font-semibold transition-all duration-150"
                 style={{
                   background: mode === m ? "var(--bg-card)" : "transparent",
@@ -174,19 +183,36 @@ export default function LoginPage() {
               />
 
               {isRegister && (
-                <Input
-                  label="Confirmar contraseña"
-                  type="password"
-                  placeholder="Repite tu contraseña"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  disabled={submitting}
-                  icon={
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                    </svg>
-                  }
-                />
+                <>
+                  <Input
+                    label="Confirmar contraseña"
+                    type="password"
+                    placeholder="Repite tu contraseña"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    disabled={submitting}
+                    icon={
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                      </svg>
+                    }
+                  />
+                  <div className="flex items-start mt-2">
+                    <div className="flex items-center h-5">
+                      <input
+                        id="terms"
+                        type="checkbox"
+                        checked={termsAccepted}
+                        onChange={(e) => setTermsAccepted(e.target.checked)}
+                        className="w-4 h-4 rounded"
+                        style={{ accentColor: "var(--qhali-primary)" }}
+                      />
+                    </div>
+                    <label htmlFor="terms" className="ml-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+                      He leído y acepto los <Link href="/terms" target="_blank" className="font-semibold underline" style={{ color: "var(--qhali-primary)" }}>Términos y Condiciones</Link> sobre el reporte anónimo y el uso de la plataforma.
+                    </label>
+                  </div>
+                </>
               )}
 
               {error && (
@@ -215,7 +241,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-[10px] mt-5 max-w-xs" style={{ color: "var(--text-muted)" }}>
-          Al continuar aceptas los términos de servicio y política de privacidad de QHALI.
+          Al continuar aceptas los <Link href="/terms" target="_blank" className="underline hover:text-white transition-colors">términos de servicio y política de privacidad</Link> de QHALI.
         </p>
       </div>
     </div>
