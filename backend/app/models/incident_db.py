@@ -26,6 +26,10 @@ class Incident(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
+    # ── Evidencia de Resolución ──
+    resolution_image_url = Column(String, nullable=True)
+    resolution_comment = Column(String, nullable=True)
+
     # ── Campos de IA (Claude) ──
     ai_category = Column(String, nullable=True)
     ai_priority = Column(String, nullable=True)

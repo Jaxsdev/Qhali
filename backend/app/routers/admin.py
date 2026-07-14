@@ -4,11 +4,16 @@ Dashboard y gestión administrativa de incidencias.
 """
 
 # pyrefly: ignore [missing-import]
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 # pyrefly: ignore [missing-import]
 from sqlalchemy import func
 # pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
+import uuid
+import os
+import httpx
+
+from app.config import Settings
 
 from app.database import get_db
 from app.models.incident_db import Incident
@@ -18,7 +23,7 @@ from app.utils.auth_utils import get_current_user
 
 router = APIRouter()
 
-_VALID_STATUSES = {"Pendiente", "Confirmado", "En revisión", "Resuelto"}
+_VALID_STATUSES = {"Pendiente", "Confirmado", "En revisión"}
 
 
 def _require_admin(current_user: User) -> None:
@@ -81,6 +86,82 @@ def update_incident_status(
     db.commit()
     db.refresh(incident)
     return incident
+
+
+@router.post(
+    "/incidents/{incident_id}/resolve",
+    response_model=AdminIncidentItem,
+    summary="Resolver incidencia con evidencia (admin)",
+    description="Cambia el estado a 'Resuelto' y guarda la foto y comentario de evidencia.",
+)
+async def resolve_incident(
+    incident_id: int,
+    image: UploadFile = File(...),
+    comment: str = Form(..., min_length=5, max_length=1000),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _require_admin(current_user)
+
+    incident = db.query(Incident).filter(Incident.id == incident_id).first()
+    if not incident:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Incidente no encontrado.",
+        )
+
+    if incident.status == "Resuelto":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El incidente ya está resuelto.",
+        )
+
+    # ── Upload Image ──
+    contents = await image.read()
+    ext = "jpg"
+    if image.filename and "." in image.filename:
+        ext = image.filename.rsplit(".", 1)[-1].lower()
+    filename = f"resolution_{uuid.uuid4().hex}.{ext}"
+
+    settings = Settings()
+    image_url = ""
+    
+    if settings.SUPABASE_URL and settings.SUPABASE_KEY:
+        try:
+            url = f"{settings.SUPABASE_URL}/storage/v1/object/qhali-images/{filename}"
+            headers = {
+                "Authorization": f"Bearer {settings.SUPABASE_KEY}",
+                "apikey": settings.SUPABASE_KEY,
+                "Content-Type": image.content_type
+            }
+            async with httpx.AsyncClient() as client:
+                res = await client.post(url, content=contents, headers=headers)
+                if res.status_code >= 200 and res.status_code < 300:
+                    image_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/qhali-images/{filename}"
+                else:
+                    raise Exception(f"Supabase error: {res.text}")
+        except Exception as e:
+            print(f"Failed to upload to Supabase: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al subir la imagen de evidencia a Supabase."
+            )
+    else:
+        # Fallback to local
+        _UPLOAD_DIR = "uploads"
+        os.makedirs(_UPLOAD_DIR, exist_ok=True)
+        with open(os.path.join(_UPLOAD_DIR, filename), "wb") as f:
+            f.write(contents)
+        image_url = f"/static/images/{filename}"
+
+    incident.status = "Resuelto"
+    incident.resolution_image_url = image_url
+    incident.resolution_comment = comment
+
+    db.commit()
+    db.refresh(incident)
+    return incident
+
 
 
 @router.get(

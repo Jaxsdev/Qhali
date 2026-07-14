@@ -23,6 +23,8 @@ class AdminIncidentItem(BaseModel):
     longitude: Optional[float]
     status: str
     validation_count: int
+    resolution_image_url: Optional[str] = None
+    resolution_comment: Optional[str] = None
     created_at: datetime
 
     class Config:

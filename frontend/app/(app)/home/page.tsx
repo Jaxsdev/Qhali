@@ -52,6 +52,15 @@ export default function HomePage() {
   // Zoomed Image State
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
+  // Resolution Flow State
+  const [resolvingId, setResolvingId] = useState<number | null>(null);
+  const [resolutionComment, setResolutionComment] = useState("");
+  const [resolutionFile, setResolutionFile] = useState<File | null>(null);
+  const [isResolving, setIsResolving] = useState(false);
+
+  // Evidence Modal State
+  const [viewingEvidence, setViewingEvidence] = useState<{url: string, comment: string} | null>(null);
+
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -138,6 +147,26 @@ export default function HomePage() {
   function handleShareWhatsApp(id: number, category: string, description: string) {
     const text = `🚨 *QHALI — Reporte Ciudadano* 🚨\n\n*Categoría:* #${category}\n*Detalle:* ${description}\n\nAyúdanos a confirmar este reporte para alertar a las autoridades. Consúltalo aquí:\n${window.location.origin}/post/${id}`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
+  }
+
+  async function submitResolution(e: React.FormEvent) {
+    e.preventDefault();
+    if (!resolvingId || !resolutionFile || resolutionComment.length < 5) return;
+    setIsResolving(true);
+    try {
+      const fd = new FormData();
+      fd.append("image", resolutionFile);
+      fd.append("comment", resolutionComment);
+      const updated = await api.resolveIncident(resolvingId, fd);
+      setIncidents((prev) => prev.map((inc) => inc.id === resolvingId ? { ...inc, ...updated } : inc));
+      setResolvingId(null);
+      setResolutionComment("");
+      setResolutionFile(null);
+    } catch (err: any) {
+      alert(err.message || "Error al resolver incidente");
+    } finally {
+      setIsResolving(false);
+    }
   }
 
   const aliasInitial = user?.alias_anonimo?.[0]?.toUpperCase() ?? "C";
@@ -575,6 +604,31 @@ export default function HomePage() {
                           </span>
                         </div>
 
+                        {/* Admin Resolve / Citizen View Evidence Buttons */}
+                        {isAdmin && inc.status !== "Resuelto" && (
+                          <div className="pt-2 border-t border-[var(--border-subtle)] mt-2">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setResolvingId(inc.id); }}
+                              className="w-full py-1.5 rounded bg-green-50 text-green-700 text-xs font-bold border border-green-200 hover:bg-green-100 transition-colors"
+                            >
+                              ✅ Resolver Incidente
+                            </button>
+                          </div>
+                        )}
+                        {inc.status === "Resuelto" && inc.resolution_image_url && (
+                          <div className="pt-2 border-t border-[var(--border-subtle)] mt-2">
+                            <button
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                setViewingEvidence({ url: inc.resolution_image_url!, comment: inc.resolution_comment || "" }); 
+                              }}
+                              className="w-full py-1.5 rounded bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200 hover:bg-blue-100 transition-colors"
+                            >
+                              🔍 Ver evidencia de resolución
+                            </button>
+                          </div>
+                        )}
+
                         {/* Caption */}
                         <p className="text-xs leading-normal" style={{ color: "var(--text-primary)" }}>
                           <span className="font-black mr-1.5">{inc.public_alias}</span>
@@ -755,6 +809,74 @@ export default function HomePage() {
             alt="Ampliación" 
             className="max-w-full max-h-[90vh] object-contain rounded-sm"
           />
+        </div>
+      )}
+
+      {/* Resolution Modal */}
+      {resolvingId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-[var(--qhali-primary)] text-white p-4 font-bold flex justify-between items-center">
+              <span>Resolver Incidente</span>
+              <button onClick={() => setResolvingId(null)} className="text-white hover:opacity-75">✕</button>
+            </div>
+            <form onSubmit={submitResolution} className="p-4 flex flex-col gap-4">
+              <div>
+                <label className="block text-xs font-bold mb-1 text-[var(--text-primary)]">Foto de Evidencia (Requerido)</label>
+                <input 
+                  type="file" 
+                  accept="image/png, image/jpeg, image/webp"
+                  required
+                  onChange={(e) => setResolutionFile(e.target.files?.[0] || null)}
+                  className="w-full text-xs"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold mb-1 text-[var(--text-primary)]">Descripción de la Solución (Requerido)</label>
+                <textarea 
+                  required
+                  rows={3}
+                  minLength={5}
+                  value={resolutionComment}
+                  onChange={(e) => setResolutionComment(e.target.value)}
+                  placeholder="Explica brevemente cómo se resolvió..."
+                  className="w-full border border-[var(--border)] rounded p-2 text-xs outline-none focus:border-[var(--qhali-primary)]"
+                />
+              </div>
+              <button 
+                type="submit" 
+                disabled={isResolving || !resolutionFile || resolutionComment.length < 5}
+                className="w-full py-2 bg-green-600 text-white rounded font-bold hover:bg-green-700 transition-colors disabled:opacity-50"
+              >
+                {isResolving ? "Guardando..." : "Confirmar Resolución"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Evidence View Modal */}
+      {viewingEvidence && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 cursor-pointer"
+          onClick={() => setViewingEvidence(null)}
+        >
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden cursor-default" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-blue-600 text-white p-4 font-bold flex justify-between items-center">
+              <span>Evidencia de Resolución</span>
+              <button onClick={() => setViewingEvidence(null)} className="text-white hover:opacity-75">✕</button>
+            </div>
+            <div className="p-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={viewingEvidence.url} alt="Evidencia" className="w-full h-auto max-h-[50vh] object-contain bg-gray-100" />
+            </div>
+            <div className="p-4 bg-gray-50 border-t border-[var(--border)]">
+              <p className="text-xs text-[var(--text-primary)] font-medium leading-relaxed">
+                <span className="font-bold block mb-1">Comentario del Administrador:</span>
+                "{viewingEvidence.comment}"
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>

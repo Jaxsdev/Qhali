@@ -16,7 +16,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 const TABS = ["Todos", "En proceso", "Resueltos"] as const;
 type Tab = (typeof TABS)[number];
 
-const STATUS_OPTIONS = ["Pendiente", "Confirmado", "En revisión", "Resuelto"];
+const STATUS_OPTIONS = ["Pendiente", "Confirmado", "En revisión"];
 const STATUS_STYLE: Record<string, React.CSSProperties> = {
   pendiente: { background: "#FEF3C7", color: "#92400E", border: "1px solid #FDE68A" },
   confirmado: { background: "#FEE2E2", color: "#991B1B", border: "1px solid #FECACA" },
@@ -83,6 +83,15 @@ export default function MyReportsPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
+  // Resolution Flow State
+  const [resolvingId, setResolvingId] = useState<number | null>(null);
+  const [resolutionComment, setResolutionComment] = useState("");
+  const [resolutionFile, setResolutionFile] = useState<File | null>(null);
+  const [isResolving, setIsResolving] = useState(false);
+
+  // Evidence Modal State
+  const [viewingEvidence, setViewingEvidence] = useState<{url: string, comment: string} | null>(null);
+
   async function handleLikeValidate(incId: number, lat: number, lng: number) {
     try {
       setValidatingId(incId);
@@ -102,15 +111,40 @@ export default function MyReportsPage() {
   }
 
   async function handleDeleteIncident(id: number) {
-    if (!confirm("¿Estás seguro de que deseas eliminar este reporte?")) return;
+    if (!confirm("¿Seguro que deseas eliminar este incidente permanentemente?")) return;
+    setDeletingId(id);
     try {
-      setDeletingId(id);
-      await api.deleteIncident(id);
+      const token = localStorage.getItem("qhali_token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1"}/incidents/${id}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error("No se pudo eliminar");
       setReports((prev) => prev.filter((r) => r.id !== id));
     } catch (err: any) {
       alert(err.message || "Error al eliminar");
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  async function submitResolution(e: React.FormEvent) {
+    e.preventDefault();
+    if (!resolvingId || !resolutionFile || resolutionComment.length < 5) return;
+    setIsResolving(true);
+    try {
+      const fd = new FormData();
+      fd.append("image", resolutionFile);
+      fd.append("comment", resolutionComment);
+      const updated = await api.resolveIncident(resolvingId, fd);
+      setReports((prev) => prev.map((r) => r.id === resolvingId ? { ...r, ...updated } : r));
+      setResolvingId(null);
+      setResolutionComment("");
+      setResolutionFile(null);
+    } catch (err: any) {
+      alert(err.message || "Error al resolver incidente");
+    } finally {
+      setIsResolving(false);
     }
   }
 
@@ -361,6 +395,31 @@ export default function MyReportsPage() {
                           </span>
                         </div>
 
+                        {/* Admin Resolve / Citizen View Evidence Buttons */}
+                        {isAdmin && report.status !== "Resuelto" && (
+                          <div className="pt-2 border-t border-[var(--border-subtle)] mt-2">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setResolvingId(report.id); }}
+                              className="w-full py-1.5 rounded bg-green-50 text-green-700 text-xs font-bold border border-green-200 hover:bg-green-100 transition-colors"
+                            >
+                              ✅ Resolver Incidente
+                            </button>
+                          </div>
+                        )}
+                        {report.status === "Resuelto" && report.resolution_image_url && (
+                          <div className="pt-2 border-t border-[var(--border-subtle)] mt-2">
+                            <button
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                setViewingEvidence({ url: report.resolution_image_url!, comment: report.resolution_comment || "" }); 
+                              }}
+                              className="w-full py-1.5 rounded bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200 hover:bg-blue-100 transition-colors"
+                            >
+                              🔍 Ver evidencia de resolución
+                            </button>
+                          </div>
+                        )}
+
                         {/* Caption */}
                         <p className="text-xs leading-normal" style={{ color: "var(--text-primary)" }}>
                           <span className="font-black mr-1.5">{report.public_alias}</span>
@@ -388,6 +447,74 @@ export default function MyReportsPage() {
             alt="Ampliación" 
             className="max-w-full max-h-[90vh] object-contain rounded-sm"
           />
+        </div>
+      )}
+
+      {/* Resolution Modal */}
+      {resolvingId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-[var(--qhali-primary)] text-white p-4 font-bold flex justify-between items-center">
+              <span>Resolver Incidente</span>
+              <button onClick={() => setResolvingId(null)} className="text-white hover:opacity-75">✕</button>
+            </div>
+            <form onSubmit={submitResolution} className="p-4 flex flex-col gap-4">
+              <div>
+                <label className="block text-xs font-bold mb-1 text-[var(--text-primary)]">Foto de Evidencia (Requerido)</label>
+                <input 
+                  type="file" 
+                  accept="image/png, image/jpeg, image/webp"
+                  required
+                  onChange={(e) => setResolutionFile(e.target.files?.[0] || null)}
+                  className="w-full text-xs"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold mb-1 text-[var(--text-primary)]">Descripción de la Solución (Requerido)</label>
+                <textarea 
+                  required
+                  rows={3}
+                  minLength={5}
+                  value={resolutionComment}
+                  onChange={(e) => setResolutionComment(e.target.value)}
+                  placeholder="Explica brevemente cómo se resolvió..."
+                  className="w-full border border-[var(--border)] rounded p-2 text-xs outline-none focus:border-[var(--qhali-primary)]"
+                />
+              </div>
+              <button 
+                type="submit" 
+                disabled={isResolving || !resolutionFile || resolutionComment.length < 5}
+                className="w-full py-2 bg-green-600 text-white rounded font-bold hover:bg-green-700 transition-colors disabled:opacity-50"
+              >
+                {isResolving ? "Guardando..." : "Confirmar Resolución"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Evidence View Modal */}
+      {viewingEvidence && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 cursor-pointer"
+          onClick={() => setViewingEvidence(null)}
+        >
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden cursor-default" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-blue-600 text-white p-4 font-bold flex justify-between items-center">
+              <span>Evidencia de Resolución</span>
+              <button onClick={() => setViewingEvidence(null)} className="text-white hover:opacity-75">✕</button>
+            </div>
+            <div className="p-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={viewingEvidence.url} alt="Evidencia" className="w-full h-auto max-h-[50vh] object-contain bg-gray-100" />
+            </div>
+            <div className="p-4 bg-gray-50 border-t border-[var(--border)]">
+              <p className="text-xs text-[var(--text-primary)] font-medium leading-relaxed">
+                <span className="font-bold block mb-1">Comentario del Administrador:</span>
+                "{viewingEvidence.comment}"
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>

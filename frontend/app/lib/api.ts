@@ -58,6 +58,8 @@ export interface IncidentResponse {
   address?: string | null;
   status: string;
   validation_count: number;
+  resolution_image_url?: string | null;
+  resolution_comment?: string | null;
   created_at: string;
   ai_category?: string | null;
   ai_priority?: string | null;
@@ -94,8 +96,8 @@ export interface AdminIncident {
   category: string;
   description: string;
   image_url: string | null;
-  latitude: number | null;
-  longitude: number | null;
+  latitude: number;
+  longitude: number;
   address?: string | null;
   status: string;
   validation_count: number;
@@ -226,6 +228,21 @@ export const api = {
     return request<AdminIncident>(`/admin/incidents/${incidentId}/status`, {
       method: "PATCH",
       body: JSON.stringify({ status: newStatus }),
+    });
+  },
+
+  resolveIncident(incidentId: number, formData: FormData) {
+    const token = getToken();
+    return fetch(`${API_BASE}/admin/incidents/${incidentId}/resolve`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    }).then(async (res) => {
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Error de red" }));
+        throw new Error(err.detail ?? "Error al resolver reporte");
+      }
+      return res.json() as Promise<AdminIncident>;
     });
   },
 

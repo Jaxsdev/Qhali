@@ -91,6 +91,8 @@ class IncidentResponse(IncidentBase):
     photo_url: Optional[str] = None
     status: IncidentStatus = IncidentStatus.pendiente
     validation_count: int = 0
+    resolution_image_url: Optional[str] = None
+    resolution_comment: Optional[str] = None
     confidence_score: Optional[float] = Field(
         None,
         description="Puntaje de confianza basado en validaciones (uso futuro)",
@@ -111,6 +113,8 @@ class IncidentInDB(IncidentBase):
     photo_url: Optional[str] = None
     status: IncidentStatus = IncidentStatus.pendiente
     validation_count: int = 0
+    resolution_image_url: Optional[str] = None
+    resolution_comment: Optional[str] = None
     confidence_score: Optional[float] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
