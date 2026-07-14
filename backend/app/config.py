@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     # ── IA ──
     ANTHROPIC_API_KEY: Optional[str] = None
 
+    # ── Storage (Supabase) ──
+    SUPABASE_URL: Optional[str] = None
+    SUPABASE_KEY: Optional[str] = None
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

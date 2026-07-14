@@ -24,6 +24,8 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from pydantic import BaseModel
+import httpx
+from app.config import Settings
 
 class RewriteRequest(BaseModel):
     raw_text: str
@@ -114,11 +116,36 @@ async def create_incident(
     if image.filename and "." in image.filename:
         ext = image.filename.rsplit(".", 1)[-1].lower()
     filename = f"{uuid.uuid4().hex}.{ext}"
-    with open(os.path.join(_UPLOAD_DIR, filename), "wb") as f:
-        f.write(contents)
 
-    base = str(request.base_url).rstrip("/")
-    image_url = f"{base}/static/images/{filename}"
+    # Try uploading to Supabase Storage if configured
+    settings = Settings()
+    if settings.SUPABASE_URL and settings.SUPABASE_KEY:
+        try:
+            url = f"{settings.SUPABASE_URL}/storage/v1/object/qhali-images/{filename}"
+            headers = {
+                "Authorization": f"Bearer {settings.SUPABASE_KEY}",
+                "apikey": settings.SUPABASE_KEY,
+                "Content-Type": image.content_type
+            }
+            async with httpx.AsyncClient() as client:
+                res = await client.post(url, content=contents, headers=headers)
+                if res.status_code >= 200 and res.status_code < 300:
+                    image_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/qhali-images/{filename}"
+                else:
+                    raise Exception(f"Supabase error: {res.text}")
+        except Exception as e:
+            print(f"Failed to upload to Supabase: {e}")
+            # Fallback to local upload
+            with open(os.path.join(_UPLOAD_DIR, filename), "wb") as f:
+                f.write(contents)
+            base = str(request.base_url).rstrip("/")
+            image_url = f"{base}/static/images/{filename}"
+    else:
+        # Local upload
+        with open(os.path.join(_UPLOAD_DIR, filename), "wb") as f:
+            f.write(contents)
+        base = str(request.base_url).rstrip("/")
+        image_url = f"{base}/static/images/{filename}"
 
     # ── Integración de IA con Claude ──
     from app.utils.ai import analyze_incident_text
