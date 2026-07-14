@@ -15,6 +15,14 @@ const CATEGORY_ICONS: Record<string, string> = {
 const TABS = ["Todos", "En proceso", "Resueltos"] as const;
 type Tab = (typeof TABS)[number];
 
+const STATUS_OPTIONS = ["Pendiente", "Confirmado", "En revisión", "Resuelto"];
+const STATUS_STYLE: Record<string, React.CSSProperties> = {
+  pendiente: { background: "#FEF3C7", color: "#92400E", border: "1px solid #FDE68A" },
+  confirmado: { background: "#FEE2E2", color: "#991B1B", border: "1px solid #FECACA" },
+  "en_revisión": { background: "#DBEAFE", color: "#1E40AF", border: "1px solid #BFDBFE" },
+  resuelto: { background: "#DCFCE7", color: "#166534", border: "1px solid #BBF7D0" },
+};
+
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("es-PE", {
     day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
@@ -23,6 +31,42 @@ function formatDate(iso: string): string {
 
 function normalizeStatus(raw: string): string {
   return raw.toLowerCase().replace(/\s+/g, "_");
+}
+
+function AdminStatusSelect({ incidentId, currentStatus, onStatusChanged }: { incidentId: number; currentStatus: string; onStatusChanged: (id: number, status: string) => void }) {
+  const [saving, setSaving] = useState(false);
+
+  async function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const newStatus = e.target.value;
+    if (newStatus === currentStatus) return;
+    setSaving(true);
+    try {
+      await api.updateIncidentStatus(incidentId, newStatus);
+      onStatusChanged(incidentId, newStatus);
+    } catch (err) {
+      alert("Error al actualizar el estado");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const key = normalizeStatus(currentStatus);
+  const styleBase = STATUS_STYLE[key] ?? {};
+
+  return (
+    <select
+      value={currentStatus}
+      onChange={handleChange}
+      disabled={saving}
+      onClick={(e) => e.stopPropagation()}
+      className="text-xs font-bold rounded-lg px-2 py-1 cursor-pointer outline-none transition-opacity"
+      style={{ ...styleBase, opacity: saving ? 0.5 : 1, border: styleBase.border }}
+    >
+      {STATUS_OPTIONS.map((s) => (
+        <option key={s} value={s}>{s}</option>
+      ))}
+    </select>
+  );
 }
 
 export default function MyReportsPage() {
@@ -66,6 +110,10 @@ export default function MyReportsPage() {
     } finally {
       setDeletingId(null);
     }
+  }
+
+  function handleStatusChanged(id: number, newStatus: string) {
+    setReports((prev) => prev.map((inc) => inc.id === id ? { ...inc, status: newStatus } : inc));
   }
 
   function handleShareWhatsApp(id: number, category: string, description: string) {
@@ -247,8 +295,17 @@ export default function MyReportsPage() {
                               {formatDate(report.created_at)}
                             </p>
                           </div>
+                          </div>
                         </div>
-                        <StatusBadge status={report.status} />
+                        {isAdmin ? (
+                          <AdminStatusSelect 
+                            incidentId={report.id} 
+                            currentStatus={report.status} 
+                            onStatusChanged={handleStatusChanged} 
+                          />
+                        ) : (
+                          <StatusBadge status={report.status} />
+                        )}
                       </div>
 
                       {/* Post Image */}
