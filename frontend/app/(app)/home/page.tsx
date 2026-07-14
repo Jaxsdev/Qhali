@@ -45,8 +45,12 @@ export default function HomePage() {
   const [chatLoading, setChatLoading] = useState(false);
 
   // AI Summary State
+  // AI Summary State
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
+
+  // Zoomed Image State
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
@@ -380,6 +384,24 @@ export default function HomePage() {
           </div>
         )}
 
+        {/* Modals y Flotantes */}
+
+      {/* Image Zoom Modal */}
+      {zoomedImage && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 cursor-zoom-out p-4"
+          onClick={() => setZoomedImage(null)}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img 
+            src={zoomedImage} 
+            alt="Ampliación" 
+            className="max-w-full max-h-[90vh] object-contain rounded-sm"
+          />
+        </div>
+      )}
+
+      {/* Chatbot Toggle Button */}
         {/* Responsive Layout Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -452,7 +474,10 @@ export default function HomePage() {
                   {recentIncidents.map((inc) => (
                     <Card key={inc.id} className="overflow-hidden border border-[var(--text-primary)] rounded-none flex flex-col justify-between bg-white">
                       {/* Post Header */}
-                      <div className="p-3 flex items-center justify-between border-b border-[var(--border)]">
+                      <div 
+                        className="p-3 flex items-center justify-between border-b border-[var(--border)] cursor-pointer hover:bg-gray-50 transition-colors"
+                        onClick={() => router.push(`/map?incidentId=${inc.id}`)}
+                      >
                         <div className="flex items-center gap-2.5">
                           <div
                             className="w-8 h-8 flex items-center justify-center text-white text-xs font-bold border border-[var(--text-primary)]"
@@ -495,14 +520,15 @@ export default function HomePage() {
                       {/* Post Image */}
                       {inc.image_url ? (
                         <div 
-                          className="relative w-full bg-gray-50 border-b border-[var(--border)] overflow-hidden flex items-center justify-center"
+                          className="relative w-full bg-gray-50 border-b border-[var(--border)] overflow-hidden flex items-center justify-center cursor-pointer"
                           style={{ minHeight: "180px", maxHeight: "300px" }}
+                          onClick={() => setZoomedImage(inc.image_url)}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img 
                             src={inc.image_url} 
                             alt="" 
-                            className="w-full h-auto max-h-[300px] object-contain block" 
+                            className="w-full h-auto max-h-[300px] object-contain block hover:scale-[1.02] transition-transform" 
                           />
                         </div>
                       ) : (

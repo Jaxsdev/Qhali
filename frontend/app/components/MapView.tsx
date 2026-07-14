@@ -144,6 +144,13 @@ export default function MapView({ incidents, onSelect, selectedId, viewMode = "p
         markersRef.current.set(inc.id, marker);
       });
 
+    if (selectedId && mapRef.current) {
+       const selectedInc = incidents.find(i => i.id === selectedId);
+       if (selectedInc) {
+          mapRef.current.setView([selectedInc.latitude, selectedInc.longitude], 16, { animate: true });
+       }
+    }
+
   }, [mapReady, incidents, onSelect, selectedId, viewMode]);
 
   return (

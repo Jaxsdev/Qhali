@@ -35,6 +35,7 @@ export default function MyReportsPage() {
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [validatingId, setValidatingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
   async function handleLikeValidate(incId: number, lat: number, lng: number) {
     try {
@@ -229,7 +230,10 @@ export default function MyReportsPage() {
                   <div key={report.id} className="animate-slide-up" style={{ animationDelay: `${i * 0.05}s` }}>
                     <Card className="overflow-hidden border border-[var(--text-primary)] rounded-none flex flex-col justify-between bg-white h-full">
                       {/* Post Header */}
-                      <div className="p-3 flex items-center justify-between border-b border-[var(--border)]">
+                      <div 
+                        className="p-3 flex items-center justify-between border-b border-[var(--border)] cursor-pointer hover:bg-gray-50 transition-colors"
+                        onClick={() => router.push(`/map?incidentId=${report.id}`)}
+                      >
                         <div className="flex items-center gap-2.5">
                           <div
                             className="w-8 h-8 flex items-center justify-center text-white text-xs font-bold border border-[var(--text-primary)]"
@@ -249,9 +253,12 @@ export default function MyReportsPage() {
 
                       {/* Post Image */}
                       {report.image_url ? (
-                        <div className="relative w-full h-48 bg-gray-100 flex-shrink-0 border-b border-[var(--border)]">
+                        <div 
+                          className="relative w-full h-48 bg-gray-100 flex-shrink-0 border-b border-[var(--border)] cursor-pointer overflow-hidden"
+                          onClick={() => setZoomedImage(report.image_url)}
+                        >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={report.image_url} alt="" className="w-full h-full object-cover" />
+                          <img src={report.image_url} alt="" className="w-full h-full object-cover hover:scale-[1.02] transition-transform" />
                         </div>
                       ) : (
                         <div className="w-full h-48 flex-shrink-0 flex flex-col items-center justify-center bg-[var(--bg-primary)] border-b border-[var(--border)] relative overflow-hidden">
@@ -309,6 +316,21 @@ export default function MyReportsPage() {
           </div>
         )}
       </div>
+      
+      {/* Image Zoom Modal */}
+      {zoomedImage && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 cursor-zoom-out p-4"
+          onClick={() => setZoomedImage(null)}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img 
+            src={zoomedImage} 
+            alt="Ampliación" 
+            className="max-w-full max-h-[90vh] object-contain rounded-sm"
+          />
+        </div>
+      )}
     </div>
   );
 }

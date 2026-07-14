@@ -53,6 +53,20 @@ export default function MapPage() {
         .then((data) => {
           if (isMounted) {
             setIncidents(data);
+            
+            // Si hay un incidentId en la URL, seleccionarlo automáticamente
+            if (typeof window !== "undefined") {
+              const urlParams = new URLSearchParams(window.location.search);
+              const targetId = urlParams.get("incidentId");
+              if (targetId) {
+                const inc = data.find(i => i.id === parseInt(targetId));
+                if (inc) {
+                  setSelected(inc);
+                  // Opcional: limpiar la URL para que no se quede pegado si navegan
+                  window.history.replaceState({}, '', '/map');
+                }
+              }
+            }
           }
         })
         .catch((e: Error) => { if (isMounted) setError(e.message); })

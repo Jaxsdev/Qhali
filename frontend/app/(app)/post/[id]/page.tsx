@@ -31,6 +31,7 @@ export default function PostDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [validating, setValidating] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -139,9 +140,12 @@ export default function PostDetailPage() {
 
               {/* Post Image */}
               {incident.image_url ? (
-                <div className="relative w-full h-80 bg-gray-100 flex-shrink-0 border-b border-[var(--border)]">
+                <div 
+                  className="relative w-full h-80 bg-gray-100 flex-shrink-0 border-b border-[var(--border)] cursor-pointer overflow-hidden"
+                  onClick={() => setZoomedImage(incident.image_url)}
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={incident.image_url} alt="" className="w-full h-full object-cover" />
+                  <img src={incident.image_url} alt="" className="w-full h-full object-cover hover:scale-[1.02] transition-transform" />
                 </div>
               ) : (
                 <div className="w-full h-64 flex-shrink-0 flex flex-col items-center justify-center bg-[var(--bg-primary)] border-b border-[var(--border)] relative overflow-hidden">
@@ -218,6 +222,21 @@ export default function PostDetailPage() {
           </div>
         )}
       </div>
+      
+      {/* Image Zoom Modal */}
+      {zoomedImage && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 cursor-zoom-out p-4"
+          onClick={() => setZoomedImage(null)}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img 
+            src={zoomedImage} 
+            alt="Ampliación" 
+            className="max-w-full max-h-[90vh] object-contain rounded-sm"
+          />
+        </div>
+      )}
     </div>
   );
 }
