@@ -32,6 +32,15 @@ try:
 except Exception:
     pass  # columna ya existe
 
+# Integración de IA — migración de columnas de Claude
+for col, type_str in [("ai_category", "VARCHAR"), ("ai_priority", "VARCHAR"), ("ai_is_valid", "BOOLEAN"), ("ai_summary", "VARCHAR")]:
+    try:
+        with engine.connect() as _conn:
+            _conn.execute(text(f"ALTER TABLE incidents ADD COLUMN {col} {type_str}"))
+            _conn.commit()
+    except Exception:
+        pass
+
 # Sprint 5 — migración idempotente: crear tabla validations si no existe
 try:
     with engine.connect() as _conn:

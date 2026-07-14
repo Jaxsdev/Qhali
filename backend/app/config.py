@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     # ── CORS ──
     CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:3001"]
 
+    # ── IA ──
+    ANTHROPIC_API_KEY: Optional[str] = None
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

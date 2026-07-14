@@ -1,7 +1,7 @@
 """SQLAlchemy ORM model para incidentes de QHALI."""
 
 # pyrefly: ignore [missing-import]
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean
 # pyrefly: ignore [missing-import]
 from sqlalchemy.sql import func
 
@@ -24,3 +24,10 @@ class Incident(Base):
     validation_count = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # ── Campos de IA (Claude) ──
+    ai_category = Column(String, nullable=True)
+    ai_priority = Column(String, nullable=True)
+    ai_is_valid = Column(Boolean, nullable=True)
+    ai_summary = Column(String, nullable=True)
+

@@ -23,6 +23,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from pydantic import BaseModel
 from app.models.incident_db import Incident
 from app.models.user_db import User
 from app.schemas.incident import DuplicateCheckResponse, DuplicateItem, IncidentPublicItem, IncidentResponse
@@ -42,7 +43,7 @@ _NEARBY_RADIUS_MAX = 1000.0          # cap para evitar queries excesivos
 
 _VALID_CATEGORIES = {
     "bache", "alumbrado", "basura", "agua", "alcantarillado",
-    "señalización", "áreas_verdes", "ruido", "seguridad", "otro",
+    "señalización", "áreas_verdes", "ruido", "seguridad", "robos", "otro",
 }
 
 _VALIDATION_THRESHOLD = 5  # validaciones para cambiar a "Confirmado"
@@ -110,6 +111,15 @@ async def create_incident(
     base = str(request.base_url).rstrip("/")
     image_url = f"{base}/static/images/{filename}"
 
+    # ── Integración de IA con Claude ──
+    from app.utils.ai import analyze_incident_text
+    ai_res = analyze_incident_text(description)
+    
+    # Si la IA determina que no es un reporte válido (spam, insulto), se modera automáticamente
+    status_inicial = "Pendiente"
+    if not ai_res.get("is_valid", True):
+        status_inicial = "Moderado"
+
     incident = Incident(
         user_id=current_user.id,
         public_alias=current_user.alias_anonimo,
@@ -119,8 +129,12 @@ async def create_incident(
         latitude=latitude,
         longitude=longitude,
         location_accuracy=location_accuracy,
-        status="Pendiente",
+        status=status_inicial,
         validation_count=0,
+        ai_category=ai_res.get("suggested_category"),
+        ai_priority=ai_res.get("priority"),
+        ai_is_valid=ai_res.get("is_valid"),
+        ai_summary=ai_res.get("summary")
     )
     db.add(incident)
     db.commit()
@@ -163,6 +177,27 @@ def list_public_incidents(
         query = query.filter(Incident.category == category)
 
     return query.order_by(Incident.created_at.desc()).limit(200).all()
+
+@router.get("/ai-summary")
+def get_ai_executive_summary(db: Session = Depends(get_db)):
+    """
+    Retorna un resumen ejecutivo generado por IA basado en los reportes más recientes.
+    """
+    recent_incidents = db.query(Incident).order_by(Incident.created_at.desc()).limit(20).all()
+    incidents_data = []
+    for inc in recent_incidents:
+        incidents_data.append({
+            "category": inc.category,
+            "ai_priority": inc.ai_priority,
+            "status": inc.status,
+            "description": inc.description,
+            "created_at": inc.created_at.isoformat() if inc.created_at else ""
+        })
+    
+    from app.utils.ai import generate_executive_summary
+    summary_text = generate_executive_summary(incidents_data)
+    
+    return {"summary": summary_text}
 
 
 # ── GET /my — Historial privado ──────────────────────────────────────────────
@@ -404,3 +439,92 @@ async def delete_incident(
     db.delete(incident)
     db.commit()
     return {"message": "Incidente eliminado exitosamente."}
+
+
+# ── POST /chat — Asistente del Ciudadano (IA Chatbot) ───────────────────────
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    message: str
+    history: list[ChatMessage] = []
+
+
+@router.post("/chat", summary="Chat de consulta para el ciudadano")
+def chat_asistente(req: ChatRequest, current_user: User = Depends(get_current_user)):
+    """
+    Asistente del Ciudadano de QHALI usando Claude.
+    Responde dudas sobre normas municipales de Huancayo, reglas geográficas del aplicativo
+    (como el radio de validación de 300m y duplicados de 50m), e incidencias urbanas.
+    """
+    from app.utils.ai import ANTHROPIC_API_KEY
+    if not ANTHROPIC_API_KEY:
+        return {"response": "El asistente no está configurado en este momento."}
+        
+    system_prompt = f"""
+    Eres el "Asistente QHALI", un chatbot de Inteligencia Artificial para la plataforma ciudadana de reporte de Huancayo (QHALI).
+    Tu objetivo es guiar amablemente al ciudadano sobre qué cosas puede reportar, cómo usar el aplicativo y las reglas vigentes.
+
+    Reglas clave de QHALI que debes conocer:
+    1. Para validar el reporte de otro vecino, el usuario debe estar físicamente a menos de 300 metros de la incidencia (Regla de validación cercana). No puede validar su propio reporte.
+    2. El sistema detecta reportes duplicados si son de la misma categoría y están a menos de 50 metros de distancia.
+    3. Categorías soportadas: Bache, Alumbrado, Basura, Agua, Alcantarillado, Señalización, Áreas verdes, Ruido, Seguridad, Robos y Otro.
+    4. Las incidencias válidas son en la vía pública o espacios públicos. Las incidencias en interiores de casas privadas o de carácter puramente comercial no corresponden a este sistema.
+
+    Responde de forma concisa, clara y en tono servicial/ciudadano en español. Máximo 2-3 párrafos cortos.
+    """
+
+    try:
+        import httpx
+        headers = {
+            "x-api-key": ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json"
+        }
+        
+        # Construir historial de mensajes válidos
+        messages = [{"role": msg.role, "content": msg.content} for msg in req.history]
+        messages.append({"role": "user", "content": req.message})
+
+        with httpx.Client(timeout=15.0) as client:
+            response = client.post(
+                "https://api.anthropic.com/v1/messages",
+                headers=headers,
+                json={
+                    "model": "claude-haiku-4-5-20251001",
+                    "max_tokens": 512,
+                    "system": system_prompt,
+                    "messages": messages
+                }
+            )
+            if response.status_code == 200:
+                res_data = response.json()
+                return {"response": res_data["content"][0]["text"].strip()}
+            elif response.status_code == 404:
+                # The API key is valid but the account has no access to the model
+                return {"response": "¡Hola! Veo que pudimos conectar con tu API Key, pero tu cuenta de Anthropic actual no tiene permisos o saldo para usar los modelos de Claude 3. (Error 404). \n\nPero no te preocupes, como demostración simulada te puedo responder que: en QHALI, las validaciones de otros ciudadanos se permiten en un radio máximo de 300 metros de la incidencia reportada."}
+            else:
+                print(f"API Error ({response.status_code}): {response.text}")
+                return {"response": f"Lo siento, tuve un problema de conexión al procesar tu consulta. (Error {response.status_code})"}
+    except Exception as e:
+        print(f"Error in chat assistant: {e}")
+        
+    return {"response": "Lo siento, tuve un problema de conexión al procesar tu consulta. Por favor, intenta en unos momentos."}
+
+
+# ── POST /suggest-category — Sugerencia automática de categorías (IA) ────────
+
+class SuggestCategoryRequest(BaseModel):
+    description: str
+
+
+@router.post("/suggest-category")
+def suggest_category(req: SuggestCategoryRequest, _current_user: User = Depends(get_current_user)):
+    """
+    Analiza una descripción textual del problema y devuelve la categoría sugerida por la IA.
+    """
+    from app.utils.ai import analyze_incident_text
+    res = analyze_incident_text(req.description)
+    return {"suggested_category": res.get("suggested_category", "otro")}

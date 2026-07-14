@@ -11,7 +11,7 @@ import { api, type IncidentResponse } from "../../../lib/api";
 const CATEGORY_ICONS: Record<string, string> = {
   bache: "🕳️", alumbrado: "💡", basura: "🗑️", agua: "💧",
   alcantarillado: "🚰", "señalización": "🚦", "áreas_verdes": "🌳",
-  ruido: "🔊", seguridad: "🔒", otro: "📌",
+  ruido: "🔊", seguridad: "🔒", robos: "🚨", otro: "📌",
 };
 
 function formatDate(iso: string): string {

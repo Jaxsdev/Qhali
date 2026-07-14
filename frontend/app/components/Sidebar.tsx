@@ -89,7 +89,7 @@ export default function Sidebar() {
 
       {/* Navigation Items */}
       <nav className="flex-1 space-y-1.5">
-        {navItems.map((item) => {
+        {navItems.filter(item => !(isAdmin && item.href === "/report")).map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
@@ -118,31 +118,6 @@ export default function Sidebar() {
           );
         })}
 
-        {/* Admin Dashboard if authorized */}
-        {isAdmin && (
-          <Link
-            href="/admin/dashboard"
-            className={`flex items-center gap-3 px-4 py-3 text-sm font-bold border transition-all duration-150 group mt-4`}
-            style={
-              pathname === "/admin/dashboard"
-                ? {
-                    background: "#FFFFFF",
-                    borderColor: "#000000",
-                    color: "var(--qhali-primary)",
-                  }
-                : {
-                    background: "transparent",
-                    borderColor: "transparent",
-                    color: "rgba(255, 255, 255, 0.7)",
-                  }
-            }
-          >
-            <span className="transition-transform duration-150 group-hover:scale-110">
-              ⚙️
-            </span>
-            <span>Panel de Admin</span>
-          </Link>
-        )}
       </nav>
 
       {/* User profile / Logout at the bottom */}

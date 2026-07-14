@@ -49,6 +49,10 @@ export interface IncidentResponse {
   status: string;
   validation_count: number;
   created_at: string;
+  ai_category?: string | null;
+  ai_priority?: string | null;
+  ai_is_valid?: boolean | null;
+  ai_summary?: string | null;
 }
 
 export interface NearbyIncidentItem {
@@ -159,6 +163,10 @@ export const api = {
     });
   },
 
+  getAiSummary() {
+    return request<{ summary: string }>("/incidents/ai-summary");
+  },
+
   getPublicIncidents(category?: string) {
     const qs = category ? `?category=${encodeURIComponent(category)}` : "";
     return request<IncidentResponse[]>(`/incidents/public${qs}`);
@@ -206,5 +214,19 @@ export const api = {
 
   getAdminMetrics() {
     return request<AdminMetrics>("/admin/metrics");
+  },
+
+  chat(message: string, history: { role: string; content: string }[] = []) {
+    return request<{ response: string }>("/incidents/chat", {
+      method: "POST",
+      body: JSON.stringify({ message, history }),
+    });
+  },
+
+  suggestCategory(description: string) {
+    return request<{ suggested_category: string }>("/incidents/suggest-category", {
+      method: "POST",
+      body: JSON.stringify({ description }),
+    });
   },
 };

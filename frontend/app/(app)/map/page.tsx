@@ -8,13 +8,13 @@ import { api, type IncidentResponse } from "../../lib/api";
 const MapView = dynamic(() => import("../../components/MapView"), { ssr: false });
 
 const CATEGORY_FILTERS = [
-  { key: "", label: "Todos" },
-  { key: "bache", label: "Baches" },
-  { key: "alumbrado", label: "Alumbrado" },
-  { key: "basura", label: "Basura" },
-  { key: "agua", label: "Agua" },
-  { key: "alcantarillado", label: "Alcantarilla" },
-  { key: "seguridad", label: "Seguridad" },
+  { key: "", label: "Todos", icon: "🌎" },
+  { key: "bache", label: "Baches", icon: "🕳️" },
+  { key: "alumbrado", label: "Alumbrado", icon: "💡" },
+  { key: "basura", label: "Basura", icon: "🗑️" },
+  { key: "agua", label: "Agua", icon: "💧" },
+  { key: "alcantarillado", label: "Alcantarilla", icon: "🚰" },
+  { key: "seguridad", label: "Seguridad", icon: "🔒" },
 ];
 
 const STATUS_LEGEND = [
@@ -27,7 +27,7 @@ const STATUS_LEGEND = [
 const CATEGORY_ICONS: Record<string, string> = {
   bache: "🕳️", alumbrado: "💡", basura: "🗑️", agua: "💧",
   alcantarillado: "🚰", "señalización": "🚦", "áreas_verdes": "🌳",
-  ruido: "🔊", seguridad: "🔒", otro: "📌",
+  ruido: "🔊", seguridad: "🔒", robos: "🚨", otro: "📌",
 };
 
 function formatDate(iso: string): string {
@@ -43,6 +43,8 @@ export default function MapPage() {
   const [selected, setSelected] = useState<IncidentResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [viewMode, setViewMode] = useState<"points" | "heatmap">("points");
 
   useEffect(() => {
     api.getPublicIncidents()
@@ -82,23 +84,40 @@ export default function MapPage() {
                 Huancayo — {loading ? "…" : `${filtered.length} incidencias`}
               </p>
             </div>
-            {/* Legend */}
-            <div className="flex items-center gap-2">
-              {STATUS_LEGEND.map((s) => (
-                <div key={s.key} className="flex items-center gap-1">
-                  <div
-                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                    style={{ background: s.color, border: "2px solid white", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }}
-                  />
-                  <span className="text-[9px] hidden sm:block" style={{ color: "var(--text-muted)" }}>{s.label}</span>
-                </div>
-              ))}
+            {/* Legend and Toggle */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                {STATUS_LEGEND.map((s) => (
+                  <div key={s.key} className="flex items-center gap-1">
+                    <div
+                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                      style={{ background: s.color, border: "2px solid white", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }}
+                    />
+                    <span className="text-[9px] hidden sm:block" style={{ color: "var(--text-muted)" }}>{s.label}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="h-4 w-px bg-gray-300"></div>
+              <div className="flex bg-gray-100 rounded-md p-0.5 border border-[var(--border)]">
+                <button
+                  onClick={() => setViewMode("points")}
+                  className={`px-2 py-1 text-[10px] font-bold rounded-sm transition-colors ${viewMode === "points" ? "bg-white shadow-sm text-[var(--qhali-primary)]" : "text-[var(--text-muted)]"}`}
+                >
+                  Puntos
+                </button>
+                <button
+                  onClick={() => setViewMode("heatmap")}
+                  className={`px-2 py-1 text-[10px] font-bold rounded-sm transition-colors ${viewMode === "heatmap" ? "bg-white shadow-sm text-red-600" : "text-[var(--text-muted)]"}`}
+                >
+                  Calor
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Map area — flex-1 so it fills remaining height */}
+      {/* Map area */}
       <div className="flex-1 relative overflow-hidden">
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center z-10" style={{ background: "var(--bg-secondary)" }}>
@@ -127,6 +146,7 @@ export default function MapPage() {
             incidents={filtered}
             onSelect={handleSelect}
             selectedId={selected?.id ?? null}
+            viewMode={viewMode}
           />
         )}
 
@@ -221,29 +241,30 @@ export default function MapPage() {
           boxShadow: "0 -1px 0 var(--border-subtle)",
         }}
       >
-        <div className="max-w-lg mx-auto flex items-center gap-2 overflow-x-auto">
-          {CATEGORY_FILTERS.map((f) => (
-            <button
-              key={f.key}
-              onClick={() => setActiveCategory(f.key)}
-              className="flex-shrink-0 text-[10px] font-medium px-3 py-1.5 rounded-full border transition-colors cursor-pointer"
-              style={
-                activeCategory === f.key
-                  ? {
-                      background: "var(--qhali-primary-pale)",
-                      color: "var(--qhali-primary)",
-                      borderColor: "var(--qhali-primary-light)",
-                    }
-                  : {
-                      background: "var(--bg-primary)",
-                      color: "var(--text-muted)",
-                      borderColor: "var(--border-subtle)",
-                    }
-              }
-            >
-              {f.label}
-            </button>
-          ))}
+        <div className="max-w-lg mx-auto flex items-stretch gap-2 overflow-x-auto py-1 scrollbar-thin">
+          {CATEGORY_FILTERS.map((f) => {
+            const active = activeCategory === f.key;
+            return (
+              <button
+                key={f.key}
+                onClick={() => setActiveCategory(f.key)}
+                className="flex-shrink-0 flex flex-col items-center justify-center p-2 rounded-none transition-all duration-150 active:scale-95 border cursor-pointer min-w-[72px]"
+                style={{
+                  background: active ? "var(--qhali-primary-pale)" : "var(--bg-card)",
+                  borderColor: active ? "var(--text-primary)" : "var(--border)",
+                  borderWidth: active ? "2px" : "1px",
+                }}
+              >
+                <span className="text-lg">{f.icon}</span>
+                <span
+                  className="text-[9px] font-bold mt-1"
+                  style={{ color: active ? "var(--qhali-primary)" : "var(--text-primary)" }}
+                >
+                  {f.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

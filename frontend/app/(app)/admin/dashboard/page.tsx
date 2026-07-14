@@ -6,13 +6,13 @@ import { api, type AdminIncident, type AdminMetrics } from "../../../lib/api";
 const CATEGORY_LABELS: Record<string, string> = {
   bache: "Bache", alumbrado: "Alumbrado", basura: "Basura", agua: "Agua",
   alcantarillado: "Alcantarillado", "señalización": "Señalización",
-  "áreas_verdes": "Áreas verdes", ruido: "Ruido", seguridad: "Seguridad", otro: "Otro",
+  "áreas_verdes": "Áreas verdes", ruido: "Ruido", seguridad: "Seguridad", robos: "Robos", otro: "Otro",
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
   bache: "🕳️", alumbrado: "💡", basura: "🗑️", agua: "💧",
   alcantarillado: "🚰", "señalización": "🚦", "áreas_verdes": "🌳",
-  ruido: "🔊", seguridad: "🔒", otro: "📌",
+  ruido: "🔊", seguridad: "🔒", robos: "🚨", otro: "📌",
 };
 
 const STATUS_OPTIONS = ["Pendiente", "Confirmado", "En revisión", "Resuelto"];

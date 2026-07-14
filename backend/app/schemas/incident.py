@@ -18,6 +18,10 @@ class IncidentResponse(BaseModel):
     status: str
     validation_count: int = 0
     created_at: datetime
+    ai_category: Optional[str] = None
+    ai_priority: Optional[str] = None
+    ai_is_valid: Optional[bool] = None
+    ai_summary: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -34,6 +38,10 @@ class IncidentPublicItem(BaseModel):
     status: str
     validation_count: int = 0
     created_at: datetime
+    ai_category: Optional[str] = None
+    ai_priority: Optional[str] = None
+    ai_is_valid: Optional[bool] = None
+    ai_summary: Optional[str] = None
 
     class Config:
         from_attributes = True

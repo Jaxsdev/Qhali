@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import L from "leaflet";
 import type { IncidentResponse } from "../lib/api";
 
 interface MapViewProps {
   incidents: IncidentResponse[];
   onSelect: (incident: IncidentResponse) => void;
   selectedId: number | null;
+  viewMode?: "points" | "heatmap";
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -37,7 +39,7 @@ function pinHtml(color: string, selected: boolean): string {
 const CATEGORY_ICONS: Record<string, string> = {
   bache: "🕳️", alumbrado: "💡", basura: "🗑️", agua: "💧",
   alcantarillado: "🚰", "señalización": "🚦", "áreas_verdes": "🌳",
-  ruido: "🔊", seguridad: "🔒", otro: "📌",
+  ruido: "🔊", seguridad: "🔒", robos: "🚨", otro: "📌",
 };
 
 const STATUS_MAPPINGS: Record<string, { bg: string; text: string; label: string }> = {
@@ -47,43 +49,50 @@ const STATUS_MAPPINGS: Record<string, { bg: string; text: string; label: string 
   resuelto:     { bg: "var(--status-resolved-bg, #EDE9FE)", text: "var(--status-resolved-text, #4C1D95)", label: "Resuelto" },
 };
 
-export default function MapView({ incidents, onSelect, selectedId }: MapViewProps) {
+export default function MapView({ incidents, onSelect, selectedId, viewMode = "points" }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<ReturnType<typeof import("leaflet")["map"]> | null>(null);
   const markersRef = useRef<Map<number, ReturnType<typeof import("leaflet")["marker"]>>>(new Map());
+  const heatLayerRef = useRef<any>(null);
   const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    let alive = true;
+    
+    // Configurar Leaflet.heat inyectando el script si no existe
+    if (typeof window !== "undefined") {
+      (window as any).L = L;
+      if (!document.getElementById("leaflet-heat-script")) {
+        const script = document.createElement("script");
+        script.id = "leaflet-heat-script";
+        script.src = "https://unpkg.com/leaflet.heat/dist/leaflet-heat.js";
+        script.async = true;
+        document.body.appendChild(script);
+      }
+    }
 
-    import("leaflet").then((L) => {
-      if (!alive || !containerRef.current || mapRef.current) return;
-
-      const map = L.map(containerRef.current, {
-        center: [-12.065, -75.204],
-        zoom: 14,
-        zoomControl: true,
-      });
-
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: "abcd",
-        maxZoom: 20,
-      }).addTo(map);
-
-      mapRef.current = map;
-      setMapReady(true);
-
-      setTimeout(() => {
-        if (alive && mapRef.current) {
-          mapRef.current.invalidateSize();
-        }
-      }, 200);
+    const map = L.map(containerRef.current, {
+      center: [-12.065, -75.204],
+      zoom: 14,
+      zoomControl: true,
     });
 
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: "abcd",
+      maxZoom: 20,
+    }).addTo(map);
+
+    mapRef.current = map;
+    setMapReady(true);
+
+    setTimeout(() => {
+      if (mapRef.current) {
+        mapRef.current.invalidateSize();
+      }
+    }, 200);
+
     return () => {
-      alive = false;
       mapRef.current?.remove();
       mapRef.current = null;
     };
@@ -92,14 +101,29 @@ export default function MapView({ incidents, onSelect, selectedId }: MapViewProp
   useEffect(() => {
     if (!mapReady || !mapRef.current) return;
 
-    import("leaflet").then((L) => {
-      if (!mapRef.current) return;
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current.clear();
+    
+    if (heatLayerRef.current) {
+      mapRef.current.removeLayer(heatLayerRef.current);
+      heatLayerRef.current = null;
+    }
 
-      markersRef.current.forEach((m) => m.remove());
-      markersRef.current.clear();
+    if (viewMode === "heatmap") {
+      const heatData = incidents.map(inc => [inc.latitude, inc.longitude, 1]);
+      if (typeof (L as any).heatLayer === 'function') {
+        heatLayerRef.current = (L as any).heatLayer(heatData, {
+          radius: 30,
+          blur: 20,
+          maxZoom: 15,
+          gradient: { 0.4: 'blue', 0.6: 'cyan', 0.7: 'lime', 0.8: 'yellow', 1.0: 'red' }
+        }).addTo(mapRef.current);
+      }
+      return;
+    }
 
-      incidents.forEach((inc) => {
-        const key = normalizeStatus(inc.status);
+    incidents.forEach((inc) => {
+      const key = normalizeStatus(inc.status);
         const color = STATUS_COLORS[key] ?? "#9CA3AF";
         const isSelected = inc.id === selectedId;
 
@@ -187,14 +211,13 @@ export default function MapView({ incidents, onSelect, selectedId }: MapViewProp
       });
 
       // Auto open popup for selected marker
-      if (selectedId) {
+      if (selectedId && viewMode === "points") {
         const selectedMarker = markersRef.current.get(selectedId);
         if (selectedMarker) {
           selectedMarker.openPopup();
         }
       }
-    });
-  }, [mapReady, incidents, onSelect, selectedId]);
+  }, [mapReady, incidents, onSelect, selectedId, viewMode]);
 
   return (
     <div

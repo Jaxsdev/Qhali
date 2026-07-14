@@ -19,6 +19,7 @@ const CATEGORIES = [
   { value: "áreas_verdes", label: "Áreas verdes", icon: "🌳" },
   { value: "ruido",        label: "Ruido",        icon: "🔊" },
   { value: "seguridad",    label: "Seguridad",    icon: "🔒" },
+  { value: "robos",        label: "Robos",        icon: "🚨" },
   { value: "otro",         label: "Otro",         icon: "📌" },
 ];
 
@@ -45,6 +46,28 @@ export default function ReportPage() {
   const [success, setSuccess] = useState(false);
   const [incidentId, setIncidentId] = useState<number | null>(null);
   const [duplicateWarning, setDuplicateWarning] = useState<DuplicateCheckResponse | null>(null);
+
+  // Auto-categorization AI feature
+  const [aiSuggestionInput, setAiSuggestionInput] = useState("");
+  const [aiSuggestionLoading, setAiSuggestionLoading] = useState(false);
+
+  async function handleSuggestCategory() {
+    if (!aiSuggestionInput.trim()) return;
+    setAiSuggestionLoading(true);
+    setError(null);
+    try {
+      const res = await api.suggestCategory(aiSuggestionInput);
+      if (res.suggested_category && CATEGORIES.some(c => c.value === res.suggested_category)) {
+        setForm(f => ({ ...f, category: res.suggested_category }));
+      } else {
+        setForm(f => ({ ...f, category: "otro" }));
+      }
+    } catch (err: any) {
+      setError("Error al sugerir categoría con IA.");
+    } finally {
+      setAiSuggestionLoading(false);
+    }
+  }
 
   const [form, setForm] = useState<FormState>({
     category: "",
@@ -268,6 +291,35 @@ export default function ReportPage() {
               <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
                 Selecciona la categoría que describe mejor el problema
               </p>
+            </div>
+
+            {/* AI Auto-Categorization Widget */}
+            <div className="bg-[var(--qhali-primary-pale)] border border-[var(--qhali-primary-light)] p-3">
+              <div className="flex items-start gap-2 mb-2">
+                <span className="text-lg">✨</span>
+                <div>
+                  <p className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>¿No estás seguro de cuál elegir?</p>
+                  <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>Describe el problema y la IA seleccionará por ti.</p>
+                </div>
+              </div>
+              <div className="flex items-stretch gap-2">
+                <input 
+                  type="text" 
+                  value={aiSuggestionInput}
+                  onChange={(e) => setAiSuggestionInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSuggestCategory()}
+                  placeholder="Ej: Hay un hoyo grande en la pista..." 
+                  className="flex-1 text-xs border border-[var(--border)] p-2 focus:outline-none focus:border-[var(--text-primary)]"
+                />
+                <button
+                  onClick={handleSuggestCategory}
+                  disabled={aiSuggestionLoading}
+                  className="bg-[var(--qhali-primary)] hover:bg-[var(--qhali-primary-hover)] text-white text-[10px] font-bold px-3 transition-colors flex items-center justify-center whitespace-nowrap disabled:opacity-50 border border-[var(--text-primary)]"
+                  style={{ boxShadow: "var(--shadow-btn)" }}
+                >
+                  {aiSuggestionLoading ? "Cargando..." : "Sugerir Categoría"}
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">

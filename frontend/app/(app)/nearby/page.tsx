@@ -9,7 +9,7 @@ import { api, type NearbyIncidentItem } from "../../lib/api";
 const CATEGORY_ICONS: Record<string, string> = {
   bache: "🕳️", alumbrado: "💡", basura: "🗑️", agua: "💧",
   alcantarillado: "🚰", "señalización": "🚦", "áreas_verdes": "🌳",
-  ruido: "🔊", seguridad: "🔒", otro: "📌",
+  ruido: "🔊", seguridad: "🔒", robos: "🚨", otro: "📌",
 };
 
 function formatDistance(m: number): string {
